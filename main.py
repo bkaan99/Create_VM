@@ -21,7 +21,13 @@ def get_vm_properties():
         memory = int(input('Bellek miktarını (KiB cinsinden) girin: '))
         vcpu = int(input('vCPU sayısını girin: '))
         disk_size = int(input('Disk boyutunu (GiB cinsinden) girin: '))
+        supported_os_types = ['linux', 'windows', 'ubuntu']  # Desteklenen işletim sistemleri listesi
         os_type = input('İşletim sistemi türünü girin (varsayılan: linux): ') or 'linux'
+
+        if os_type.lower() not in supported_os_types:
+            print('Hata: Geçersiz işletim sistemi tipi.')
+            sys.exit(1)
+
         iso_path = input('ISO dosyasının yolunu girin (opsiyonel): ')
 
         return vm_name, memory, vcpu, disk_size, os_type, iso_path
@@ -33,6 +39,13 @@ def get_vm_properties():
 
 def create_vm(conn, vm_name, memory, vcpu, disk_size, os_type='linux', iso_path=None):
     try:
+        os_info = f"""
+                    <os>
+                        <type arch='x86_64' machine='pc-i440fx-2.12'>{os_type}</type>
+                        <boot dev='hd'/>
+                    </os>
+                """
+
         xml_desc = f"""
             <domain type='kvm'>
                 <name>{vm_name}</name>
@@ -42,6 +55,7 @@ def create_vm(conn, vm_name, memory, vcpu, disk_size, os_type='linux', iso_path=
                     <type arch='x86_64' machine='pc-i440fx-2.12'>{os_type}</type>
                     <boot dev='hd'/>
                 </os>
+                {os_info}  <!-- Eklenen kısım -->
                 <devices>
                     <disk type='file' device='disk'>
                         <driver name='qemu' type='qcow2'/>
