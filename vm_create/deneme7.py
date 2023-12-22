@@ -3,7 +3,7 @@ import time
 import psutil
 import os
 
-DEFAULT_ISO_PATH = "/Users/b.gurgen/PycharmProjects/Create_VM/ex_files/Core-current.iso"
+DEFAULT_ISO_PATH = "/ex_files/Core-current.iso"
 
 def create_vm(vm_name, memory_size_mb, iso_path):
     # Validate inputs
