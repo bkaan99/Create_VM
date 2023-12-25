@@ -36,8 +36,8 @@ def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
 
         print(f"Dosya başarıyla kopyalandı: {target_file_path}")
 
-        # Dosyayı sil (rename işlemi için)
-        file_manager.DeleteDatastoreFile(datacenter_obj, source_file_path)
+        # Dosyayı sil
+        file_manager.DeleteFile(sourceName=source_file_path, datacenter=datacenter_obj)
 
         print(f"Dosya başarıyla silindi: {source_file_path}")
     except Exception as e:
@@ -59,12 +59,15 @@ def main():
 
     source_vm = get_vm_by_name(content, source_vm_name)
 
-    if source_vm is not None:
-        folder_name = "bkaan_deneme_clone"
-        file_to_rename = "bkaan_deneme.vmsd"  # Specify the file to be renamed
-        new_file_name = "new_bkaan_deneme.vmsd"  # Specify the new file name
+    datastoreFile = {"nvram","vmdk","vmsd","vmxf","vmx","log"}
 
-        rename_files_in_folder(folder_name, content, source_vm.datastore[0], file_to_rename, new_file_name)
+    if source_vm is not None:
+        for i in datastoreFile:
+            folder_name = "bkaan_deneme_clone"
+            file_to_rename = "bkaan_deneme"+"."+i  # Specify the file to be renamed
+            new_file_name = "new_bkaan_deneme"+"."+i  # Specify the new file name
+
+            rename_files_in_folder(folder_name, content, source_vm.datastore[0], file_to_rename, new_file_name)
     else:
         print("VM bulunamadı.")
 
