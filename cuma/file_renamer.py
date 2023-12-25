@@ -34,10 +34,13 @@ def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
         file_manager.CopyFile(sourceName=source_file_path, sourceDatacenter=datacenter_obj,
                               destinationName=target_file_path, destinationDatacenter=datacenter_obj)
 
+
         print(f"Dosya başarıyla kopyalandı: {target_file_path}")
 
-        # Dosyayı sil
-        file_manager.DeleteFile(sourceName=source_file_path, datacenter=datacenter_obj)
+
+       # kopyalanan dosyayı sil
+        file_manager.DeleteFile(name=source_file_path, datacenter=datacenter_obj)
+
 
         print(f"Dosya başarıyla silindi: {source_file_path}")
     except Exception as e:
