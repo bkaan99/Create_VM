@@ -27,7 +27,7 @@ def main():
     vcenter_server = "10.14.45.11"
     vcenter_user = "root"
     vcenter_password = "Aa112233!"
-    vm_name_to_destroy = "deneme_renamed"
+    vm_name_to_destroy = "yeni_bkaan_cemo"
 
     # Disable SSL certificate verification
     sslContext = ssl.create_default_context()

@@ -74,9 +74,9 @@ def main():
 
     datastore = source_vm.datastore[0]
 
-    folder_name = "bkaan_deneme_clone"
+    folder_name = "gurgen33"
 
-    file_name = "new_bkaan_deneme"
+    file_name = "bkaan_deneme"
 
     source_file_path = f"[{datastore.name}] {folder_name}/{file_name}.vmx"
 
