@@ -7,7 +7,6 @@ import os
 import shutil
 
 
-##çalışan pyyyy cemo
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
     for vm in vm_view.view:

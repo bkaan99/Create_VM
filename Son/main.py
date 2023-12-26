@@ -13,15 +13,14 @@ def main():
 
     copyfile.main()
     if copyfile.main() == 0:
-        print("Kopyalama İşlemi Tamamlandı Sıradaki işleme geçiliyor...")
-    else:
-        print("Kopyalama işlemi başarısız")
+        print("VM kopyalama işlemi başarılı")
+        registry_vm.main()
 
-    registry_vm.main()
-    if registry_vm.main() == 0:
-        print("VM register işlemi başarılı")
+        print("VM kayıt işlemi başarılı")
+
+
     else:
-        print("VM register işlemi başarısız")
+        print("VM kopyalama işlemi başarısız")
 
 
 if __name__ == "__main__":
