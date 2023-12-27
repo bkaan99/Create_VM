@@ -9,6 +9,30 @@ def get_vm_by_name(content, vm_name):
             return vm
     return None
 
+def get_last_used_unit_number(vm):
+    existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
+    if existing_disks:
+        return max([disk.unitNumber for disk in existing_disks])
+    else:
+        return -1  # Eğer disk yoksa, -1 döndür
+
+def get_available_unit_number(vm, max_unit_number=15):
+    existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
+    used_unit_numbers = {disk.unitNumber for disk in existing_disks}
+
+    # Mevcut disk birim numaralarının dışında kullanılabilir birim numaralarını oluştur
+    available_unit_numbers = set(range(max_unit_number + 1)) - used_unit_numbers
+
+    # Eğer kullanılabilir birim numarası yoksa, sıradaki birim numarasını kullan
+    if not available_unit_numbers:
+        next_unit_number = max(used_unit_numbers) + 1
+        # Eğer sıradaki birim numarası sınırları aşıyorsa, hata döndür
+        if next_unit_number > max_unit_number:
+            raise ValueError("Mevcut birim numaraları sınırları aşıyor.")
+        available_unit_numbers.add(next_unit_number)
+
+    return min(available_unit_numbers)
+
 def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
     try:
         # Değişiklikleri belirtmek için bir VimVMConfigSpec nesnesi oluşturun
@@ -32,15 +56,8 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         # Yeni disk için disk türünü belirtin
         new_disk_spec.device.backing.thinProvisioned = True
 
-        # Eğer bir birim numarası varsa, en son birim numarasının bir fazlasını kullanın
-        if hasattr(vm.config, 'hardware') and hasattr(vm.config.hardware, 'device'):
-            existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
-            if existing_disks:
-                # Bir birim numarası varsa, en son birim numarasının bir fazlasını kullanın
-                new_disk_spec.device.unitNumber = max([disk.unitNumber for disk in existing_disks]) + 1
-            else:
-                # Eğer bir birim numarası yoksa, 0'ı kullanın
-                new_disk_spec.device.unitNumber = 0
+        # Yeni birim numarasını alın
+        new_disk_spec.device.unitNumber = get_available_unit_number(vm)
 
         # Eğer bir kontrol cihazı varsa, onu kullanın
         controllers = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualController)]
