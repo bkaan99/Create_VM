@@ -33,66 +33,31 @@ def get_available_unit_number(vm, max_unit_number=15):
 
     return min(available_unit_numbers)
 
-def reconfigure_vm(vm, disk_size_gb):
+def delete_disk_by_name(vm, disk_name):
     try:
-        # Değişiklikleri belirtmek için bir VimVMConfigSpec nesnesi oluşturun
+        # Silinecek disk adına sahip bir disk bulun
+        disk_to_remove = None
+        for device in vm.config.hardware.device:
+            if isinstance(device, vim.VirtualDisk) and device.deviceInfo.label == disk_name:
+                disk_to_remove = device
+                break
+
+        if disk_to_remove is None:
+            raise ValueError(f"{disk_name} adına sahip bir disk bulunamadı.")
+
+        # Diski kaldırmak için bir VimVMConfigSpec nesnesi oluşturun
         spec = vim.vm.ConfigSpec()
-        spec.deviceChange = []
-
-        # Yeni disk ekleyin
-        new_disk_spec = vim.vm.device.VirtualDeviceSpec()
-        new_disk_spec.fileOperation = "create"
-        new_disk_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.add
-
-        # Yeni disk oluşturun
-        new_disk_spec.device = vim.vm.device.VirtualDisk()
-        # Yeni disk için kapasiteyi belirtin
-        new_disk_spec.device.capacityInKB = disk_size_gb * 1024 * 1024
-        # Yeni disk için disk modunu belirtin
-        new_disk_spec.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
-        new_disk_spec.device.backing.diskMode = 'persistent'
-        # Yeni disk için disk türünü belirtin
-        new_disk_spec.device.backing.thinProvisioned = True
-
-        # Yeni birim numarasını alın
-        new_disk_spec.device.unitNumber = get_available_unit_number(vm)
-
-        # Eğer bir kontrol cihazı varsa, onu kullanın
-        controllers = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualController)]
-        if controllers:
-            # Bir kontrol cihazı varsa, en ilk kontrol cihazını kullanın
-            new_disk_spec.device.controllerKey = controllers[0].key
-        else:
-            # Eğer bir kontrol cihazı yoksa, yeni bir kontrol cihazı ekleyin
-            new_controller_spec = vim.vm.device.VirtualController()
-            new_controller_spec.key = 1000
-            new_controller_spec.busNumber = 0
-            new_controller_spec.device = []
-
-            controller_added_task = vm.ReconfigVM_Task(
-                vim.vm.ConfigSpec(deviceChange=[vim.VirtualDeviceConfigSpec(device=new_controller_spec)]))
-            WaitForTask(controller_added_task)
-
-            # Yeni eklenen kontrol cihazının anahtarını kullanın
-            new_disk_spec.device.controllerKey = new_controller_spec.key
-
-        spec.deviceChange.append(new_disk_spec)
+        spec.deviceChange = [vim.VirtualDeviceConfigSpec(device=disk_to_remove, operation=vim.vm.device.VirtualDeviceSpec.Operation.remove)]
 
         # Değişiklikleri uygulamak için ReconfigVM_Task'i çağırın
         task = vm.ReconfigVM_Task(spec=spec)
         WaitForTask(task)
 
-        print("VM başarıyla yeniden yapılandırıldı.")
-
-
-        # Her disk hakkında bilgiyi yazdırın
-        for device in vm.config.hardware.device:
-            if isinstance(device, vim.vm.device.VirtualDisk):
-                print(f"{device.deviceInfo.label} Disk: {device.capacityInKB / (1024 * 1024)} GB")
-
+        print(f"{disk_name} adına sahip disk başarıyla kaldırıldı.")
     except Exception as e:
-        print(f"VM yeniden yapılandırma hatası: {e}")
+        print(f"Disk kaldırma hatası: {e}")
 
+# ...
 def WaitForTask(task):
     """Bir vSphere görevi tamamlanana kadar bekler ve güncellemeler sağlar."""
     task_done = False
@@ -118,8 +83,6 @@ def main():
 
     vm_name_to_reconfigure = "yeni_bkaan_cemo"
 
-    target_disk_size_gb = 48  # GB cinsinden istenen disk boyutu ile değiştirin
-
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
     if vm_to_reconfigure is None:
@@ -132,7 +95,9 @@ def main():
         task = vm_to_reconfigure.PowerOffVM_Task()
         WaitForTask(task)
 
-    reconfigure_vm(vm_to_reconfigure, target_disk_size_gb)
+    # Silinecek disk adı
+    disk_to_remove_name = "Hard disk 2"  # Silinecek disk adını değiştirin
+    delete_disk_by_name(vm_to_reconfigure, disk_to_remove_name)
 
     Disconnect(service_instance)
 
