@@ -74,7 +74,7 @@ def main():
 
     datastore = source_vm.datastore[0]
 
-    folder_name = "gurgen33"
+    folder_name = "gurgen44"
 
     file_name = "bkaan_deneme"
 
