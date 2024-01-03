@@ -1,6 +1,7 @@
 import ssl
 from pyVmomi import vim
 from pyVim.connect import SmartConnect, Disconnect
+import time
 
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
@@ -36,7 +37,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    target_vm_name = "yeni_bkaan_cemo"  # Windows sanal makinenizin adını buraya ekleyin
+    target_vm_name = "yeni_bkaan_cemo"
 
     target_vm = get_vm_by_name(content, target_vm_name)
 
@@ -45,18 +46,24 @@ def main():
         Disconnect(service_instance)
         return
 
-    # Komut istemcisine yazılacak komutları oluşturun
-    cmd_command = (
-        f'netsh interface ip set address name="Ethernet1" static '
-        f'10.14.45.189 255.255.255.0 10.14.45.1'
+    # Disk ayarları
+    label = "Glass_House_Disk"
+    assign_letter = "G"
+    #assign_letter = assign_letter.replace('"', '')
+
+    # CMD komutları
+    cmd_commands = (
+        'echo select disk 1 > diskpart_commands.txt && ',
+        'echo clean >> diskpart_commands.txt && ',
+        'echo create partition primary >> diskpart_commands.txt && ',
+        f'echo assign letter={assign_letter} >> diskpart_commands.txt && ',  # Modified line
+        f'echo format fs=ntfs label={label} quick >> diskpart_commands.txt && ',  # Modified line
+        'echo exit >> diskpart_commands.txt && ',
+        'start /wait diskpart /s diskpart_commands.txt && ',  # Use start /wait to wait for diskpart to finish
+        'del diskpart_commands.txt'
     )
 
-    dns_script = (f'netsh interface ip set dns name="Ethernet1" static ' 
-                  f'1.1.1.1'
-    )
-
-
-    # Komutu sanal makinede çalıştırma
+    # CMD komutlarını sanal makinede çalıştırma
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="cekino",
@@ -64,15 +71,15 @@ def main():
         )
         pm = content.guestOperationsManager.processManager
 
-        # Komutları sırayla çalıştırma
-        for script in [cmd_command, dns_script]:
-            ps = vim.vm.guest.ProcessManager.ProgramSpec(
-                programPath="C:\\Windows\\System32\\cmd.exe",
-                arguments=f'/c "{script}"'
-            )
-            pid = pm.StartProgramInGuest(target_vm, auth, ps)
-            print(f"Command started with PID {pid}")
-            wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
+        cmd_string = ''.join(cmd_commands)
+        ps = vim.vm.guest.ProcessManager.ProgramSpec(
+            programPath="C:\\Windows\\System32\\cmd.exe",
+            arguments=f'/c "{cmd_string}"'
+        )
+
+        pid = pm.StartProgramInGuest(target_vm, auth, ps)
+        print(f"Command started with PID {pid}")
+        wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
     except Exception as e:
         print(f"Error: {e}")
 
