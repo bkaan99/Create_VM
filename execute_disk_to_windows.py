@@ -46,20 +46,21 @@ def main():
         Disconnect(service_instance)
         return
 
-    # Disk ayarları
+    # Disk set ayarları
     label = "Glass_House_Disk"
     assign_letter = "G"
-    #assign_letter = assign_letter.replace('"', '')
+    disk_number = 1
+    create_partition_type = "primary"
 
     # CMD komutları
     cmd_commands = (
-        'echo select disk 1 > diskpart_commands.txt && ',
+        f'echo select disk {disk_number} > diskpart_commands.txt && ',
         'echo clean >> diskpart_commands.txt && ',
-        'echo create partition primary >> diskpart_commands.txt && ',
-        f'echo assign letter={assign_letter} >> diskpart_commands.txt && ',  # Modified line
-        f'echo format fs=ntfs label={label} quick >> diskpart_commands.txt && ',  # Modified line
+        f'echo create partition {create_partition_type} >> diskpart_commands.txt && ',
+        f'echo assign letter={assign_letter} >> diskpart_commands.txt && ',
+        f'echo format fs=ntfs label={label} quick >> diskpart_commands.txt && ',
         'echo exit >> diskpart_commands.txt && ',
-        'start /wait diskpart /s diskpart_commands.txt && ',  # Use start /wait to wait for diskpart to finish
+        'start /wait diskpart /s diskpart_commands.txt && ',
         'del diskpart_commands.txt'
     )
 
