@@ -1,0 +1,79 @@
+import ssl
+from pyVmomi import vim
+from pyVim.connect import SmartConnect, Disconnect
+
+def get_vm_by_name(content, vm_name):
+    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
+    for vm in vm_view.view:
+        if vm.name == vm_name:
+            return vm
+    return None
+
+def wait_for_task(task):
+    """Waits and provides updates on a vSphere task until it is completed."""
+    task_done = False
+    while not task_done:
+        if task.info.state == vim.TaskInfo.State.success:
+            print("Task completed successfully.")
+            task_done = True
+        elif task.info.state == vim.TaskInfo.State.error:
+            print(f"Error: {task.info.error}")
+            task_done = True
+
+def main():
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    host = "10.14.45.11"
+    user = "root"
+    password = "Aa112233!"
+
+    service_instance = SmartConnect(host=host,
+                                    user=user,
+                                    pwd=password,
+                                    sslContext=ssl_context)
+
+    content = service_instance.RetrieveContent()
+
+    target_vm_name = "yeni_bkaan_cemo"  # Windows sanal makinenizin adını buraya ekleyin
+
+    target_vm = get_vm_by_name(content, target_vm_name)
+
+    if target_vm is None:
+        print(f"VM {target_vm_name} not found.")
+        Disconnect(service_instance)
+        return
+
+    cmd_command = (
+        f'netsh interface ip set address name="Ethernet1" static '
+        f'10.14.45.186 255.255.255.0 10.14.45.1'
+    )
+
+    dns_script = (f'netsh interface ip set dns name="Ethernet1" static ' 
+                  f'1.1.1.1'
+    )
+
+    try:
+        auth = vim.vm.guest.NamePasswordAuthentication(
+            username="cekino",
+            password="1234"
+        )
+        pm = content.guestOperationsManager.processManager
+
+        # Komutları sırayla çalıştırma
+        for script in [cmd_command, dns_script]:
+            ps = vim.vm.guest.ProcessManager.ProgramSpec(
+                programPath="C:\\Windows\\System32\\cmd.exe",
+                arguments=f'/c "{script}"'
+            )
+            pid = pm.StartProgramInGuest(target_vm, auth, ps)
+            print(f"Command started with PID {pid}")
+            wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
+    except Exception as e:
+        print(f"Error: {e}")
+
+    Disconnect(service_instance)
+
+if __name__ == "__main__":
+    main()
