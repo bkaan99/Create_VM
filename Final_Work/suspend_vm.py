@@ -64,8 +64,6 @@ def main():
         print(f"VM with name {vm_name_to_suspend} not found")
 
     # Disconnect from vCenter
-
-
     Disconnect(si)
 
 if __name__ == "__main__":
