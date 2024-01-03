@@ -1,11 +1,11 @@
-from Son import copyfile
-from Son import main
-from Son import rename_vm
-from Son import datastore_file_renamer
-from Son import powerOn
-from Son import registry_vm
-from Son import shut_down
-from Son import destroy_vm
+from Final_Work import copyfile
+from Final_Work import main
+from Final_Work import rename_vm
+from Final_Work import datastore_file_renamer
+from Final_Work import powerOn
+from Final_Work import registry_vm
+from Final_Work import shut_down
+from Final_Work import destroy_vm
 
 
 def main():
