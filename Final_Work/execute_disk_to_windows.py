@@ -1,7 +1,6 @@
 import ssl
 from pyVmomi import vim
 from pyVim.connect import SmartConnect, Disconnect
-import time
 
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
@@ -52,6 +51,10 @@ def main():
     disk_number = 1
     create_partition_type = "primary"
 
+    #os credentials
+    os_user = "cekino"
+    os_password = "1234"
+
     # CMD komutları
     cmd_commands = (
         f'echo select disk {disk_number} > diskpart_commands.txt && ',
@@ -67,8 +70,8 @@ def main():
     # CMD komutlarını sanal makinede çalıştırma
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
-            username="cekino",
-            password="1234"
+            username = os_user,
+            password = os_password
         )
         pm = content.guestOperationsManager.processManager
 
