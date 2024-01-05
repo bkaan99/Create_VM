@@ -9,6 +9,28 @@ def get_vm_by_name(content, vm_name):
             return vm
     return None
 
+def find_highest_disk_number(vm):
+    highest_disk_number = 0
+    for device in vm.config.hardware.device:
+        if isinstance(device, vim.vm.device.VirtualDisk):
+            disk_label = device.deviceInfo.label
+            try:
+                disk_number = int(disk_label.split()[-1])
+                highest_disk_number = max(highest_disk_number, disk_number)
+            except ValueError:
+                pass  # Disk numarasını çıkaramazsak (örneğin, "Harddisk" gibi bir etiket varsa), hatayı yok say
+
+    return highest_disk_number
+
+def get_letter_for_disk_number(disk_number):
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    if disk_number <= len(alphabet):
+        return alphabet[disk_number - 1]
+    else:
+        # Eğer disk numarası alfabedeki harf sayısından büyükse, "AA", "AB", "AC", vb. gibi kombinasyonlarla devam eder.
+        quotient, remainder = divmod(disk_number - 1, len(alphabet))
+        return alphabet[quotient - 1] + alphabet[remainder]
+
 def main():
     # ESXi bilgileri
     esxi_host = "10.14.45.11"
@@ -40,20 +62,28 @@ def main():
             password="1234"
         )
 
+        highest_disk_number = find_highest_disk_number(target_vm)
+
+        # Disk numarasına göre alfabede karşılık gelen harfi bul
+        letter_for_disk_number = get_letter_for_disk_number(highest_disk_number)
+        added_disk_label = letter_for_disk_number.lower()
+
         # Yeni disk oluşturma ve mount işlemleri
-        cmd_create_disk = """sudo parted /dev/sdc <<EOF
-        mklabel gpt
-        mkpart primary ext4 0% 100%
-        quit
-        EOF
-                """
+        disk_device = "/dev/sd"  # Burada disk cihazının başlangıç değerini tanımlayın
+        added_disk_full_path_name = disk_device + added_disk_label
+
+        cmd_create_disk = f"sudo parted {added_disk_full_path_name} <<EOF\n" \
+                          "mklabel gpt\n" \
+                          "mkpart primary ext4 0% 100%\n" \
+                          "quit\n" \
+                          "EOF"
         spec_create_disk = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                    arguments=f"-c '{cmd_create_disk}'")
         pid_create_disk = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
                                                                                             spec_create_disk)
         print(f"Creating new disk with PID {pid_create_disk}")
 
-        cmd_format_disk = "sudo mkfs.ext4 /dev/sdb1"
+        cmd_format_disk = f"sudo mkfs.ext4 {added_disk_full_path_name}1"
         spec_format_disk = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                    arguments=f"-c '{cmd_format_disk}'")
         pid_format_disk = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
@@ -68,7 +98,7 @@ def main():
         print(f"Creating mount point with PID {pid_create_mount_point}")
 
         # /etc/fstab dosyasını düzenleme
-        cmd_edit_fstab = 'echo "/dev/sdb1   /mnt/new_disk   ext4    defaults    0   0" | sudo tee -a /etc/fstab'
+        cmd_edit_fstab = f'echo {added_disk_full_path_name}1   /mnt/new_disk   ext4    defaults    0   0" | sudo tee -a /etc/fstab'
         spec_edit_fstab = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                   arguments=f"-c '{cmd_edit_fstab}'")
         pid_edit_fstab = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
@@ -88,7 +118,6 @@ def main():
         spec_mount = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd_mount}'")
         pid_mount = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_mount)
         print(f"Mounting new disk with PID {pid_mount}")
-
     except Exception as e:
         print(f"Error: {e}")
     finally:
