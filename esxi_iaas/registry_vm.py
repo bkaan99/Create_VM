@@ -44,12 +44,11 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name):
+def main(register_vm_name, copied_vm_name):
 
     service_instance, content = create_vsphere_connection("10.14.45.11", "root", "Aa112233!")
 
-
-    source_vm_name = "bkaan_deneme"
+    source_vm_name = copied_vm_name
 
     source_vm = get_vm_by_name(content, source_vm_name)
 

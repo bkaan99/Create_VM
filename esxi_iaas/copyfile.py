@@ -2,7 +2,7 @@ import time
 from pyVim import connect
 from pyVmomi import vim
 import os
-from esxi_iaas.esxi_connection import create_vsphere_connection
+from esxi_iaas.esxi_connection import *
 
 def create_folder_in_datastore(content, datastore, source_folder_name, target_folder_name):
     try:
@@ -68,6 +68,16 @@ def print_files_in_folder(folder):
     except Exception as e:
         print(f"Hata: {e}")
 
+def get_datastore_path_for_vm(vm):
+    datastore_path = None
+    if vm.config and vm.config.hardware and vm.config.hardware.device:
+        for device in vm.config.hardware.device:
+            if isinstance(device, vim.VirtualDisk):
+                datastore_path = device.backing.fileName
+                final_vm_folder_name = datastore_path.split("] ")[1].split("/")[0]
+                break
+    return final_vm_folder_name
+
 def main(copied_vm_name, copied_folder_name):
 
     service_instance, content = create_vsphere_connection("10.14.45.11", "root", "Aa112233!")
@@ -85,9 +95,17 @@ def main(copied_vm_name, copied_folder_name):
             task = source_vm.PowerOffVM_Task()
             WaitForTask(task)
 
+        final_vm_folder_name = get_datastore_path_for_vm(source_vm)
+
+        if final_vm_folder_name is not None:
+            # Dizin adından datastore adını çıkar
+            print(f"VM'nin datastore'daki klasör adı: {final_vm_folder_name}")
+        else:
+            print("VM'nin datastore klasör adını bulamadım.")
+
         # Klasörü oluştur
         folder_name = copied_folder_name
-        folder = create_folder_in_datastore(content, source_vm.datastore[0], source_vm_name, folder_name)
+        folder = create_folder_in_datastore(content, source_vm.datastore[0], final_vm_folder_name, folder_name)
 
         if folder is not None:
             print(f"Klasör başarıyla oluşturuldu: {folder}")
