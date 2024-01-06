@@ -2,17 +2,25 @@
 from pyVim import connect
 import ssl
 from pyVmomi import vim
+import socket
 
 
-def create_vsphere_connection(host, user, password):
+def create_vsphere_connection(host, user, password, timeout=10):
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    service_instance = connect.SmartConnect(host=host,
-                                            user=user,
-                                            pwd=password,
-                                            sslContext=ssl_context)
+    try:
+        socket.create_connection((host, 443), timeout=timeout)
+        service_instance = connect.SmartConnect(host=host,
+                                                user=user,
+                                                pwd=password,
+                                                sslContext=ssl_context)
+
+    except (ssl.SSLError, socket.timeout, socket.error) as e:
+        print(f"Bağlantı Hatası: {e}")
+        # exit close the program
+        exit(1)
 
     content = service_instance.RetrieveContent()
 

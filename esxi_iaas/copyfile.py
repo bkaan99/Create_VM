@@ -78,9 +78,9 @@ def get_datastore_path_for_vm(vm):
                 break
     return final_vm_folder_name
 
-def main(copied_vm_name, copied_folder_name):
+def main(copied_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password):
 
-    service_instance, content = create_vsphere_connection("10.14.45.11", "root", "Aa112233!")
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
     # Klonlanacak VM'nin adını belirt
     source_vm_name = copied_vm_name

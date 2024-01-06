@@ -44,9 +44,9 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name, copied_vm_name):
+def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_password):
 
-    service_instance, content = create_vsphere_connection("10.14.45.11", "root", "Aa112233!")
+    service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
 
     source_vm_name = copied_vm_name
 
