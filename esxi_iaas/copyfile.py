@@ -97,24 +97,25 @@ def main(copied_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_passw
 
         final_vm_folder_name = get_datastore_path_for_vm(source_vm)
 
-        if final_vm_folder_name is not None:
-            # Dizin adından datastore adını çıkar
-            print(f"VM'nin datastore'daki klasör adı: {final_vm_folder_name}")
-        else:
-            print("VM'nin datastore klasör adını bulamadım.")
-
-        # Klasörü oluştur
-        folder_name = copied_folder_name
-        folder = create_folder_in_datastore(content, source_vm.datastore[0], final_vm_folder_name, folder_name)
-
-        if folder is not None:
-            print(f"Klasör başarıyla oluşturuldu: {folder}")
-
-            # Oluşturulan klasördeki dosyaları ekrana yazdır
-            print_files_in_folder(folder)
+        if final_vm_folder_name is None:
+            print("VM'nin datastore yolunu alırken bir hata oluştu.")
+            # exit close the program
+            exit(1)
 
         else:
-            print("Klasör oluşturulurken bir hata oluştu.")
+            # Klasörü oluştur
+            folder_name = copied_folder_name
+            folder = create_folder_in_datastore(content, source_vm.datastore[0], final_vm_folder_name, folder_name)
+
+            if folder is not None:
+                print(f"Klasör başarıyla oluşturuldu: {folder}")
+
+                # Oluşturulan klasördeki dosyaları ekrana yazdır
+                print_files_in_folder(folder)
+            else:
+                print("Klasör oluşturulurken bir hata oluştu.")
+                # exit close the program
+                exit(1)
     else:
         print(f"Source VM '{source_vm_name}' not found.")
 

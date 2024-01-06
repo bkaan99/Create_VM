@@ -3,11 +3,9 @@ from pyVim import connect
 from pyVmomi import vim
 from esxi_connection import *
 
-import ssl
 
 def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
     try:
-
         for child in content.rootFolder.childEntity:
             if isinstance(child, vim.Datacenter):
                 datacenter = child
@@ -44,7 +42,7 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
 
     service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
 
@@ -56,11 +54,12 @@ def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_passwor
         print(f"VM {source_vm_name} not found.")
         return
 
+    #Burada kodda güncellme yapılacak datastore kısmı 0. al diyorum böyle bir şey ilerde hata verdirebilir.
     datastore = source_vm.datastore[0]
 
-    folder_name = "cuma_mesai"
+    folder_name = copied_folder_name
 
-    file_name = "bkaan_centos"
+    file_name = copied_vm_name
 
     source_file_path = f"[{datastore.name}] {folder_name}/{file_name}.vmx"
 
