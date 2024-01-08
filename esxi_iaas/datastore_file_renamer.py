@@ -39,6 +39,23 @@ def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
     except Exception as e:
         print(f"Hata: {e}")
 
+def find_file_in_folder(ds):
+    search = vim.HostDatastoreBrowserSearchSpec()
+    search.matchPattern = "*.vmx"
+    search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
+    while search_ds.info.state != "success":
+        print(search_ds.info.state)
+        print(search_ds.info.error.msg)
+        pass
+    results = search_ds.info.result
+    # folderPath değeri ile arama yapılır
+    for result in results:
+        if result.folderPath == "esxi_centos_pzt":
+            print(result)
+            return result
+
+
+
 def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_password):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
@@ -48,6 +65,9 @@ def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_passw
     source_vm = get_vm_by_name(content, source_vm_name)
 
     datastoreFile = {"nvram","vmdk","vmsd","vmxf","vmx","log"}
+
+    finded_files = find_file_in_folder(source_vm.datastore[0])
+
 
     if source_vm is not None:
         for i in datastoreFile:
