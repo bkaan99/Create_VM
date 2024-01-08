@@ -30,6 +30,28 @@ def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
     except Exception as e:
         print(f"Error: {e}")
 
+def find_file_in_folder(ds ,target_folder):
+    search = vim.HostDatastoreBrowserSearchSpec()
+    search.matchPattern = "*.vmx"
+    search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
+    while search_ds.info.state != "success":
+        print(search_ds.info.state)
+        print(search_ds.info.error.msg)
+        pass
+    results = search_ds.info.result
+
+    for result in results:
+        # Adjust the comparison to consider the datastore name in the folderPath
+        if f"[{ds.name}] {target_folder}" in result.folderPath:
+            print("Found file:", result.folderPath)
+            for f in result.file:
+                if f.path.endswith(".vmx"):
+                    print("Found file:", f.path)
+                    return f.path
+
+    print("File not found.")
+    return None
+
 def WaitForTask(task):
     """Waits and provides updates on a vSphere task until it is completed."""
     task_done = False
@@ -59,9 +81,9 @@ def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_passwor
 
     folder_name = copied_folder_name
 
-    file_name = copied_vm_name
+    file_name = find_file_in_folder(datastore, folder_name)
 
-    source_file_path = f"[{datastore.name}] {folder_name}/{file_name}.vmx"
+    source_file_path = f"[{datastore.name}] {folder_name}/{file_name}"
 
     register_vmx_file(datastore, content, source_file_path, register_vm_name)
 

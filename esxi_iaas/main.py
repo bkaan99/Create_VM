@@ -28,11 +28,11 @@ def main():
 
     #Dosya kopyalama işlemi
     print("VM Dosya kopyalama işlemi başlatıldı")
-   # copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
+    #copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
 
     #Dosya isim değiştirme işlemi
     print("VM Dosya isim değiştirme işlemi başlatıldı")
-    datastore_file_renamer.main(copying_vm_name,copied_folder_name ,  esxi_host_ip, esxi_user, esxi_password)
+    #datastore_file_renamer.main(copying_vm_name,copied_folder_name ,  esxi_host_ip, esxi_user, esxi_password)
 
     #Vm kayıt işlemi
     print("VM kayıt işlemi başlatıldı")
