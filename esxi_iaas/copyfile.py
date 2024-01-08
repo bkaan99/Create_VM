@@ -28,6 +28,8 @@ def create_folder_in_datastore(content, datastore, source_folder_name, target_fo
         task = file_manager.CopyFile(sourceName=source_folder_path, sourceDatacenter=datacenter,
                               destinationName=target_folder_path, destinationDatacenter=datacenter)
 
+        print(f"Klasör kopyalama işlemi başlatıldı: {source_folder_path} -> {target_folder_path}")
+
         WaitForTask(task)
 
         # Check if the task was successful
