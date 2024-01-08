@@ -1,13 +1,4 @@
-from pyVim import connect
-from pyVmomi import vim
-import ssl
-
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
+from Final_Work.esxi_connection import *
 
 def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
     try:
@@ -45,29 +36,51 @@ def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
     except Exception as e:
         print(f"Hata: {e}")
 
-def main():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+def find_file_in_folder(ds):
+    search = vim.HostDatastoreBrowserSearchSpec()
+    search.matchPattern = "*.vmx"
+    search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
+    while search_ds.info.state != "success":
+        print(search_ds.info.state)
+        print(search_ds.info.error.msg)
+        pass
+    results = search_ds.info.result
+    target_folder = "esxi_centos_pzt"  # Adjust the folder path as needed
 
-    service_instance = connect.SmartConnect(host="10.14.45.11",
-                              user="root",
-                              pwd="Aa112233!",
-                              sslContext=ssl_context)
+    for result in results:
+        # Adjust the comparison to consider the datastore name in the folderPath
+        if f"[{ds.name}] {target_folder}" in result.folderPath:
+            print("Found file:", result.folderPath)
+            for f in result.file:
+                if f.path.endswith(".vmx"):
+                    print("Found file:", f.path)
+                    return f.path
+                else:
+                    print("File not found.")
+                    return None
+        else:
+            print("File not found.")
 
-    content = service_instance.RetrieveContent()
+    return None
 
-    source_vm_name = "bkaan_deneme"
+def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_password):
+
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+
+    source_vm_name = Copying_vm_name
 
     source_vm = get_vm_by_name(content, source_vm_name)
 
     datastoreFile = {"nvram","vmdk","vmsd","vmxf","vmx","log"}
 
+    finded_files = find_file_in_folder(source_vm.datastore[0])
+
+
     if source_vm is not None:
         for i in datastoreFile:
-            folder_name = "bkaan_deneme_clone"
-            file_to_rename = "bkaan_deneme"+"."+i  # Specify the file to be renamed
-            new_file_name = "new_bkaan_deneme"+"."+i  # Specify the new file name
+            folder_name = Copied_folder_name
+            file_to_rename = "new_bkaan_deneme"+"."+i  # Specify the file to be renamed
+            new_file_name = "bkaan_centos"+"."+i  # Specify the new file name
 
             rename_files_in_folder(folder_name, content, source_vm.datastore[0], file_to_rename, new_file_name)
     else:

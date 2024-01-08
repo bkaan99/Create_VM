@@ -48,13 +48,23 @@ def find_file_in_folder(ds):
         print(search_ds.info.error.msg)
         pass
     results = search_ds.info.result
-    # folderPath değeri ile arama yapılır
+    target_folder = "esxi_centos_pzt"  # Adjust the folder path as needed
+
     for result in results:
-        if result.folderPath == "esxi_centos_pzt":
-            print(result)
-            return result
+        # Adjust the comparison to consider the datastore name in the folderPath
+        if f"[{ds.name}] {target_folder}" in result.folderPath:
+            print("Found file:", result.folderPath)
+            for f in result.file:
+                if f.path.endswith(".vmx"):
+                    print("Found file:", f.path)
+                    return f.path
+                else:
+                    print("File not found.")
+                    return None
+        else:
+            print("File not found.")
 
-
+    return None
 
 def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_password):
 

@@ -1,7 +1,6 @@
 from esxi_iaas import copyfile
 from esxi_iaas import registry_vm
 from esxi_iaas import reconfig_vm
-from esxi_iaas import datastore_file_renamer
 def main():
     print("IAAS Create işlemi başlatıldı")
 
@@ -28,15 +27,11 @@ def main():
 
     #Dosya kopyalama işlemi
     print("VM Dosya kopyalama işlemi başlatıldı")
-    #copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
-
-    #Dosya isim değiştirme işlemi
-    print("VM Dosya isim değiştirme işlemi başlatıldı")
-    #datastore_file_renamer.main(copying_vm_name,copied_folder_name ,  esxi_host_ip, esxi_user, esxi_password)
+    copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
 
     #Vm kayıt işlemi
     print("VM kayıt işlemi başlatıldı")
-    #registry_vm.main(RegisterVm_name , copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
+    registry_vm.main(RegisterVm_name , copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
 
     #Vm reconfig işlemi
     print("VM reconfig işlemi başlatıldı")
