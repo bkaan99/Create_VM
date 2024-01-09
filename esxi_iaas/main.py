@@ -10,7 +10,7 @@ def main():
     #burada ise cloen olacak vm icin datastore icerisinde bir klasör adı belirtiyoruz.
 
     #burada ise kayıt edilme ile oluşacak olan vm adını belirtiyoruz.
-    RegisterVm_name = "esxi_centos_pzt"
+    RegisterVm_name = "esxi_centos_sali"
 
     copied_folder_name = RegisterVm_name
 
@@ -27,11 +27,11 @@ def main():
 
     #Dosya kopyalama işlemi
     print("VM Dosya kopyalama işlemi başlatıldı")
-    copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
+    #copyfile.main(copying_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_password)
 
     #Vm kayıt işlemi
     print("VM kayıt işlemi başlatıldı")
-    registry_vm.main(RegisterVm_name , copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
+    #registry_vm.main(RegisterVm_name , copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
 
     #Vm reconfig işlemi
     print("VM reconfig işlemi başlatıldı")
