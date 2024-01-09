@@ -2,6 +2,7 @@ from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
 
+
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
     for vm in vm_view.view:
@@ -9,12 +10,14 @@ def get_vm_by_name(content, vm_name):
             return vm
     return None
 
+
 def get_last_used_unit_number(vm):
     existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
     if existing_disks:
         return max([disk.unitNumber for disk in existing_disks])
     else:
         return -1  # Eğer disk yoksa, -1 döndür
+
 
 def get_available_unit_number(vm, max_unit_number=15):
     existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
@@ -33,12 +36,11 @@ def get_available_unit_number(vm, max_unit_number=15):
 
     return min(available_unit_numbers)
 
-def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
+
+def reconfigure_vm_disk_size(vm, disk_size_gb):
     try:
         # Değişiklikleri belirtmek için bir VimVMConfigSpec nesnesi oluşturun
         spec = vim.vm.ConfigSpec()
-        spec.numCPUs = cpu_count
-        spec.memoryMB = memory_mb
         spec.deviceChange = []
 
         # Yeni disk ekleyin
@@ -59,14 +61,14 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         # Yeni birim numarasını alın
         new_disk_spec.device.unitNumber = get_available_unit_number(vm)
 
-        # Eğer bir kontrol cihazı varsa, onu kullanın
-        controllers = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualController)]
+        # SCSI controller kullanmak için controller key değerini ayarlayın
+        controllers = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualSCSIController)]
         if controllers:
-            # Bir kontrol cihazı varsa, en ilk kontrol cihazını kullanın
+            # Bir SCSI controller varsa, en ilk SCSI controller'ı kullanın
             new_disk_spec.device.controllerKey = controllers[0].key
         else:
-            # Eğer bir kontrol cihazı yoksa, yeni bir kontrol cihazı ekleyin
-            new_controller_spec = vim.vm.device.VirtualController()
+            # Eğer bir SCSI controller yoksa, yeni bir SCSI controller ekleyin
+            new_controller_spec = vim.vm.device.VirtualLsiLogicController()
             new_controller_spec.key = 1000
             new_controller_spec.busNumber = 0
             new_controller_spec.device = []
@@ -75,7 +77,7 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
                 vim.vm.ConfigSpec(deviceChange=[vim.VirtualDeviceConfigSpec(device=new_controller_spec)]))
             WaitForTask(controller_added_task)
 
-            # Yeni eklenen kontrol cihazının anahtarını kullanın
+            # Yeni eklenen SCSI controller'ın anahtarını kullanın
             new_disk_spec.device.controllerKey = new_controller_spec.key
 
         spec.deviceChange.append(new_disk_spec)
@@ -84,9 +86,7 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         task = vm.ReconfigVM_Task(spec=spec)
         WaitForTask(task)
 
-        print("VM başarıyla yeniden yapılandırıldı.")
-        print("VM yeni Bellek: %s" % memory_mb)
-        print("VM yeni CPU: %s" % cpu_count)
+        print("VM disk başarıyla yeniden yapılandırıldı.")
 
         # Her disk hakkında bilgiyi yazdırın
         for device in vm.config.hardware.device:
@@ -94,7 +94,7 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
                 print(f"{device.deviceInfo.label} Disk: {device.capacityInKB / (1024 * 1024)} GB")
 
     except Exception as e:
-        print(f"VM yeniden yapılandırma hatası: {e}")
+        print(f"VM disk yeniden yapılandırma hatası: {e}")
 
 def WaitForTask(task):
     """Bir vSphere görevi tamamlanana kadar bekler ve güncellemeler sağlar."""
@@ -119,11 +119,9 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "yeni_bkaan_cemo"
+    vm_name_to_reconfigure = "esxi_centos_sali"
 
-    target_cpu_count = 2  # İstenen CPU sayısı ile değiştirin
-    target_memory_mb = 4096  # MB cinsinden istenen bellek boyutu ile değiştirin
-    target_disk_size_gb = 48  # GB cinsinden istenen disk boyutu ile değiştirin
+    target_disk_size_gb = 14  # GB cinsinden istenen disk boyutu ile değiştirin
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
@@ -137,9 +135,11 @@ def main():
         task = vm_to_reconfigure.PowerOffVM_Task()
         WaitForTask(task)
 
-    reconfigure_vm(vm_to_reconfigure, target_cpu_count, target_memory_mb, target_disk_size_gb)
+    # Modify only the disk size
+    reconfigure_vm_disk_size(vm_to_reconfigure, target_disk_size_gb)
 
     Disconnect(service_instance)
+
 
 if __name__ == "__main__":
     main()
