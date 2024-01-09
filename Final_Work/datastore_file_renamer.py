@@ -36,7 +36,7 @@ def rename_files_in_folder(folder, content, datacenter, old_name, new_name):
     except Exception as e:
         print(f"Hata: {e}")
 
-def find_file_in_folder(ds):
+def find_file_in_folder(ds ,target_folder):
     search = vim.HostDatastoreBrowserSearchSpec()
     search.matchPattern = "*.vmx"
     search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
@@ -45,7 +45,6 @@ def find_file_in_folder(ds):
         print(search_ds.info.error.msg)
         pass
     results = search_ds.info.result
-    target_folder = "esxi_centos_pzt"  # Adjust the folder path as needed
 
     for result in results:
         # Adjust the comparison to consider the datastore name in the folderPath
@@ -55,14 +54,9 @@ def find_file_in_folder(ds):
                 if f.path.endswith(".vmx"):
                     print("Found file:", f.path)
                     return f.path
-                else:
-                    print("File not found.")
-                    return None
-        else:
-            print("File not found.")
 
+    print("File not found.")
     return None
-
 def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_password):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
@@ -73,7 +67,7 @@ def main(Copying_vm_name,Copied_folder_name, esxi_host_ip, esxi_user, esxi_passw
 
     datastoreFile = {"nvram","vmdk","vmsd","vmxf","vmx","log"}
 
-    finded_files = find_file_in_folder(source_vm.datastore[0])
+    finded_files = find_file_in_folder(source_vm.datastore[0], Copied_folder_name)
 
 
     if source_vm is not None:
