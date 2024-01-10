@@ -121,7 +121,7 @@ def main():
 
     vm_name_to_reconfigure = "esxi_centos_sali"
 
-    target_disk_size_gb = 14  # GB cinsinden istenen disk boyutu ile değiştirin
+    target_disk_size_gb = 8  # GB cinsinden istenen disk boyutu ile değiştirin
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 

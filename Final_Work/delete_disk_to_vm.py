@@ -69,6 +69,17 @@ def WaitForTask(task):
             print(f"Hata: {task.info.error}")
             task_done = True
 
+def get_vm_disk_info(vm):
+    disk_info = []
+
+    for device in vm.config.hardware.device:
+        if isinstance(device, vim.VirtualDisk):
+            disk_name = device.deviceInfo.label
+            disk_size_gb = device.capacityInKB / (1024 * 1024)  # Byte cinsinden kapasiteyi GB'ye çevir
+            disk_info.append({"Disk Name": disk_name, "Disk Size (GB)": disk_size_gb})
+
+    return disk_info
+
 def main():
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
@@ -83,7 +94,9 @@ def main():
 
     vm_name_to_reconfigure = "esxi_centos_sali"
 
+
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
+
 
     if vm_to_reconfigure is None:
         print(f"VM {vm_name_to_reconfigure} bulunamadı.")
@@ -96,8 +109,14 @@ def main():
         WaitForTask(task)
 
     # Silinecek disk adı
-    disk_to_remove_name = "Hard disk 2"  # Silinecek disk adını değiştirin
-    delete_disk_by_name(vm_to_reconfigure, disk_to_remove_name)
+    vm_disk_info = get_vm_disk_info(vm_to_reconfigure)
+    for disk in vm_disk_info:
+        print(f"Disk Name: {disk['Disk Name']}, Disk Size (MB): {disk['Disk Size (MB)']}")
+        #disk adı yada boyutu doğru girilirse silme işlemi yapılır.
+        if disk['Disk Name'] == "Hard disk 2" :
+            delete_disk_by_name(vm_to_reconfigure, disk['Disk Name'])
+        if disk['Disk Size (MB)'] == 8192.0 :
+            delete_disk_by_name(vm_to_reconfigure, disk['Disk Name'])
 
     Disconnect(service_instance)
 
