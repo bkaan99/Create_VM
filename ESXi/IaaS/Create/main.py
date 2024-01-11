@@ -1,6 +1,6 @@
-from ESXi import copyfile
-from ESXi import registry_vm
-from ESXi import reconfig_vm
+from ESXi.IaaS.Create import registry_vm
+
+
 def main():
     print("IAAS Create işlemi başlatıldı")
 
@@ -31,7 +31,7 @@ def main():
 
     #Vm kayıt işlemi
     print("VM kayıt işlemi başlatıldı")
-    registry_vm.main(RegisterVm_name , copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
+    registry_vm.main(RegisterVm_name, copying_vm_name, esxi_host_ip, esxi_user, esxi_password, copied_folder_name)
 
     #Vm reconfig işlemi
     print("VM reconfig işlemi başlatıldı")
