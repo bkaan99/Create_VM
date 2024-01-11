@@ -1,6 +1,6 @@
-from esxi_iaas import copyfile
-from esxi_iaas import registry_vm
-from esxi_iaas import reconfig_vm
+from ESXi import copyfile
+from ESXi import registry_vm
+from ESXi import reconfig_vm
 def main():
     print("IAAS Create işlemi başlatıldı")
 

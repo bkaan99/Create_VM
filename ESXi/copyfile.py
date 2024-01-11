@@ -2,7 +2,7 @@ import time
 from pyVim import connect
 from pyVmomi import vim
 import os
-from esxi_iaas.esxi_connection import *
+from ESXi.esxi_connection import *
 
 def create_folder_in_datastore(content, datastore, source_folder_name, target_folder_name):
     try:
