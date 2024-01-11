@@ -64,7 +64,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "yeni_bkaan_cemo"
+    vm_name_to_reconfigure = "bkaan_deneme"
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 

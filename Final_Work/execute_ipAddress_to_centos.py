@@ -16,7 +16,7 @@ def main():
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "esxi_centos_pzt"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "referans_centos"  # Linux sanal makinenizin adını buraya ekleyin
 
     # ESXi'ye bağlan
     ssl_context = ssl.create_default_context()
@@ -38,7 +38,7 @@ def main():
         # Mevcut IP adresini al
         current_ip = target_vm.summary.guest.ipAddress
         # Yeni IP adresini setle
-        new_ip = "10.14.45.135"
+        new_ip = "10.14.45.109"
         new_dns = "1.1.1.1"
 
         auth = vim.vm.guest.NamePasswordAuthentication(
@@ -63,6 +63,10 @@ def main():
         cmd2 = f'echo "nameserver {new_dns}" | sudo tee /etc/resolv.conf > /dev/null'
         spec2 = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd2}'")
         pid2 = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec2)
+
+        cmd3 = f'echo "nameserver {"8.8.8.8"}" | sudo tee /etc/resolv.conf > /dev/null'
+        spec3 = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd3}'")
+        pid3 = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec3)
         print(f"Setting DNS with PID {pid2}")
 
     except Exception as e:

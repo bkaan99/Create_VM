@@ -36,7 +36,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    target_vm_name = "yeni_bkaan_cemo"  # Windows sanal makinenizin adını buraya ekleyin
+    target_vm_name = "bkaan_deneme"  # Windows sanal makinenizin adını buraya ekleyin
 
     target_vm = get_vm_by_name(content, target_vm_name)
 
@@ -45,15 +45,19 @@ def main():
         Disconnect(service_instance)
         return
 
+    # Komut istemcisine yazılacak komutları oluşturun
     cmd_command = (
-        f'netsh interface ip set address name="Ethernet1" static '
-        f'10.14.45.186 255.255.255.0 10.14.45.1'
+        f'netsh interface ip set address name="Ethernet0" static '
+        f'10.14.45.187 255.255.255.0 10.14.45.1'
     )
 
-    dns_script = (f'netsh interface ip set dns name="Ethernet1" static ' 
-                  f'1.1.1.1'
+    dns_script = (
+        f'netsh interface ip set dns name="Ethernet0" static '
+        f'8.8.8.8 &&'
+        f'netsh interface ip add dns name="Ethernet0" 8.8.4.4'
     )
 
+    # Komutu sanal makinede çalıştırma
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="cekino",
@@ -62,7 +66,7 @@ def main():
         pm = content.guestOperationsManager.processManager
 
         # Komutları sırayla çalıştırma
-        for script in [cmd_command, dns_script]:
+        for script in [cmd_command]:
             ps = vim.vm.guest.ProcessManager.ProgramSpec(
                 programPath="C:\\Windows\\System32\\cmd.exe",
                 arguments=f'/c "{script}"'
@@ -70,6 +74,20 @@ def main():
             pid = pm.StartProgramInGuest(target_vm, auth, ps)
             print(f"Command started with PID {pid}")
             wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+    try:
+        for script in [dns_script]:
+            ps = vim.vm.guest.ProcessManager.ProgramSpec(
+                programPath="C:\\Windows\\System32\\cmd.exe",
+                arguments=f'/c "{script}"'
+            )
+            pid = pm.StartProgramInGuest(target_vm, auth, ps)
+            print(f"Command started with PID {pid}")
+            wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
+
     except Exception as e:
         print(f"Error: {e}")
 
