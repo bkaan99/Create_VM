@@ -1,16 +1,7 @@
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
-
-
-def get_vm_by_name(content, vm_name):
-    container = content.viewManager.CreateContainerView(
-        content.rootFolder, [vim.VirtualMachine], True
-    )
-    for child in container.view:
-        if child.name == vm_name:
-            return child
-    return None
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 def destroy_vm(vm):
 
@@ -30,27 +21,11 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main():
-    vcenter_server = "10.14.45.11"
-    vcenter_user = "root"
-    vcenter_password = "Aa112233!"
-    vm_name_to_destroy = "yeni_bkaan_cemo"
+def main(destroy_vm_name ,esxi_host_ip, esxi_user, esxi_password):
 
-    # Disable SSL certificate verification
-    sslContext = ssl.create_default_context()
-    sslContext.check_hostname = False
-    sslContext.verify_mode = ssl.CERT_NONE
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    vm_name_to_destroy = destroy_vm_name
 
-    # Connect to vCenter
-    si = SmartConnect(
-        host=vcenter_server,
-        user=vcenter_user,
-        pwd=vcenter_password,
-        sslContext=sslContext,
-    )
-
-    # Retrieve the VM to destroy
-    content = si.RetrieveContent()
     vm_to_destroy = get_vm_by_name(content, vm_name_to_destroy)
 
     if vm_to_destroy is not None:
@@ -60,7 +35,7 @@ def main():
         print(f"VM with name {vm_name_to_destroy} not found")
 
     # Disconnect from vCenter
-    Disconnect(si)
+    Disconnect(service_instance)
 
 if __name__ == "__main__":
     main()
