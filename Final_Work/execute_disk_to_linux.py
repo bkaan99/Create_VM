@@ -38,7 +38,7 @@ def main():
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "esxi_centos_sali"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "esxi_centos_bkaan"  # Linux sanal makinenizin adını buraya ekleyin
 
     # ESXi'ye bağlan
     ssl_context = ssl.create_default_context()
@@ -98,7 +98,7 @@ def main():
         print(f"Creating mount point with PID {pid_create_mount_point}")
 
         # /etc/fstab dosyasını düzenleme
-        cmd_edit_fstab = f'echo {added_disk_full_path_name}1   /mnt/new_disk   ext4    defaults    0   0" | sudo tee -a /etc/fstab'
+        cmd_edit_fstab = f'echo "{added_disk_full_path_name}1   /mnt/new_disk   ext4    defaults    0   0" | sudo tee -a /etc/fstab'
         spec_edit_fstab = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                   arguments=f"-c '{cmd_edit_fstab}'")
         pid_edit_fstab = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,

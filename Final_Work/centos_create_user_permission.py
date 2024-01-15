@@ -16,9 +16,9 @@ def main():
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "centos_clone"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "esxi_centos_cuma"  # Linux sanal makinenizin adını buraya ekleyin
 
-    os_username = "cekino"
+    os_username = "bkaan"
 
     # ESXi'ye bağlan
     ssl_context = ssl.create_default_context()
