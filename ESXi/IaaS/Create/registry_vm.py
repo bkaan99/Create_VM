@@ -35,15 +35,15 @@ def find_file_in_folder(ds ,target_folder):
     search.matchPattern = "*.vmx"
     search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
     while search_ds.info.state != "success":
-        print(search_ds.info.state)
-        print(search_ds.info.error.msg)
+        #print(search_ds.info.state)
+        #print(search_ds.info.error.msg)
         pass
     results = search_ds.info.result
 
     for result in results:
         # Adjust the comparison to consider the datastore name in the folderPath
         if f"[{ds.name}] {target_folder}" in result.folderPath:
-            print("Found file:", result.folderPath)
+            print("Found Folder on:", result.folderPath)
             for f in result.file:
                 if f.path.endswith(".vmx"):
                     print("Found file:", f.path)
