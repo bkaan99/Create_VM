@@ -1,7 +1,7 @@
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
-from esxi_connection import *
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
     try:

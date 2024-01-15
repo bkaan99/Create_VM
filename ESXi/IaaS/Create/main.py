@@ -1,7 +1,6 @@
 from ESXi.IaaS.Create import registry_vm
 from ESXi.IaaS.Create import copyfile
 from ESXi.IaaS.Create import reconfig_vm
-import time
 
 
 def main():

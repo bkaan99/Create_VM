@@ -1,7 +1,7 @@
 from pyVim.connect import SmartConnect, Disconnect
 from pyVim import connect
 from pyVmomi import vim
-from esxi_connection import *
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 
 def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
