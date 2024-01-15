@@ -14,11 +14,14 @@ def get_vm_by_name(content, vm_name):
 
 def unregister_vm(vm):
     if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+        poweroff = vm.PowerOffVM_Task()
         task = vm.Unregister()
         if task:
             WaitForTask(task)
         else:
             print("Failed to initiate the shutdown process.")
+    else:
+        vm.Unregister()
 
 
 def WaitForTask(task):
@@ -33,7 +36,7 @@ def main():
     vcenter_server = "10.14.45.11"
     vcenter_user = "root"
     vcenter_password = "Aa112233!"
-    vm_name_to_shut_down = "esxi_centos_sali"
+    vm_name_to_shut_down = "esxi_centos_bkaan"
 
     # Disable SSL certificate verification
     sslContext = ssl.create_default_context()
@@ -55,14 +58,11 @@ def main():
     if vm_to_unregister is not None:
         # Shut down the VM
         unregister_vm(vm_to_unregister)
-
         print("VM is unregistering...")
     else:
         print(f"VM with name {vm_name_to_shut_down} not found")
 
     # Disconnect from vCenter
-
-
     Disconnect(si)
 
 if __name__ == "__main__":
