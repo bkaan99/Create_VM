@@ -2,13 +2,6 @@ from pyVim.connect import SmartConnect, Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
-
 def find_highest_disk_number(vm):
     highest_disk_number = 0
     for device in vm.config.hardware.device:
@@ -45,6 +38,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
 
     # TODO : Burada yeni disk oluşturma ve mount işlemlerini gerçekleştir.
     try:
+        # Vm üzerinde ki kullanıcı adı ve şifre bilgileri
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="root",
             password="1234"
@@ -57,7 +51,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
         added_disk_label = letter_for_disk_number.lower()
 
         # Yeni disk oluşturma ve mount işlemleri
-        disk_device = "/dev/sd"  # Burada disk cihazının başlangıç değerini tanımlayın
+        disk_device = "/dev/sd"
         added_disk_full_path_name = disk_device + added_disk_label
 
         cmd_create_disk = f"sudo parted {added_disk_full_path_name} <<EOF\n" \

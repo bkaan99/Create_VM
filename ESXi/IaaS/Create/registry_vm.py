@@ -1,6 +1,4 @@
-from pyVim.connect import SmartConnect, Disconnect
-from pyVim import connect
-from pyVmomi import vim
+from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 
@@ -64,11 +62,11 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name, copied_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
+def main(register_vm_name, reference_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
 
     service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
 
-    source_vm_name = copied_vm_name
+    source_vm_name = reference_vm_name
 
     source_vm = get_vm_by_name(content, source_vm_name)
 

@@ -1,13 +1,7 @@
-import ssl
 from pyVmomi import vim
 from pyVim.connect import SmartConnect, Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
 
 def wait_for_task(task):
     """Waits and provides updates on a vSphere task until it is completed."""
@@ -20,23 +14,9 @@ def wait_for_task(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password):
 
-    host = "10.14.45.11"
-    user = "root"
-    password = "Aa112233!"
-
-    service_instance = SmartConnect(host=host,
-                                    user=user,
-                                    pwd=password,
-                                    sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    target_vm_name = "yeni_bkaan_cemo"
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
     target_vm = get_vm_by_name(content, target_vm_name)
 

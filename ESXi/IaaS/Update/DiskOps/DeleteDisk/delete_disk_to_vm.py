@@ -1,13 +1,7 @@
 from pyVim.connect import SmartConnect, Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
 import ssl
-
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
 
 def get_last_used_unit_number(vm):
     existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]
@@ -80,23 +74,11 @@ def get_vm_disk_info(vm):
 
     return disk_info
 
-def main():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
 
-    service_instance = SmartConnect(host="10.14.45.11",
-                                    user="root",
-                                    pwd="Aa112233!",
-                                    sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    vm_name_to_reconfigure = "esxi_centos_sali"
-
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
-
 
     if vm_to_reconfigure is None:
         print(f"VM {vm_name_to_reconfigure} bulunamadı.")

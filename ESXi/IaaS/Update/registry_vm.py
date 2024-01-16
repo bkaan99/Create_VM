@@ -1,18 +1,9 @@
-from pyVim.connect import SmartConnect, Disconnect
-from pyVim import connect
-from pyVmomi import vim
-import ssl
+from pyVim.connect import Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
 
-def register_vmx_file(datacenter, content, vmx_file_path):
+def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
     try:
-
         for child in content.rootFolder.childEntity:
             if isinstance(child, vim.Datacenter):
                 datacenter = child
@@ -27,8 +18,6 @@ def register_vmx_file(datacenter, content, vmx_file_path):
         # Get the VM folder
         vm_folder = datacenter.vmFolder
 
-        RegisterVm_name = "yeni_bkaan_cemo"
-
         vm = vm_folder.RegisterVm(path=vmx_file_path,name=RegisterVm_name, asTemplate=False, pool=pool)
         WaitForTask(vm)
 
@@ -38,6 +27,28 @@ def register_vmx_file(datacenter, content, vmx_file_path):
 
     except Exception as e:
         print(f"Error: {e}")
+
+def find_file_in_folder(ds ,target_folder):
+    search = vim.HostDatastoreBrowserSearchSpec()
+    search.matchPattern = "*.vmx"
+    search_ds = ds.browser.SearchDatastoreSubFolders_Task(datastorePath="[%s]" % ds.name, searchSpec=search)
+    while search_ds.info.state != "success":
+        #print(search_ds.info.state)
+        #print(search_ds.info.error.msg)
+        pass
+    results = search_ds.info.result
+
+    for result in results:
+        # Adjust the comparison to consider the datastore name in the folderPath
+        if f"[{ds.name}] {target_folder}" in result.folderPath:
+            print("Found Folder on:", result.folderPath)
+            for f in result.file:
+                if f.path.endswith(".vmx"):
+                    print("Found file:", f.path)
+                    return f.path
+
+    print("File not found.")
+    return None
 
 def WaitForTask(task):
     """Waits and provides updates on a vSphere task until it is completed."""
@@ -51,20 +62,11 @@ def WaitForTask(task):
             task_done = True
 
 
-def main():
+def main(register_vm_name, reference_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
 
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
 
-    service_instance = connect.SmartConnect(host="10.14.45.11",
-                                            user="root",
-                                            pwd="Aa112233!",
-                                            sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    source_vm_name = "bkaan_deneme"
+    source_vm_name = reference_vm_name
 
     source_vm = get_vm_by_name(content, source_vm_name)
 
@@ -72,15 +74,16 @@ def main():
         print(f"VM {source_vm_name} not found.")
         return
 
+    #Burada kodda güncellme yapılacak datastore kısmı 0. al diyorum böyle bir şey ilerde hata verdirebilir.
     datastore = source_vm.datastore[0]
 
-    folder_name = "gurgen44"
+    folder_name = copied_folder_name
 
-    file_name = "bkaan_deneme"
+    file_name = find_file_in_folder(datastore, folder_name)
 
-    source_file_path = f"[{datastore.name}] {folder_name}/{file_name}.vmx"
+    source_file_path = f"[{datastore.name}] {folder_name}/{file_name}"
 
-    register_vmx_file(datastore, content, source_file_path)
+    register_vmx_file(datastore, content, source_file_path, register_vm_name)
 
     Disconnect(service_instance)
 

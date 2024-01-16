@@ -1,13 +1,7 @@
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
-
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
     try:
@@ -40,19 +34,10 @@ def WaitForTask(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
-    service_instance = SmartConnect(host="10.14.45.11",
-                                    user="root",
-                                    pwd="Aa112233!",
-                                    sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    vm_name_to_reconfigure = "yeni_bkaan_cemo"
+    #TODO: Buraya gerekli parametreler girilecek
 
     target_cpu_count = 2  # Modify with the desired CPU count
     target_memory_mb = 4096 # Modify with the desired memory size in MB
