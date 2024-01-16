@@ -1,6 +1,6 @@
 from pyVim.connect import SmartConnect, Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
-import ssl
 
 def get_vm_by_name(content, vm_name):
     container = content.viewManager.CreateContainerView(
@@ -27,37 +27,18 @@ def wait_for_task(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main():
-    vcenter_server = "10.14.45.11"
-    vcenter_user = "root"
-    vcenter_password = "Aa112233!"
-    vm_name_to_manage = "yeni_bkaan_cemo"
-
-    # Disable SSL certificate verification
-    sslContext = ssl.create_default_context()
-    sslContext.check_hostname = False
-    sslContext.verify_mode = ssl.CERT_NONE
-
-    # Connect to vCenter
-    si = SmartConnect(
-        host=vcenter_server,
-        user=vcenter_user,
-        pwd=vcenter_password,
-        sslContext=sslContext,
-    )
-
-    # Retrieve the VM to manage
-    content = si.RetrieveContent()
-    vm_to_manage = get_vm_by_name(content, vm_name_to_manage)
+def main(power_on_vm, esxi_host_ip, esxi_user, esxi_password):
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    vm_to_manage = get_vm_by_name(content, power_on_vm)
 
     if vm_to_manage is not None:
         # Power off the VM if it's powered on
         power_off_vm(vm_to_manage)
     else:
-        print(f"VM with name {vm_name_to_manage} not found")
+        print(f"VM with name {power_on_vm} not found")
 
     # Disconnect from vCenter
-    Disconnect(si)
+    Disconnect(service_instance)
 
 if __name__ == "__main__":
     main()

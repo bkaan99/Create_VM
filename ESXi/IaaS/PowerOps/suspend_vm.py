@@ -1,6 +1,6 @@
 from pyVim.connect import SmartConnect, Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
-import ssl
 import time
 
 def get_vm_by_name(content, vm_name):
@@ -33,27 +33,8 @@ def WaitForTask(task):
         time.sleep(1)
     return task.info.state
 
-def main():
-    vcenter_server = "10.14.45.11"
-    vcenter_user = "root"
-    vcenter_password = "Aa112233!"
-    vm_name_to_suspend = "yeni_bkaan_cemo"
-
-    # Disable SSL certificate verification
-    sslContext = ssl.create_default_context()
-    sslContext.check_hostname = False
-    sslContext.verify_mode = ssl.CERT_NONE
-
-    # Connect to vCenter
-    si = SmartConnect(
-        host=vcenter_server,
-        user=vcenter_user,
-        pwd=vcenter_password,
-        sslContext=sslContext,
-    )
-
-    # Retrieve the VM to shut down
-    content = si.RetrieveContent()
+def main(vm_name_to_suspend, esxi_host_ip, esxi_user, esxi_password):
+    si, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
     vm_to_suspend = get_vm_by_name(content, vm_name_to_suspend)
 
     if vm_to_suspend is not None:

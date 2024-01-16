@@ -1,4 +1,5 @@
 from pyVim.connect import SmartConnect, Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
 import ssl
 import time
@@ -29,27 +30,9 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main():
-    vcenter_server = "10.14.45.11"
-    vcenter_user = "root"
-    vcenter_password = "Aa112233!"
-    vm_name_to_shut_down = "yeni_bkaan_cemo"
+def main(vm_name_to_shut_down, esxi_host_ip, esxi_user, esxi_password):
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
-    # Disable SSL certificate verification
-    sslContext = ssl.create_default_context()
-    sslContext.check_hostname = False
-    sslContext.verify_mode = ssl.CERT_NONE
-
-    # Connect to vCenter
-    si = SmartConnect(
-        host=vcenter_server,
-        user=vcenter_user,
-        pwd=vcenter_password,
-        sslContext=sslContext,
-    )
-
-    # Retrieve the VM to shut down
-    content = si.RetrieveContent()
     vm_to_shut_down = get_vm_by_name(content, vm_name_to_shut_down)
 
     if vm_to_shut_down is not None:
@@ -61,9 +44,7 @@ def main():
         print(f"VM with name {vm_name_to_shut_down} not found")
 
     # Disconnect from vCenter
-
-
-    Disconnect(si)
+    Disconnect(service_instance)
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
+import ssl
 from pyVim.connect import SmartConnect, Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
 
 def get_vm_by_name(content, vm_name):
@@ -31,11 +31,24 @@ def get_letter_for_disk_number(disk_number):
         quotient, remainder = divmod(disk_number - 1, len(alphabet))
         return alphabet[quotient - 1] + alphabet[remainder]
 
-def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
-    # TODO: VM Adı ve ESXi bilgilerini parametre olarak al
+def main():
+    # ESXi bilgileri
+    esxi_host = "10.14.45.11"
+    esxi_user = "root"
+    esxi_password = "Aa112233!"
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    # VM bilgileri
+    vm_name = "esxi_centos_bkaan"  # Linux sanal makinenizin adını buraya ekleyin
 
+    # ESXi'ye bağlan
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    service_instance = SmartConnect(host=esxi_host, user=esxi_user, pwd=esxi_password, sslContext=ssl_context)
+    content = service_instance.RetrieveContent()
+
+    # Belirtilen sanal makineyi bul
     target_vm = get_vm_by_name(content, vm_name)
 
     if target_vm is None:
@@ -43,7 +56,6 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
         Disconnect(service_instance)
         return
 
-    # TODO : Burada yeni disk oluşturma ve mount işlemlerini gerçekleştir.
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="root",
@@ -62,7 +74,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
 
         cmd_create_disk = f"sudo parted {added_disk_full_path_name} <<EOF\n" \
                           "mklabel gpt\n" \
-                          "mkpart primary ext4 0% 100%\n" \
+                          "mkpart  primary xfs 1MiB 100%\n" \
                           "quit\n" \
                           "EOF"
         spec_create_disk = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
@@ -71,14 +83,14 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
                                                                                             spec_create_disk)
         print(f"Creating new disk with PID {pid_create_disk}")
 
-        cmd_format_disk = f"sudo mkfs.ext4 {added_disk_full_path_name}1"
+        cmd_format_disk = f"sudo mkfs.xfs {added_disk_full_path_name}1"
         spec_format_disk = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                    arguments=f"-c '{cmd_format_disk}'")
         pid_format_disk = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
                                                                                             spec_format_disk)
         print(f"Formatting new disk with PID {pid_format_disk}")
 
-        cmd_create_mount_point = "sudo mkdir /mnt/new_disk"
+        cmd_create_mount_point = "sudo mkdir /hana/log"
         spec_create_mount_point = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                           arguments=f"-c '{cmd_create_mount_point}'")
         pid_create_mount_point = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
@@ -86,7 +98,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
         print(f"Creating mount point with PID {pid_create_mount_point}")
 
         # /etc/fstab dosyasını düzenleme
-        cmd_edit_fstab = f'echo "{added_disk_full_path_name}1   /mnt/new_disk   ext4    defaults    0   0" | sudo tee -a /etc/fstab'
+        cmd_edit_fstab = f'echo "{added_disk_full_path_name}1   /hana/log   xfs    defaults    0   0" | sudo tee -a /etc/fstab'
         spec_edit_fstab = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
                                                                   arguments=f"-c '{cmd_edit_fstab}'")
         pid_edit_fstab = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth,
@@ -102,7 +114,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
         print(f"Reloading systemd with PID {pid_reload_systemd}")
 
         # Mount etme
-        cmd_mount = "sudo mount -a"
+        cmd_mount = f'sudo mount {added_disk_full_path_name}1  /hana/log'
         spec_mount = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd_mount}'")
         pid_mount = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_mount)
         print(f"Mounting new disk with PID {pid_mount}")
