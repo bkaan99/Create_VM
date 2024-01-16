@@ -1,7 +1,6 @@
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
-import ssl
 import time
 
 def get_vm_by_name(content, vm_name):

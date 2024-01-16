@@ -1,7 +1,6 @@
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
-import ssl
 
 def get_last_used_unit_number(vm):
     existing_disks = [d for d in vm.config.hardware.device if isinstance(d, vim.VirtualDisk)]

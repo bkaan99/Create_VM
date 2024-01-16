@@ -1,5 +1,4 @@
-import ssl
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
 
