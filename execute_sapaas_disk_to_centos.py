@@ -38,7 +38,7 @@ def main():
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "esxi_centos_bkaan"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "Clone-SUSE-Temp-15-3"  # Linux sanal makinenizin adını buraya ekleyin
 
     # ESXi'ye bağlan
     ssl_context = ssl.create_default_context()
@@ -59,7 +59,7 @@ def main():
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="root",
-            password="1234"
+            password="111111"
         )
 
         highest_disk_number = find_highest_disk_number(target_vm)
