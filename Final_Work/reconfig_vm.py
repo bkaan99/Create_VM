@@ -16,12 +16,36 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         spec.numCPUs = cpu_count
         spec.memoryMB = memory_mb
 
-        # Modify the first virtual disk (assuming there is only one disk)
-        if len(vm.config.hardware.device) > 0 and isinstance(vm.config.hardware.device[0], vim.vm.device.VirtualDisk):
-            disk = vm.config.hardware.device[0]
-            disk.capacityInKB = disk_size_gb * 1024 * 1024
+        # vm: vim.VirtualMachine instance already obtained
+        vdisk = None
+        for device in vm.config.hardware.device:
+            if isinstance(device, vim.vm.device.VirtualDisk):
+                vdisk = device
+                break
+        if not vdisk:
+            raise Exception("Failed to find VM virtual disk for resizing!")
+        cspec = vim.vm.ConfigSpec()
+        vdisk.capacityInKB = disk_size_gb * 1024 ** 2
+        vdisk_spec = vim.vm.device.VirtualDeviceSpec(
+            device=vdisk,
+            operation=vim.vm.device.VirtualDeviceSpec.Operation.edit,
+        )
+        cspec.deviceChange = [vdisk_spec]
+        WaitForTask(vm.Reconfigure(cspec))
 
-        # Invoke ReconfigVM_Task to apply the changes
+        # # Find the first virtual disk
+        # virtual_disks = [device for device in vm.config.hardware.device if
+        #                  isinstance(device, vim.vm.device.VirtualDisk)]
+        #
+        # if len(virtual_disks) > 0:
+        #     disk = virtual_disks[0]
+        #     # Update the disk size (in kilobytes)
+        #     disk.capacityInKB = disk_size_gb * 1024 * 1024
+        #
+        #     # Invoke ReconfigVM_Task to apply the changes
+        #     task = vm.ReconfigVM_Task(spec=spec)
+        #     WaitForTask(task)
+
         task = vm.ReconfigVM_Task(spec=spec)
         WaitForTask(task)
 
@@ -52,11 +76,11 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "yeni_bkaan_cemo"
+    vm_name_to_reconfigure = "Pzt_Ubuntu_Deneme"
 
-    target_cpu_count = 2  # Modify with the desired CPU count
+    target_cpu_count = 3  # Modify with the desired CPU count
     target_memory_mb = 4096 # Modify with the desired memory size in MB
-    target_disk_size_gb = 48  # Modify with the desired disk size in GB
+    target_disk_size_gb = 20  # Modify with the desired disk size in GB
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 

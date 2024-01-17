@@ -92,8 +92,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "esxi_centos_sali"
-
+    vm_name_to_reconfigure = "Clone-SUSE-Temp-15-3"
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 

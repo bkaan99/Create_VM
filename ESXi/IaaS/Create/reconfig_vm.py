@@ -8,10 +8,21 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         spec.numCPUs = cpu_count
         spec.memoryMB = memory_mb
 
-        # Modify the first virtual disk (assuming there is only one disk)
-        if len(vm.config.hardware.device) > 0 and isinstance(vm.config.hardware.device[0], vim.vm.device.VirtualDisk):
-            disk = vm.config.hardware.device[0]
-            disk.capacityInKB = disk_size_gb * 1024 * 1024
+        vdisk = None
+        for device in vm.config.hardware.device:
+            if isinstance(device, vim.vm.device.VirtualDisk):
+                vdisk = device
+                break
+        if not vdisk:
+            raise Exception("Failed to find VM virtual disk for resizing!")
+        cspec = vim.vm.ConfigSpec()
+        vdisk.capacityInKB = disk_size_gb * 1024 ** 2
+        vdisk_spec = vim.vm.device.VirtualDeviceSpec(
+            device=vdisk,
+            operation=vim.vm.device.VirtualDeviceSpec.Operation.edit,
+        )
+        cspec.deviceChange = [vdisk_spec]
+        WaitForTask(vm.Reconfigure(cspec))
 
         # Invoke ReconfigVM_Task to apply the changes
         task = vm.ReconfigVM_Task(spec=spec)
