@@ -7,12 +7,12 @@ def main():
     print("IAAS Create işlemi başlatıldı")
 
     #önceden kurulmuş vm 'i kopyalayacağımız için vm adını belirtiyoruz.
-    copying_vm_name = "Ubuntu_Deneme"
+    copying_vm_name = "SUSE-Temp-15-3"
 
     #burada ise cloen olacak vm icin datastore icerisinde bir klasör adı belirtiyoruz.
 
     #burada ise kayıt edilme ile oluşacak olan vm adını belirtiyoruz.
-    RegisterVm_name = "Pzt_Ubuntu_Deneme"
+    RegisterVm_name = "Clone-SUSE-Temp-15-3"
 
     copied_folder_name = RegisterVm_name
 
