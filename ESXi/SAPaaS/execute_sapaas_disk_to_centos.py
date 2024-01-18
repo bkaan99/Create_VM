@@ -47,6 +47,7 @@ def main():
     disk_mount_location = "hana/shared"
 
     # Yeni disk boyutu
+    # TODO: Disk boyutu veri tabanından alınacak
     target_disk_size_gb = 2  # Yeni disk boyutunu buraya ekleyin
 
     # ESXi'ye bağlan
