@@ -1,6 +1,5 @@
 import ssl
 import time
-
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 from ESXi.SAPaaS import add_disk_to_vm
