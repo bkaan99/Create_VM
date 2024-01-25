@@ -12,26 +12,30 @@ def main():
     esxi_user = "root"
     esxi_password = "Aa112233!"
 
-    #vm powerOn işlemi
-    print("VM powerOn işlemi başlatıldı")
-    powerOn.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
+    select_power_mod = input("1- Power On\n2- Power Off\n3- Reboot\n4- Shut Down\n5- Suspend\n")
+    if select_power_mod == "1":
+        print("VM powerOn işlemi başlatıldı")
+        powerOn.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
 
-    #vm powerOff işlemi
-    print("VM powerOff işlemi başlatıldı")
-    powerOff.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
+    if select_power_mod == "2":
+        print("VM powerOff işlemi başlatıldı")
+        powerOff.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
 
-    #vm reboot işlemi
-    print("VM reboot işlemi başlatıldı")
-    reboot_vm.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
+    if select_power_mod == "3":
+        print("VM reboot işlemi başlatıldı")
+        reboot_vm.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
 
-    #vm shut_down işlemi
-    print("VM shut_down işlemi başlatıldı")
-    shut_down.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
+    if select_power_mod == "4":
+        print("VM shut_down işlemi başlatıldı")
+        shut_down.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
 
-    #vm suspend işlemi
-    print("VM suspend işlemi başlatıldı")
-    suspend_vm.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
+    if select_power_mod == "5":
+        print("VM suspend işlemi başlatıldı")
+        suspend_vm.main(vm_name, esxi_host_ip, esxi_user, esxi_password)
 
+    else:
+        print("Yanlış seçim yaptınız.")
+        exit()
 
 if __name__ == "__main__":
     main()
