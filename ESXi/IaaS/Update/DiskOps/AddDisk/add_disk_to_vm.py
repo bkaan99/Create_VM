@@ -118,6 +118,12 @@ def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, es
 
     # Modify only the disk size
     reconfigure_vm_disk_size(vm_to_reconfigure, target_disk_size_gb)
+
+    print("VM açılıyor...")
+    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
+        task = vm_to_reconfigure.PowerOnVM_Task()
+        WaitForTask(task)
+
     Disconnect(service_instance)
 
 if __name__ == "__main__":
