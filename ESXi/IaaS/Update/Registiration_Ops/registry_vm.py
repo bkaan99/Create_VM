@@ -1,6 +1,17 @@
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
+def find_first_vm(content):
+    for child in content.rootFolder.childEntity:
+        if isinstance(child, vim.Datacenter):
+            datacenter = child
+            vm_folder = datacenter.vmFolder
+            view = content.viewManager.CreateContainerView(datacenter, [vim.VirtualMachine], True)
+            vms = view.view
+            view.Destroy()
+            if vms:
+                return vms[0]
+    return None
 
 def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
     try:
@@ -62,16 +73,14 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name, reference_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
+def main(register_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
 
     service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
 
-    source_vm_name = reference_vm_name
-
-    source_vm = get_vm_by_name(content, source_vm_name)
+    source_vm = find_first_vm(content)
 
     if source_vm is None:
-        print(f"VM {source_vm_name} not found.")
+        print(f"VM {source_vm.name} not found.")
         return
 
     #Burada kodda güncellme yapılacak datastore kısmı 0. al diyorum böyle bir şey ilerde hata verdirebilir.

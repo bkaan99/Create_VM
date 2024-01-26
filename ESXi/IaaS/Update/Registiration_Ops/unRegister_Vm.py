@@ -35,16 +35,19 @@ def WaitForTask(task):
 def main(unregister_vm_name ,esxi_host_ip, esxi_user, esxi_password):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
-    vm_name_to_shut_down = unregister_vm_name
 
-    vm_to_unregister = get_vm_by_name(content, vm_name_to_shut_down)
+    vm_to_unregister = get_vm_by_name(content, unregister_vm_name)
 
     if vm_to_unregister is not None:
-        # Shut down the VM
+
+        if vm_to_unregister.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+            poweroff = vm_to_unregister.PowerOffVM_Task()
+            WaitForTask(poweroff)
+
         unregister_vm(vm_to_unregister)
         print("VM is unregistering...")
     else:
-        print(f"VM with name {vm_name_to_shut_down} not found")
+        print(f"VM with name {unregister_vm_name} not found")
 
     Disconnect(service_instance)
 
