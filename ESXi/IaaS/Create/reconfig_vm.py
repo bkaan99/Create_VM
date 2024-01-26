@@ -3,7 +3,6 @@ from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
 def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
     try:
-        # Create a VimVMConfigSpec object to specify the changes
         spec = vim.vm.ConfigSpec()
         spec.numCPUs = cpu_count
         spec.memoryMB = memory_mb
@@ -24,7 +23,6 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         cspec.deviceChange = [vdisk_spec]
         WaitForTask(vm.Reconfigure(cspec))
 
-        # Invoke ReconfigVM_Task to apply the changes
         task = vm.ReconfigVM_Task(spec=spec)
         WaitForTask(task)
 
@@ -58,7 +56,7 @@ def main(RegisterVm_name, esxi_host_ip, esxi_user, esxi_password, cpu_count, mem
         print(f"VM {vm_name_to_reconfigure} not found.")
         return
 
-    # Power On durumunda ise shutdown et
+    # VM Power On durumunda ise shutdown et
     if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
         print(f"{vm_name_to_reconfigure} Powering off VM...")
         task = vm_to_reconfigure.PowerOffVM_Task()

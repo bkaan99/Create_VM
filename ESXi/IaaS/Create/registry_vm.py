@@ -1,7 +1,6 @@
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-
 def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
     try:
         for child in content.rootFolder.childEntity:
@@ -65,9 +64,7 @@ def WaitForTask(task):
 def main(register_vm_name, reference_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
 
     service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
-
     source_vm_name = reference_vm_name
-
     source_vm = get_vm_by_name(content, source_vm_name)
 
     if source_vm is None:
@@ -76,7 +73,6 @@ def main(register_vm_name, reference_vm_name, esxi_host_ip, esxi_user, esxi_pass
 
     #Burada kodda güncellme yapılacak datastore kısmı 0. al diyorum böyle bir şey ilerde hata verdirebilir.
     datastore = source_vm.datastore[0]
-
     folder_name = copied_folder_name
 
     file_name = find_file_in_folder(datastore, folder_name)

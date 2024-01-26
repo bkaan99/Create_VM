@@ -3,14 +3,11 @@ import os
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 def create_folder_in_datastore(content, datastore, source_folder_name, target_folder_name):
     try:
-        # FileManager'ı al
         file_manager = content.fileManager
 
-        # Kaynak ve hedef klasör yollarını belirle
         source_folder_path = f"[{datastore.name}] {source_folder_name}"
         target_folder_path = f"[{datastore.name}] {target_folder_name}"
 
-        # Datacenter nesnesini al
         datacenter = None
         for child in content.rootFolder.childEntity:
             if isinstance(child, vim.Datacenter):
@@ -29,11 +26,9 @@ def create_folder_in_datastore(content, datastore, source_folder_name, target_fo
 
         WaitForTask(task)
 
-        # Check if the task was successful
         if task.info.state == vim.TaskInfo.State.success:
             print(f"Klasör başarıyla kopyalandı: {target_folder_path}")
 
-            # Oluşturulan klasörü al
             created_folder = target_folder_path
 
             if created_folder is not None:
@@ -54,9 +49,7 @@ def WaitForTask(task):
         task_info = task.info
         if hasattr(task_info, 'progress') and task_info.progress:
             print(f"Task Progress: {task_info.progress}%")
-
         time.sleep(3)
-
     return task.info.state
 
 def print_files_in_folder(folder):
