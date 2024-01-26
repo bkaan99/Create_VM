@@ -1,30 +1,10 @@
-import ssl
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
+def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
 
-def main():
-    # ESXi bilgileri
-    esxi_host = "10.14.45.11"
-    esxi_user = "root"
-    esxi_password = "Aa112233!"
-
-    # VM bilgileri
-    vm_name = "referans_centos"  # Linux sanal makinenizin adını buraya ekleyin
-
-    # ESXi'ye bağlan
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    service_instance = SmartConnect(host=esxi_host, user=esxi_user, pwd=esxi_password, sslContext=ssl_context)
-    content = service_instance.RetrieveContent()
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
     # Belirtilen sanal makineyi bul
     target_vm = get_vm_by_name(content, vm_name)

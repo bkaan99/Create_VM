@@ -1,13 +1,6 @@
-from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
-import ssl
+from pyVim.connect import Disconnect
+from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
 
 def delete_last_network_adapter(vm, content):
     try:
@@ -52,19 +45,8 @@ def WaitForTask(task):
             print("Hata: ", task.info.error)
             task_done = True
 
-def main():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    service_instance = SmartConnect(host="10.14.45.11",
-                                    user="root",
-                                    pwd="Aa112233!",
-                                    sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    vm_name_to_reconfigure = "bkaan_deneme"
+def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
+    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
