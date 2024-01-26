@@ -32,15 +32,9 @@ def WaitForTask(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password, target_cpu_count, target_memory_mb, target_disk_size_gb):
+
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
-
-    #TODO: Buraya gerekli parametreler girilecek
-
-    target_cpu_count = 2  # Modify with the desired CPU count
-    target_memory_mb = 4096 # Modify with the desired memory size in MB
-    target_disk_size_gb = 48  # Modify with the desired disk size in GB
-
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
     if vm_to_reconfigure is None:
