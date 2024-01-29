@@ -30,9 +30,6 @@ def main(old_vm_name, new_vm_name, esxi_host_ip, esxi_user, esxi_password):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
-    old_vm_name = "cemo"
-    new_vm_name = "bkaan_deneme"
-
     vm_to_rename = get_vm_by_name(content, old_vm_name)
 
     if vm_to_rename is not None:

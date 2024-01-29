@@ -1,6 +1,6 @@
 from ESXi.IaaS.Update.DiskOps import DiskOpsController
 from ESXi.IaaS.Update.NetworkOps import NetworkOpsController
-from ESXi.IaaS.Update.Reconfig import reconfig_vm
+from ESXi.IaaS.Update.Reconfig import reconfig_vm, rename_vm
 from ESXi.IaaS.Update.Registiration_Ops import registry_vm, unRegister_Vm
 
 def main():
@@ -11,7 +11,7 @@ def main():
     esxi_user = "root"
     esxi_password = "Aa112233!"
 
-    update_mod = input("1- Disk_Ops\n2- Network_Ops\n3-Reconfg_Ops\n4-Register VM\n5-UnRegister VM\n6-execute_commands\n7-Rename VM\n")
+    update_mod = input("1- Disk_Ops\n2- Network_Ops\n3-Reconfg_Ops\n4-Register VM\n5-UnRegister VM\n6-Rename VM\n7-execute_commands\n")
 
     if update_mod == "1":
         DiskOpsController.main(vm_name=vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
@@ -32,6 +32,10 @@ def main():
 
     elif update_mod == "5":
         unRegister_Vm.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
+
+    elif update_mod == "6":
+        new_vm_name = input("New VM Name: ")
+        rename_vm.main(old_vm_name=vm_name, new_vm_name=new_vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
 
 if __name__ == "__main__":
     main()
