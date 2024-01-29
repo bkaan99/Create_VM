@@ -39,16 +39,12 @@ def main(vm_name_to_reboot, esxi_host_ip, esxi_user, esxi_password):
     vm_to_reboot = get_vm_by_name(content, vm_name_to_reboot)
 
     if vm_to_reboot is not None:
-        #reboot the VM
         reboot_vm(vm_to_reboot)
-
+        
     else:
         print(f"VM with name {vm_name_to_reboot} not found")
 
-    # Disconnect from vCenter
-
-
-    Disconnect(si)
+    Disconnect(service_instance)
 
 if __name__ == "__main__":
     main()
