@@ -35,7 +35,7 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
         delete_network_adapter.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
 
     elif network_ops_mod == "3":
-        if network_adapter_existence_value == True:
+        if network_adapter_existence_value is True:
 
             service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
             vm_to_reconfigure = get_vm_by_name(content, vm_name)
@@ -51,7 +51,7 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
                 execute_ipAddress_windows.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
 
     elif network_ops_mod == "4":
-        if network_adapter_existence_value == True:
+        if network_adapter_existence_value is True:
             print(f"{device_label} ağ adaptörü var.")
         else:
             print(f"Ağ adaptörü yok.")
