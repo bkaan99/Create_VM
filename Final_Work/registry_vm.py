@@ -1,4 +1,4 @@
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
 from pyVim import connect
 from pyVmomi import vim
 import ssl
