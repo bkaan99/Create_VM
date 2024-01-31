@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from ESXi.IaaS.ESXi_Connection.esxi_connection import create_vsphere_connection, get_vm_by_name
 from pyVmomi import vim
 import time
 
