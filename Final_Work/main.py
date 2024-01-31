@@ -1,11 +1,6 @@
 from Final_Work import copyfile
 from Final_Work import main
-from Final_Work import rename_vm
-from Final_Work import datastore_file_renamer
-from Final_Work import powerOn
 from Final_Work import registry_vm
-from Final_Work import shut_down
-from Final_Work import destroy_vm
 
 
 def main():
