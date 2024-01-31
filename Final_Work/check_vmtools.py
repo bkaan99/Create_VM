@@ -48,7 +48,11 @@ def get_vm_tools_status(vm):
             result["tools_running_status_info"] = "VMware Tools çalışıyor."
 
         elif tools_running_status == "guestToolsNotRunning":
-            result["tools_running_status_info"] = "VMware Tools çalışmıyor."
+            #check vm power state
+            if vm.runtime.powerState == "poweredOff":
+                result["tools_running_status_info"] = "VMware Tools çalışmıyor. VM kapalı durumda."
+            elif vm.runtime.powerState == "poweredOn":
+                result["tools_running_status_info"] = "VMware Tools çalışmıyor. VM açık durumda."
 
         elif tools_running_status == "guestToolsExecutingScripts":
             result["tools_running_status_info"] = "VMware Tools script çalıştırıyor."
