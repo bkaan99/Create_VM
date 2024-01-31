@@ -1,4 +1,5 @@
 # vsphere_connection.py
+import sys
 from pyVim import connect
 import ssl
 from pyVmomi import vim
@@ -20,7 +21,7 @@ def create_vsphere_connection(host, user, password, timeout=10):
     except (ssl.SSLError, socket.timeout, socket.error) as e:
         print(f"Bağlantı Hatası: {e}")
         # exit close the program
-        exit(1)
+        sys.exit(1)
 
     content = service_instance.RetrieveContent()
 

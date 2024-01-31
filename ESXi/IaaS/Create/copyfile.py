@@ -1,6 +1,8 @@
 import time
 import os
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+import sys
+
 def create_folder_in_datastore(content, datastore, source_folder_name, target_folder_name):
     try:
         file_manager = content.fileManager
@@ -92,7 +94,7 @@ def main(copied_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_passw
         if final_vm_folder_name is None:
             print("VM'nin datastore yolunu alırken bir hata oluştu.")
             # exit close the program
-            exit(1)
+            sys.exit(1)
 
         else:
             # Klasörü oluştur
@@ -107,7 +109,7 @@ def main(copied_vm_name, copied_folder_name, esxi_host_ip, esxi_user, esxi_passw
             else:
                 print("Klasör oluşturulurken bir hata oluştu.")
                 # exit close the program
-                exit(1)
+                sys.exit(1)
     else:
         print(f"Source VM '{source_vm_name}' not found.")
 

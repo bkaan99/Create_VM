@@ -1,3 +1,4 @@
+import sys
 from ESXi.IaaS.PowerOps import powerOn
 from ESXi.IaaS.PowerOps import powerOff
 from ESXi.IaaS.PowerOps import reboot_vm
@@ -35,7 +36,7 @@ def main():
 
     else:
         print("Yanlış seçim yaptınız.")
-        exit()
+        sys.exit()
 
 if __name__ == "__main__":
     main()
