@@ -46,9 +46,11 @@ def main(RegisterVm_name, esxi_host_ip, esxi_user, esxi_password, cpu_count, mem
 
     vm_name_to_reconfigure = RegisterVm_name
 
-    target_cpu_count = cpu_count
-    target_memory_mb = memory_mb
-    target_disk_size_gb = disk_size_gb
+    target_cpu_count = int(cpu_count)
+    #target_cpu_count değeri string olarak gelmektedir. Bu yüzden int'e çeviriyoruz.
+    target_memory_mb = int(memory_mb)
+    #target_disk_size_gb değeri long olmalı
+    target_disk_size_gb = int(disk_size_gb)
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 

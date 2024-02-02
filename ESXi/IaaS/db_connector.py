@@ -1,9 +1,6 @@
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
-from ESXi.IaaS.Create import Create_Control_Plane
-from ESXi.IaaS.Delete import delete_main
-
 
 def connect_Postgres():
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
@@ -52,49 +49,3 @@ def get_first_disik_Config(vmid):
     vmFirstDiskConfig_DiskType = VmFirstDiskConfigurationTable.get("controllerlocation")[0]
 
     return vmFirstDiskConfig_DiskSize
-
-def IaaS_Create():
-    vmListConfig_OperatingSystemInformation, vmListConfig_VmName, vmListConfig_Cpu, vmListConfig_RamSize = get_vmList_Config()
-    vmFirstDiskConfig_DiskSize = get_first_disik_Config()
-
-    memory_of_mb = int(vmListConfig_RamSize) * 1024
-
-    if vmListConfig_OperatingSystemInformation == "Windows":
-        template_name = "bkaan_deneme"
-        Create_Control_Plane.main(copying_vm_name=template_name, cpu_count=vmListConfig_Cpu, memory_mb=vmListConfig_RamSize, disk_size_gb=vmFirstDiskConfig_DiskSize, RegisterVm_name=vmListConfig_VmName)
-
-    elif vmListConfig_OperatingSystemInformation == "Linux":
-        template_name = "Ubuntu_Deneme"
-        Create_Control_Plane.main(copying_vm_name=template_name, cpu_count=vmListConfig_Cpu, memory_mb=vmListConfig_RamSize, disk_size_gb=vmFirstDiskConfig_DiskSize, RegisterVm_name=vmListConfig_VmName)
-
-    elif vmListConfig_OperatingSystemInformation == "MacOS":
-        pass
-
-    else:
-        pass
-
-
-def IaaS_Delete():
-    delete_main.main()
-
-def IaaS_Update():
-    pass
-
-
-def main():
-
-    user_select_mod = input("1- IaaS Create \n2- IaaS Delete \n3-IaaS Update\n")
-
-    if user_select_mod == "1":
-        IaaS_Create()
-
-    elif user_select_mod == "2":
-        IaaS_Delete()
-
-    elif user_select_mod == "3":
-        IaaS_Update()
-
-
-if __name__ == "__main__":
-    main()
-
