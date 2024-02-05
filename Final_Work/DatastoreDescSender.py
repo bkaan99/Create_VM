@@ -18,8 +18,9 @@ def print_datastore_info(datastores):
     for datastore in datastores:
         print("Datastore Name:", datastore.name)
         print("Datastore URL:", datastore.summary.url)
-        print("Capacity:", datastore.summary.capacity)
-        print("Free Space:", datastore.summary.freeSpace)
+        print("Capacity (GB):", datastore.summary.capacity / (1024 ** 3), "GB")
+        print("Used Space:", round((datastore.summary.capacity - datastore.summary.freeSpace) / (1024 ** 3),2), "GB")
+        print("Free Space:", round((datastore.summary.freeSpace / (1024 ** 3)),2), "GB")
         print("------------------------------")
 
 def wait_for_task(task):
