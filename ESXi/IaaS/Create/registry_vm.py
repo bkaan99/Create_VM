@@ -22,7 +22,7 @@ def register_vmx_file(datacenter, content, vmx_file_path, RegisterVm_name):
 
         print(f"VMX file registered successfully: {vmx_file_path}")
 
-        print("VM created: %s" , RegisterVm_name)
+        print("VM created: ==>" , RegisterVm_name)
 
     except Exception as e:
         print(f"Error: {e}")
