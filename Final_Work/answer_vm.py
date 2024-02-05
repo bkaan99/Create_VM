@@ -20,18 +20,27 @@ def wait_for_task(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def answer_vm_question(vm, question_id, answer_value):
-    """
-    Answers a specific question for a virtual machine.
-    """
-    if not isinstance(vm, vim.VirtualMachine):
-        raise ValueError("Invalid virtual machine object.")
 
-    try:
-        task = vm.AnswerVM(questionId=question_id, answer=answer_value)
-        wait_for_task(task)
-    except Exception as e:
-        print(f"Error answering VM question: {e}")
+def answer_vm_question(vm):
+    if vm.runtime.question is not None:
+        question_id = vm.runtime.question.id
+        question_text = vm.runtime.question.text
+
+        for choice_info in vm.runtime.question.choice.choiceInfo:
+            if choice_info.summary == "I Copied It":
+                choice_id = choice_info.key
+
+                # Örnek bir yanıt oluşturun
+                answer = vim.vm.AnswerVM(questionId=question_id, choiceId=choice_id)
+
+                # Sanal makineyi yeniden yapılandırma görevini başlatın
+                reconfig_task = vm.ReconfigVM_Task(spec=vim.vm.ConfigSpec(answer=answer))
+
+                # Görevin tamamlanmasını bekleyin
+                wait_for_task(reconfig_task)
+                break
+    else:
+        print(f"Answer not found for question")
 
 def main():
     ssl_context = ssl.create_default_context()
@@ -45,7 +54,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    source_vm_name = "esxi_centos_sali"
+    source_vm_name = "11"
 
     source_vm = get_vm_by_name(content, source_vm_name)
 
@@ -54,13 +63,18 @@ def main():
         Disconnect(service_instance)
         return
 
-    question_id = "config.moved"
-    answer_value = "I Copied It"
+    if source_vm:
+        answer_text = "This virtual machine might have been moved or copied. In order to configure certain management and networking features, VMware ESX needs to know if this virtual machine was moved or copied. If you don't know, answer 'I Copied It'."
+        # power on the VM
+        if source_vm.runtime.powerState != vim.VirtualMachinePowerState.poweredOn:
+            task = source_vm.PowerOnVM_Task()
+            wait_for_task(task)
 
-    try:
-        answer_vm_question(source_vm, question_id, answer_value)
-    except Exception as e:
-        print(f"Error answering VM question: {e}")
+        try:
+            answer_vm_question(source_vm)
+        except Exception as e:
+            print(f"Error: {e}")
+
 
     Disconnect(service_instance)
 
