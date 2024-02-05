@@ -14,7 +14,6 @@ def connect_Postgres():
 
     return connectionForPostgres
 
-
 def get_vmList_Config(vmid):
 
     connectionForPostgres = connect_Postgres()
@@ -34,7 +33,7 @@ def get_vmList_Config(vmid):
     vmListConfig_VirtualizationTechnology = VmListConfigrurationTable.get("virtualizationtechnology")[0]
     vmListConfig_PFMSConfigurationId = VmListConfigrurationTable.get("pfmsconfiguration_id")[0]
 
-    return vmListConfig_OperatingSystemInformation, vmListConfig_VmName, vmListConfig_Cpu, vmListConfig_RamSize
+    return vmListConfig_OperatingSystemInformation, vmListConfig_VmName, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_OperatingSystemVersion
 
 def get_first_disik_Config(vmid):
     connectionForPostgres = connect_Postgres()
