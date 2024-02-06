@@ -156,6 +156,15 @@ def WaitForTask(task):
             print(f"Hata: {task.info.error}")
             task_done = True
 
+# def get_cluster_name(vm):
+#     if hasattr(vm, 'runtime') and hasattr(vm.runtime, 'host'):
+#         host = vm.runtime.host
+#         if hasattr(host, 'parent') and hasattr(host.parent, 'name'):
+#             # Assuming the parent of the host is the cluster
+#             cluster_name = host.parent.name
+#             return cluster_name
+#     return None
+
 def main():
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
@@ -168,10 +177,11 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "Clone-SUSE-Temp-15-3"
+    vm_name_to_reconfigure = "11"
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
+    #cluster_name = get_cluster_name(vm_to_reconfigure)
     if vm_to_reconfigure is None:
         print(f"VM {vm_name_to_reconfigure} bulunamadı.")
         return
