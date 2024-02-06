@@ -15,7 +15,13 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         if not vdisk:
             raise Exception("Failed to find VM virtual disk for resizing!")
         cspec = vim.vm.ConfigSpec()
+
+        #disk_size_gb değeri var olan boyuttan büyük olmalı
+        if disk_size_gb < vdisk.capacityInKB / 1024 ** 2:
+            raise Exception("Disk boyutu var olan boyuttan küçük olamaz.")
+
         vdisk.capacityInKB = disk_size_gb * 1024 ** 2
+        vdisk.capacityInBytes = disk_size_gb * 1024 ** 3
         vdisk_spec = vim.vm.device.VirtualDeviceSpec(
             device=vdisk,
             operation=vim.vm.device.VirtualDeviceSpec.Operation.edit,

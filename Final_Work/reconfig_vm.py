@@ -25,13 +25,19 @@ def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
         if not vdisk:
             raise Exception("Failed to find VM virtual disk for resizing!")
         cspec = vim.vm.ConfigSpec()
+
+        #disk_size_gb değeri var olan boyuttan büyük olmalı
+        if disk_size_gb < vdisk.capacityInKB / 1024 ** 2:
+            raise Exception("Disk boyutu var olan boyuttan küçük olamaz.")
+
         vdisk.capacityInKB = disk_size_gb * 1024 ** 2
+        vdisk.capacityInBytes = disk_size_gb * 1024 ** 3
         vdisk_spec = vim.vm.device.VirtualDeviceSpec(
             device=vdisk,
             operation=vim.vm.device.VirtualDeviceSpec.Operation.edit,
         )
         cspec.deviceChange = [vdisk_spec]
-        WaitForTask(vm.Reconfigure(cspec))
+        WaitForTask(vm.ReconfigVM_Task(cspec))
 
         # # Find the first virtual disk
         # virtual_disks = [device for device in vm.config.hardware.device if
@@ -76,11 +82,11 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    vm_name_to_reconfigure = "Pzt_Ubuntu_Deneme"
+    vm_name_to_reconfigure = "11"
 
     target_cpu_count = 3  # Modify with the desired CPU count
     target_memory_mb = 4096 # Modify with the desired memory size in MB
-    target_disk_size_gb = 20  # Modify with the desired disk size in GB
+    target_disk_size_gb = 10  # Modify with the desired disk size in GB
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
