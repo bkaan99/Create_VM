@@ -28,16 +28,38 @@ def get_id_list():
 
     return li, flowUUID
 
-def check_vm_os_family(param):
-    if param == "Windows":
-        template_name = "bkaan_deneme"
-        print("Windows işletim sistemi için VM oluşturuluyor")
-        return template_name
+def check_vm_os_family(os_family, os_version):
 
-    elif param == "Linux":
-        template_name = "SUSE-Temp-15-3"
-        print("Linux işletim sistemi için VM oluşturuluyor")
-        return template_name
+    if os_family == "Windows":
+        if os_version == "Windows Server 2016":
+            template_name = "Windows-Server-2016"
+            print("Windows işletim sistemi için VM oluşturuluyor")
+            return template_name
+
+        if os_version == "Windows 2018":
+            template_name = "bkaan_deneme"
+            print("Windows işletim sistemi için VM oluşturuluyor")
+            return template_name
+
+    elif os_family == "Linux":
+        if os_version == "SUSE Linux":
+            template_name = "SUSE-Temp-15-3"
+            print("Linux işletim sistemi için VM oluşturuluyor")
+            return template_name
+
+        if os_version == "Ubuntu":
+            template_name = "Ubuntu-Temp-20-04"
+            print("Linux işletim sistemi için VM oluşturuluyor")
+            return template_name
+
+    elif os_family == "Other":
+        pass
+
+    elif os_family == "MacOS":
+        pass
+
+    else:
+        print("OS family not found")
 
 def main():
     print("IAAS Create işlemi başlatıldı")
@@ -74,11 +96,12 @@ def main():
         vm_config_lists_vm_name = vm_config_lists[1]
         vm_config_lists_cpu = vm_config_lists[2]
         vm_config_lists_ram_size = vm_config_lists[3]
+        vm_config_lists_os_version = vm_config_lists[4]
 
         #get first disk config
         vm_disk_size_gb = get_first_disik_Config(vmid)
 
-        copying_vm_name = check_vm_os_family(vm_config_lists_os_family)
+        copying_vm_name = check_vm_os_family(vm_config_lists_os_family, vm_config_lists_os_version)
         RegisterVm_name = vm_config_lists_vm_name
         copied_folder_name = RegisterVm_name
 
