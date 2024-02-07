@@ -3,7 +3,7 @@ import sys
 from ESXi.IaaS.Create import registry_vm
 from ESXi.IaaS.Create import copyfile
 from ESXi.IaaS.Create import reconfig_vm
-from ESXi.IaaS.db_connector import *
+from ESXi.IaaS.db_connection import *
 
 # def db_logger():
 #     t = connect_Postgres()
