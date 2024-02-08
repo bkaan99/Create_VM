@@ -1,6 +1,6 @@
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
+from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
-import ssl
 
 def clone_template(si, template_name, clone_name):
     content = si.RetrieveContent()
@@ -15,7 +15,7 @@ def clone_template(si, template_name, clone_name):
         continue
 
     if clone_task.info.state == vim.TaskInfo.State.success:
-        print("Template cloned successfully.")
+        print("Template cloned successfully as", clone_name)
     else:
         print("Error cloning template:", clone_task.info.error.msg)
 
@@ -53,36 +53,26 @@ def get_cluster(content):
     cluster = None
     container = content.viewManager.CreateContainerView(content.rootFolder, [vim.ClusterComputeResource], True)
     for c in container.view:
-        # first cluster in the list
         cluster = c
         break
     return cluster
 
-def main():
-    # vSphere server credentials
-    esxi_host_ip = "10.14.45.10"
-    esxi_user = "administrator@vsphere.local"
-    esxi_password = "Aa112233!"
+def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_name):
 
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    # Connect to vSphere server
-    si = SmartConnect(host=esxi_host_ip, user=esxi_user, pwd=esxi_password, sslContext=ssl_context)
-
-    if not si:
+    if not service_instance:
         print("Failed to connect to vSphere server.")
         return
 
     try:
         # Call clone_template function with desired template name and clone name
-        clone_template(si, "bkaan_deneme_clone", "clone_name_here")
+        clone_template(service_instance, template_name= template_name, clone_name= clone_name)
     except Exception as e:
         print("Error:", e)
 
     # Disconnect from vSphere server
-    Disconnect(si)
+    Disconnect(service_instance)
 
 if __name__ == "__main__":
     main()

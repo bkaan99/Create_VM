@@ -1,6 +1,6 @@
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
+from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
-import ssl
 
 def clone_vm(si, vm_name, clone_name):
     content = si.RetrieveContent()
@@ -35,31 +35,22 @@ def create_clone_spec(vm):
     return clone_spec
 
 
-def main():
-    # vSphere server credentials
-    esxi_host_ip = "10.14.45.10"
-    esxi_user = "administrator@vsphere.local"
-    esxi_password = "Aa112233!"
+def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name, clone_name):
 
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    service_instance, content = create_vsphere_connection(host=vCenter_host_ip, user=vCenter_user, password=vCenter_password)
 
-    # Connect to vSphere server
-    si = SmartConnect(host=esxi_host_ip, user=esxi_user, pwd=esxi_password, sslContext=ssl_context)
-
-    if not si:
+    if not service_instance:
         print("Failed to connect to vSphere server.")
         return
 
     try:
         # Call clone_vm function with desired VM name and clone name
-        clone_vm(si, "bkaan_deneme", "bkaan_deneme_clone")
+        clone_vm(service_instance, vm_name= vm_name, clone_name= clone_name)
     except Exception as e:
         print("Error:", e)
 
     # Disconnect from vSphere server
-    Disconnect(si)
+    Disconnect(service_instance)
 
 
 if __name__ == "__main__":

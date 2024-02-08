@@ -24,12 +24,12 @@ def get_id_list():
 def check_vm_os_family(os_family, os_version):
 
     if os_family == "Windows":
-        if os_version == "Windows Server 2016":
+        if "Windows Server 2016" in os_version:
             template_name = "bkaan_windows_template"
             print("Windows işletim sistemi için VM oluşturuluyor")
             return template_name
 
-        if os_version == "Windows 2018":
+        if "Windows 2018" in os_version:
             template_name = "bkaan_windows_template"
             print("Windows işletim sistemi için VM oluşturuluyor")
             return template_name
@@ -44,7 +44,7 @@ def check_vm_os_family(os_family, os_version):
             print("Linux işletim sistemi için VM oluşturuluyor")
             return template_name
 
-        if os_version == "Ubuntu":
+        if "Ubuntu" in os_version:
             template_name = "Ubuntu_Deneme"
             print("Linux işletim sistemi için VM oluşturuluyor")
             return template_name
