@@ -113,8 +113,8 @@ def WaitForTask(task):
             print("Hata: ", task.info.error)
             task_done = True
 
-def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password):
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
@@ -131,6 +131,12 @@ def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
     # Yeni ağ adaptörü ekleyin
     new_network_name = "VM Network"
     add_network_adapter(vm_to_reconfigure, content, new_network_name)
+
+    # VM kapalı durumdaysa aç
+    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
+        print("VM açılıyor...")
+        task = vm_to_reconfigure.PowerOnVM_Task()
+        WaitForTask(task)
 
     Disconnect(service_instance)
 
