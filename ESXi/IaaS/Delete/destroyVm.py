@@ -4,7 +4,7 @@ from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 def destroy_vm(vm):
 
     if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
-        print("Shutting down VM...")
+        print(f"Shutting down VM -- {vm.name}...")
         task = vm.PowerOff()
         WaitForTask(task)
 
