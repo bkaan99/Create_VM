@@ -46,11 +46,11 @@ def WaitForTask(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(RegisterVm_name, esxi_host_ip, esxi_user, esxi_password, cpu_count, memory_mb, disk_size_gb):
+def main(vCenter_host_ip, vCenter_user, vCenter_password, clone_name, cpu_count, memory_mb, disk_size_gb):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    vm_name_to_reconfigure = RegisterVm_name
+    vm_name_to_reconfigure = clone_name
 
     target_cpu_count = int(cpu_count)
     #target_cpu_count değeri string olarak gelmektedir. Bu yüzden int'e çeviriyoruz.
@@ -71,6 +71,12 @@ def main(RegisterVm_name, esxi_host_ip, esxi_user, esxi_password, cpu_count, mem
         WaitForTask(task)
 
     reconfigure_vm(vm_to_reconfigure, target_cpu_count, target_memory_mb, target_disk_size_gb)
+
+    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+        print(f"{vm_name_to_reconfigure} Powering on VM...")
+        task = vm_to_reconfigure.PowerOnVM_Task()
+        WaitForTask(task)
+
     Disconnect(service_instance)
 
 if __name__ == "__main__":
