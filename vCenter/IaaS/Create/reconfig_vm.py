@@ -72,7 +72,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, clone_name, cpu_count,
 
     reconfigure_vm(vm_to_reconfigure, target_cpu_count, target_memory_mb, target_disk_size_gb)
 
-    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
         print(f"{vm_name_to_reconfigure} Powering on VM...")
         task = vm_to_reconfigure.PowerOnVM_Task()
         WaitForTask(task)
