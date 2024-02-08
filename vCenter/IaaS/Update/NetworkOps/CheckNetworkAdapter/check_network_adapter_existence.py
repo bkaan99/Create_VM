@@ -1,15 +1,7 @@
 import time
-from pyVim.connect import SmartConnect, Disconnect
+from pyVim.connect import Disconnect
 from pyVmomi import vim
-import ssl
-
-
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def get_all_networks(content):
     network_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.Network], True)
@@ -33,33 +25,16 @@ def WaitForTask(task):
             task_done = True
         time.sleep(1)  # 1 saniye bekleyerek tekrar kontrol et
 
-def main():
+def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name):
 
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    service_instance, content = create_vsphere_connection(host=vCenter_host_ip, user=vCenter_user, password=vCenter_password)
 
-    service_instance = SmartConnect(host="10.14.45.11",
-                                    user="root",
-                                    pwd="Aa112233!",
-                                    sslContext=ssl_context)
-
-    content = service_instance.RetrieveContent()
-
-    vm_name_to_reconfigure = "Clone-SUSE-Temp-15-3"
-
-    vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
+    vm_to_reconfigure = get_vm_by_name(content, vm_name)
 
     if vm_to_reconfigure is None:
-        print(f"VM {vm_name_to_reconfigure} bulunamadı.")
+        print(f"VM {vm_name} bulunamadı.")
         Disconnect(service_instance)
         return
-
-    # VM açık durumdaysa kapat
-    if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
-        print("VM kapatılıyor...")
-        task = vm_to_reconfigure.PowerOffVM_Task()
-        WaitForTask(task)
 
     # Ağ adaptörü varlığı kontrolü ve label bilgisi
     network_adapter_existence_value, device_label = check_any_network_adapter_existence(vm_to_reconfigure)
