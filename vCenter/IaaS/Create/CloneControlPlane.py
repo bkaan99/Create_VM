@@ -3,7 +3,7 @@ import string
 import sys
 import time
 from vCenter.IaaS.Connections.db_connection import *
-from vCenter.IaaS.Create import clone_from_template, vmtoolsstatus
+from vCenter.IaaS.Create import vmtoolsstatus, clone_from_template
 from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
@@ -112,16 +112,16 @@ def main():
 
 
         # ## Clone VM from template
-        # clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
-        #                          vCenter_user=vCenter_user,
-        #                          vCenter_password=vCenter_password,
-        #                          template_name=template_name,
-        #                          clone_name=clone_name,
-        #                          disk_size_gb=vm_disk_size_gb,
-        #                          memory_mb=vm_config_lists_RamSize,
-        #                          cpu_count=vm_config_lists_Cpu)
-        #
-        # time.sleep(15)
+        clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
+                                 vCenter_user=vCenter_user,
+                                 vCenter_password=vCenter_password,
+                                 template_name=template_name,
+                                 clone_name=clone_name,
+                                 disk_size_gb=vm_disk_size_gb,
+                                 memory_mb=vm_config_lists_RamSize,
+                                 cpu_count=vm_config_lists_Cpu)
+
+        time.sleep(15)
 
 
 
