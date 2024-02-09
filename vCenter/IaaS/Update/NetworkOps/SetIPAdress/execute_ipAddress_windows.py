@@ -13,10 +13,10 @@ def wait_for_task(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
 
     # vCenter'a bağlanın
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
     target_vm = get_vm_by_name(content, vm_name)
 
     if target_vm is None:
@@ -27,7 +27,7 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
     # Komut istemcisine yazılacak komutları oluşturun
     cmd_command = (
         f'netsh interface ip set address name="Ethernet0" static '
-        f'10.14.45.187 255.255.255.0 10.14.45.1'
+        f'{ipAddress} 255.255.255.0 10.14.45.1'
     )
 
     dns_script = (
