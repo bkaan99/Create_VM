@@ -1,3 +1,4 @@
+import time
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 from pyVmomi import vim
@@ -123,6 +124,8 @@ def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, es
     if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
         task = vm_to_reconfigure.PowerOnVM_Task()
         WaitForTask(task)
+
+    time.sleep(5)
 
     Disconnect(service_instance)
 
