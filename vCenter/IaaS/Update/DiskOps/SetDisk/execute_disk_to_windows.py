@@ -13,7 +13,7 @@ def wait_for_task(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password, label, assign_letter, disk_number):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
@@ -25,9 +25,9 @@ def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password):
         return
 
     # Disk set ayarları
-    label = "Glass_House_Disk"
-    assign_letter = "G"
-    disk_number = 1
+    #label = "Glass_House_Disk"
+    #assign_letter = "G"
+    #disk_number = 1
     create_partition_type = "primary"
 
     #os credentials
