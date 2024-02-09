@@ -25,7 +25,7 @@ def get_letter_for_disk_number(disk_number):
         quotient, remainder = divmod(disk_number - 1, len(alphabet))
         return alphabet[quotient - 1] + alphabet[remainder]
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name, esxi_host_ip, esxi_user, esxi_password, os_user, os_password):
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
@@ -38,8 +38,8 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
 
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
-            username="root",
-            password="1234"
+            username=os_user,
+            password=os_password
         )
 
         highest_disk_number = find_highest_disk_number(target_vm)
