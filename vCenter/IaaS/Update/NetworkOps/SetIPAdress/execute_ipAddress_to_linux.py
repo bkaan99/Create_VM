@@ -2,9 +2,9 @@ from pyVim.connect import Disconnect
 from pyVmomi import vim
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password ,ipAddress):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     # Belirtilen sanal makineyi bul
     target_vm = get_vm_by_name(content, vm_name)
@@ -18,12 +18,12 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
         # Mevcut IP adresini al
         current_ip = target_vm.summary.guest.ipAddress
         # Yeni IP adresini setle
-        new_ip = "10.14.45.109"
+        new_ip = ipAddress
         new_dns = "1.1.1.1"
 
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="root",
-            password="1234"
+            password="111111"
         )
 
         # Mevcut IP adresini sil
