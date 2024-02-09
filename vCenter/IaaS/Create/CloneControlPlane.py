@@ -1,9 +1,15 @@
 import base64
+import string
 import sys
 import time
 from vCenter.IaaS.Connections.db_connection import *
-from vCenter.IaaS.Create import clone_from_template, reconfig_vm
-from vCenter.IaaS.PowerOps import powerOn
+from vCenter.IaaS.Create import clone_from_template, vmtoolsstatus
+from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
+from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
+from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
+from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
+from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows, execute_ipAddress_to_linux
+
 
 def get_id_list():
     global flowUUID
@@ -23,7 +29,7 @@ def get_id_list():
 
 def check_vm_os_family(os_family, os_version):
 
-    if os_family == "Windows":
+    if "Windows" in os_family:
         if "Windows Server 2016" in os_version:
             template_name = "bkaan_windows_template"
             print("Windows işletim sistemi için VM oluşturuluyor")
@@ -38,8 +44,8 @@ def check_vm_os_family(os_family, os_version):
             template_name = "bkaan_windows_template"
             return template_name
 
-    elif os_family == "Linux":
-        if os_version == "SUSE Linux":
+    elif "Linux" in os_family:
+        if "SUSE" in os_version:
             template_name = "SUSE-Temp-15-3"
             print("Linux işletim sistemi için VM oluşturuluyor")
             return template_name
@@ -74,32 +80,225 @@ def main():
         #get vm config
         vm_config_lists = get_vmList_Config(vmid)
 
-        vm_config_lists_os_family = vm_config_lists[0]
-        vm_config_lists_vm_name = vm_config_lists[1]
-        vm_config_lists_cpu = vm_config_lists[2]
-        vm_config_lists_ram_size = vm_config_lists[3]
-        vm_config_lists_os_version = vm_config_lists[4]
+        vm_config_lists_id = vm_config_lists[0]
+        vm_config_lists_Cpu = int(vm_config_lists[1])
+        vm_config_lists_RamSize = int(vm_config_lists[2]) * 1024
+        vm_config_lists_VmName = vm_config_lists[3]
+        vm_config_lists_HostName = vm_config_lists[4]
+        vm_config_lists_IpAdress = vm_config_lists[5]
+        vm_config_lists_Environment = vm_config_lists[6]
+        vm_config_lists_OperatingSystemInformation = vm_config_lists[7]
+        vm_config_lists_OperatingSystemVersion = vm_config_lists[8]
+        vm_config_lists_InternetConnection = vm_config_lists[9]
+        vm_config_lists_VirtualizationTechnology = vm_config_lists[10]
+        vm_config_lists_PFMSConfigurationId = vm_config_lists[11]
+
+        #get pfms config type
+        pfms_config_type = vm_config_lists[12]
+
 
         #get first disk config
-        vm_disk_size_gb = get_first_disik_Config(vmid)
+        vm_disk_list = get_first_disik_Config(vmid)
 
-        template_name = check_vm_os_family(vm_config_lists_os_family, vm_config_lists_os_version)
-        clone_name = vm_config_lists_vm_name
+        vm_disk_size_gb = int(vm_disk_list[0])
+
+        vm_disk_list.pop(0)
+
+        other_disk_list = vm_disk_list
+
+        template_name = check_vm_os_family(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
+        clone_name = vm_config_lists_VmName
         copied_folder_name = clone_name
 
-        cpu_count = int(vm_config_lists_cpu)
-        memory_mb = int(vm_config_lists_ram_size) * 1024
-        disk_size_gb = int(vm_disk_size_gb)
 
-        # Clone VM from template
-        clone_from_template.main(vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password, template_name=template_name, clone_name=clone_name)
+        # ## Clone VM from template
+        # clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
+        #                          vCenter_user=vCenter_user,
+        #                          vCenter_password=vCenter_password,
+        #                          template_name=template_name,
+        #                          clone_name=clone_name,
+        #                          disk_size_gb=vm_disk_size_gb,
+        #                          memory_mb=vm_config_lists_RamSize,
+        #                          cpu_count=vm_config_lists_Cpu)
+        #
+        # time.sleep(15)
 
-        time.sleep(3)
-        # Reconfigure VM
-        reconfig_vm.main(vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password, clone_name=clone_name, cpu_count=cpu_count, memory_mb=memory_mb, disk_size_gb=disk_size_gb)
 
-        # Power on VM
 
-        print("IAAS Create işlemi tamamlandı")
+        # check internet connection
+        if vm_config_lists_InternetConnection == True:
+            network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
+                                                                                                 vCenter_user=vCenter_user,
+                                                                                                 vCenter_password=vCenter_password,
+                                                                                                 vm_name=clone_name)
+
+            if network_adapter_existence_value:  # Eğer network adaptörü mevcutsa devam et
+
+                vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                     username=vCenter_user,
+                                                     password=vCenter_password,
+                                                     vm_name=clone_name)
+
+                if vm_tools_status:  # Eğer VM Tools durumu True ise devam et
+
+                    if vm_config_lists_OperatingSystemInformation == "Windows":
+                        execute_ipAddress_windows.main(vm_name=clone_name,
+                                                       vCenter_host_ip=vCenter_host_ip,
+                                                       vCenter_user=vCenter_user,
+                                                       vCenter_password=vCenter_password,
+                                                       ipAddress=vm_config_lists_IpAdress)
+                    elif vm_config_lists_OperatingSystemInformation == "Linux":
+                        execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                                        vCenter_host_ip=vCenter_host_ip,
+                                                        vCenter_user=vCenter_user,
+                                                        vCenter_password=vCenter_password,
+                                                        ipAddress=vm_config_lists_IpAdress)
+
+                else:  # Eğer VM Tools durumu False ise yeniden deneme
+                    retry_count = 0
+                    max_retries = 2
+                    while retry_count < max_retries:
+                        time.sleep(5)
+                        vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                             username=vCenter_user,
+                                                             password=vCenter_password,
+                                                             vm_name=clone_name)
+                        if vm_tools_status:  # Eğer VM Tools durumu True ise döngüden çık
+                            if vm_config_lists_OperatingSystemInformation == "Windows":
+                                execute_ipAddress_windows.main(vm_name=clone_name,
+                                                               vCenter_host_ip=vCenter_host_ip,
+                                                               vCenter_user=vCenter_user,
+                                                               vCenter_password=vCenter_password,
+                                                               ipAddress=vm_config_lists_IpAdress)
+
+                            elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                                                vCenter_host_ip=vCenter_host_ip,
+                                                                vCenter_user=vCenter_user,
+                                                                vCenter_password=vCenter_password,
+                                                                ipAddress=vm_config_lists_IpAdress)
+                            break
+                        retry_count += 1
+
+                    if not vm_tools_status:  # Eğer hala VM Tools durumu False ise hata ver
+                        raise Exception("VM Tools status could not be verified after retrying.")
+
+            elif network_adapter_existence_value == False:
+                add_network_adapter.main(vm_name_to_reconfigure=clone_name,
+                                         vCenter_host_ip=vCenter_host_ip,
+                                         vCenter_user=vCenter_user,
+                                         vCenter_password=vCenter_password)
+
+                if vm_config_lists_OperatingSystemInformation == "Windows":
+                    execute_ipAddress_windows.main(vm_name=clone_name,
+                                                   vCenter_host_ip=vCenter_host_ip,
+                                                   vCenter_user=vCenter_user,
+                                                   vCenter_password=vCenter_password,
+                                                   ipAddress=vm_config_lists_IpAdress)
+
+                elif vm_config_lists_OperatingSystemInformation == "Linux":
+                    execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                                    vCenter_host_ip=vCenter_host_ip,
+                                                    vCenter_user=vCenter_user,
+                                                    vCenter_password=vCenter_password)
+
+        # add disk to VM
+        if len(other_disk_list) > 0:
+            allowed_letters = string.ascii_uppercase[4:]  # "E" harfinden başlayarak "Z" harfine kadar olan harfler
+            current_letter = allowed_letters[0]
+            counter = 0
+            disk_mount_location = "hana/shared"
+            for disk_size_gb in other_disk_list:
+
+                add_disk_to_vm.main(vm_name_to_reconfigure=clone_name,
+                                    target_disk_size_gb=disk_size_gb,
+                                    esxi_host_ip=vCenter_host_ip,
+                                    esxi_user=vCenter_user,
+                                    esxi_password=vCenter_password)
+
+                vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                     username=vCenter_user,
+                                                     password=vCenter_password,
+                                                     vm_name=clone_name)
+
+                counter += 1
+
+                if vm_tools_status:
+
+                    if pfms_config_type == "SAPaaS":
+
+                        if vm_config_lists_OperatingSystemInformation == "Windows":
+                            execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
+                                                               vCenter_user=vCenter_user,
+                                                               vCenter_password=vCenter_password,
+                                                               vm_name=clone_name)
+
+                            disk_mount_location = disk_mount_location + str(counter)
+
+
+                    elif pfms_config_type == "IaaS":
+
+                        if vm_config_lists_OperatingSystemInformation == "Windows":
+                            execute_disk_to_windows.main(target_vm_name=clone_name,
+                                                        esxi_host_ip=vCenter_host_ip,
+                                                        esxi_user=vCenter_user,
+                                                        esxi_password=vCenter_password,
+                                                        label="Glass_House_Disk " + str(counter),
+                                                        assign_letter=current_letter,
+                                                        disk_number=counter)
+
+                            current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+
+                        elif vm_config_lists_OperatingSystemInformation == "Linux":
+                            execute_disk_to_linux.main(vm_name=clone_name,
+                                                       esxi_host_ip=vCenter_host_ip,
+                                                       esxi_user=vCenter_user,
+                                                       esxi_password=vCenter_password,
+                                                       os_user="root",
+                                                       os_password="111111")
+                else:
+                    retry_count = 0
+                    max_retries = 3
+                    while retry_count < max_retries:
+                        time.sleep(10)
+                        vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                             username=vCenter_user,
+                                                             password=vCenter_password,
+                                                             vm_name=clone_name)
+                        if vm_tools_status:
+
+                            if pfms_config_type == "SAPaaS":
+
+                                if vm_config_lists_OperatingSystemInformation == "Windows":
+                                    execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
+                                                                       vCenter_user=vCenter_user,
+                                                                       vCenter_password=vCenter_password,
+                                                                       vm_name=clone_name,
+                                                                       disk_mount_location=disk_mount_location)
+
+                                    disk_mount_location = disk_mount_location + str(counter)
+
+                            elif pfms_config_type == "IaaS":
+
+                                if vm_config_lists_OperatingSystemInformation == "Windows":
+                                    execute_disk_to_windows.main(target_vm_name=clone_name,
+                                                                 esxi_host_ip=vCenter_host_ip,
+                                                                 esxi_user=vCenter_user,
+                                                                 esxi_password=vCenter_password,
+                                                                 label="Glass_House_Disk " + str(counter),
+                                                                 assign_letter=current_letter,
+                                                                 disk_number=counter)
+
+                                    current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+
+                                elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                    execute_disk_to_linux.main(vm_name=clone_name,
+                                                               esxi_host_ip=vCenter_host_ip,
+                                                               esxi_user=vCenter_user,
+                                                               esxi_password=vCenter_password,
+                                                               os_user="root",
+                                                               os_password="111111")
+
+        print("Create işlemi tamamlandı")
 if __name__ == "__main__":
     main()
