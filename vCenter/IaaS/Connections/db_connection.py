@@ -33,18 +33,32 @@ def get_vmList_Config(vmid):
     vmListConfig_VirtualizationTechnology = VmListConfigrurationTable.get("virtualizationtechnology")[0]
     vmListConfig_PFMSConfigurationId = VmListConfigrurationTable.get("pfmsconfiguration_id")[0]
 
-    return vmListConfig_OperatingSystemInformation, vmListConfig_VmName, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_OperatingSystemVersion
+    pfmsConfigType = pd.read_sql_query(
+        "select configtype from kr_pfms_configuration where id=" + str(vmListConfig_PFMSConfigurationId),
+        connectionForPostgres).get("configtype")[0]
+
+    return vmListConfig_Id, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_VmName, vmListConfig_HostName, vmListConfig_IpAdress, vmListConfig_Environment, vmListConfig_OperatingSystemInformation, vmListConfig_OperatingSystemVersion, vmListConfig_InternetConnection, vmListConfig_VirtualizationTechnology, vmListConfig_PFMSConfigurationId, pfmsConfigType
 
 def get_first_disik_Config(vmid):
     connectionForPostgres = connect_Postgres()
-    VmFirstDiskConfigurationTable = pd.read_sql_query("select * from kr_vm_first_disk where vmlist_id=" + str(vmid),
+    VmFirstDiskConfigurationTable = pd.read_sql_query("select * from kr_vm_first_disk where vmlist_id=" + str(vmid) +" and is_deleted=false ORDER BY id",
                                                       connectionForPostgres)
 
-    vmFirstDiskConfig_Id = VmFirstDiskConfigurationTable.get("id")[0]
-    vmFirstDiskConfig_DiskByte = VmFirstDiskConfigurationTable.get("diskbyte")[0]
-    vmFirstDiskConfig_DiskSize = VmFirstDiskConfigurationTable.get("disksize")[0]
-    vmFirstDiskConfig_VmListId = VmFirstDiskConfigurationTable.get("vmlist_id")[0]
-    vmFirstDiskConfig_VmDiskImagePath = VmFirstDiskConfigurationTable.get("location")[0]
-    vmFirstDiskConfig_DiskType = VmFirstDiskConfigurationTable.get("controllerlocation")[0]
+    #vmFirstDiskConfig_Id = list(VmFirstDiskConfigurationTable.id)
+    # vmFirstDiskConfig_ControllerLocation = VmFirstDiskConfigurationTable.get("controllerlocation")[0]
+    # vmFirstDiskConfig_ControllerLocationValue = VmFirstDiskConfigurationTable.get("controllerlocationvalue")[0]
+    #vmFirstDiskConfig_CreateDate = list(VmFirstDiskConfigurationTable.createdate)
+    # vmFirstDiskConfig_isDeleted = VmFirstDiskConfigurationTable.get("isdeleted")[0]
+    # vmFirstDiskConfig_DiskByte = VmFirstDiskConfigurationTable.get("diskbyte")[0]
+    # vmFirstDiskConfig_DiskMod = VmFirstDiskConfigurationTable.get("diskmod")[0] if "diskmod" in VmFirstDiskConfigurationTable else None
+    #vmFirstDiskConfig_DiskProvisioning = VmFirstDiskConfigurationTable.get("diskprovisioning")[0]
+    vmFirstDiskConfig_DiskSize = list(VmFirstDiskConfigurationTable.disksize)
+    #vmFirstDiskConfig_LimitOps = VmFirstDiskConfigurationTable.get("limitops")[0] if "limitops" in VmFirstDiskConfigurationTable else None
+    # vmFirstDiskConfig_VmDiskImagePath = VmFirstDiskConfigurationTable.get("location")[0]
+    # vmFirstDiskConfig_Shared = VmFirstDiskConfigurationTable.get("shared")[0]
+    # vmFirstDiskConfig_SharedValue = VmFirstDiskConfigurationTable.get("sharedvalue")[0]
+    # vmFirstDiskConfig_Sharing = VmFirstDiskConfigurationTable.get("sharing")[0]
+    # vmFirstDiskConfig_Version = VmFirstDiskConfigurationTable.get("version")[0]
+    #vmFirstDiskConfig_VmListId = VmFirstDiskConfigurationTable.get("vmlist_id")[0]
 
     return vmFirstDiskConfig_DiskSize
