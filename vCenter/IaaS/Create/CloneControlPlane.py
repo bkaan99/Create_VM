@@ -122,7 +122,7 @@ def main():
                                  cpu_count=vm_config_lists_Cpu)
 
 
-        time.sleep(5)
+        time.sleep(30)
 
         # check internet connection
         if vm_config_lists_InternetConnection == True:
@@ -131,14 +131,14 @@ def main():
                                                                                                  vCenter_password=vCenter_password,
                                                                                                  vm_name=clone_name)
 
-            if network_adapter_existence_value:  # Eğer network adaptörü mevcutsa devam et
+            if network_adapter_existence_value:
 
                 vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                                      username=vCenter_user,
                                                      password=vCenter_password,
                                                      vm_name=clone_name)
 
-                if vm_tools_status:  # Eğer VM Tools durumu True ise devam et
+                if vm_tools_status:
 
                     if vm_config_lists_OperatingSystemInformation == "Windows":
                         execute_ipAddress_windows.main(vm_name=clone_name,
@@ -153,16 +153,16 @@ def main():
                                                         vCenter_password=vCenter_password,
                                                         ipAddress=vm_config_lists_IpAdress)
 
-                else:  # Eğer VM Tools durumu False ise yeniden deneme
+                else:
                     retry_count = 0
-                    max_retries = 2
+                    max_retries = 3
                     while retry_count < max_retries:
-                        time.sleep(5)
+                        time.sleep(10)
                         vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                                              username=vCenter_user,
                                                              password=vCenter_password,
                                                              vm_name=clone_name)
-                        if vm_tools_status:  # Eğer VM Tools durumu True ise döngüden çık
+                        if vm_tools_status:
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 execute_ipAddress_windows.main(vm_name=clone_name,
                                                                vCenter_host_ip=vCenter_host_ip,
@@ -179,8 +179,8 @@ def main():
                             break
                         retry_count += 1
 
-                    if not vm_tools_status:  # Eğer hala VM Tools durumu False ise hata ver
-                        raise Exception("VM Tools status could not be verified after retrying.")
+                if not vm_tools_status:
+                    raise Exception("VM Tools status could not be verified after retrying.")
 
             elif network_adapter_existence_value == False:
                 add_network_adapter.main(vm_name_to_reconfigure=clone_name,
@@ -257,7 +257,7 @@ def main():
                                                        os_password="111111")
                 else:
                     retry_count = 0
-                    max_retries = 2
+                    max_retries = 3
                     while retry_count < max_retries:
                         time.sleep(10)
                         vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
