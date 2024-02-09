@@ -299,6 +299,10 @@ def main():
                                                                os_password="111111")
                         retry_count += 1
 
+                if not vm_tools_status:
+                    raise Exception("VM Tools status could not be verified after retrying.")
+
+
         print("Create işlemi tamamlandı")
 if __name__ == "__main__":
     main()
