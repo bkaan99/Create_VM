@@ -121,9 +121,8 @@ def main():
                                  memory_mb=vm_config_lists_RamSize,
                                  cpu_count=vm_config_lists_Cpu)
 
-        time.sleep(15)
 
-
+        time.sleep(5)
 
         # check internet connection
         if vm_config_lists_InternetConnection == True:
@@ -258,7 +257,7 @@ def main():
                                                        os_password="111111")
                 else:
                     retry_count = 0
-                    max_retries = 3
+                    max_retries = 2
                     while retry_count < max_retries:
                         time.sleep(10)
                         vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
@@ -298,6 +297,7 @@ def main():
                                                                esxi_password=vCenter_password,
                                                                os_user="root",
                                                                os_password="111111")
+                        retry_count += 1
 
         print("Create işlemi tamamlandı")
 if __name__ == "__main__":
