@@ -135,14 +135,12 @@ def main():
                                                                                                  vm_name=clone_name)
 
             if network_adapter_existence_value:
-
                 vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                                      username=vCenter_user,
                                                      password=vCenter_password,
                                                      vm_name=clone_name)
 
                 if vm_tools_status:
-
                     if vm_config_lists_OperatingSystemInformation == "Windows":
                         execute_ipAddress_windows.main(vm_name=clone_name,
                                                        vCenter_host_ip=vCenter_host_ip,
@@ -242,9 +240,18 @@ def main():
                             execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
                                                                vCenter_user=vCenter_user,
                                                                vCenter_password=vCenter_password,
-                                                               vm_name=clone_name)
+                                                               vm_name=clone_name,
+                                                               disk_mount_location=disk_mount_location)
 
                             disk_mount_location = disk_mount_location + str(counter)
+
+                        elif vm_config_lists_OperatingSystemInformation == "Linux":
+                            execute_disk_to_linux.main(vm_name=clone_name,
+                                                       esxi_host_ip=vCenter_host_ip,
+                                                       esxi_user=vCenter_user,
+                                                       esxi_password=vCenter_password,
+                                                       os_user="root",
+                                                       os_password="111111")
 
 
                     elif pfms_config_type == "IaaS":
@@ -306,7 +313,6 @@ def main():
                                                            os_user="root",
                                                            os_password="111111")
                         break
-                    retry_count += 1
 
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
