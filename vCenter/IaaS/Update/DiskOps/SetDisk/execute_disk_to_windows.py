@@ -1,3 +1,4 @@
+import time
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
@@ -63,6 +64,7 @@ def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password, label, assign_l
         pid = pm.StartProgramInGuest(target_vm, auth, ps)
         print(f"Command started with PID {pid}")
         wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
+        time.sleep(5)
     except Exception as e:
         print(f"Error: {e}")
 
