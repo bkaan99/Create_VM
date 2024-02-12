@@ -25,8 +25,8 @@ def main():
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    host = "10.14.45.11"
-    user = "root"
+    host = "10.14.45.10"
+    user = "administrator@vsphere.local"
     password = "Aa112233!"
 
     service_instance = SmartConnect(host=host,
@@ -36,7 +36,7 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    target_vm_name = "yeni_bkaan_cemo"
+    target_vm_name = "BilgeKaanGurgen"
 
     target_vm = get_vm_by_name(content, target_vm_name)
 
