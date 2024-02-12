@@ -1,3 +1,4 @@
+import time
 from pyVim.connect import Disconnect
 from pyVmomi import vim
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
@@ -56,3 +57,4 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password ,ipAddress):
 
 if __name__ == "__main__":
     main()
+    time.sleep(5)
