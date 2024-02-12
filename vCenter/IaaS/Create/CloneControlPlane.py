@@ -111,7 +111,7 @@ def main():
         copied_folder_name = clone_name
 
 
-        # ## Clone VM from template
+        ### Clone VM from template
         clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
                                  vCenter_user=vCenter_user,
                                  vCenter_password=vCenter_password,
@@ -121,8 +121,11 @@ def main():
                                  memory_mb=vm_config_lists_RamSize,
                                  cpu_count=vm_config_lists_Cpu)
 
-
-        time.sleep(30)
+        while vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
+                                 password=vCenter_password,
+                                 vm_name=clone_name) == False:
+            print("VM Tools status kontrol ediliyor")
+            time.sleep(3)
 
         # check internet connection
         if vm_config_lists_InternetConnection == True:
@@ -154,6 +157,7 @@ def main():
                                                         ipAddress=vm_config_lists_IpAdress)
 
                 else:
+                    time.sleep(5)
                     retry_count = 0
                     max_retries = 3
                     while retry_count < max_retries:
@@ -199,7 +203,8 @@ def main():
                     execute_ipAddress_to_linux.main(vm_name=clone_name,
                                                     vCenter_host_ip=vCenter_host_ip,
                                                     vCenter_user=vCenter_user,
-                                                    vCenter_password=vCenter_password)
+                                                    vCenter_password=vCenter_password,
+                                                    ipAddress=vm_config_lists_IpAdress)
 
         # add disk to VM
         if len(other_disk_list) > 0:
@@ -214,6 +219,13 @@ def main():
                                     esxi_host_ip=vCenter_host_ip,
                                     esxi_user=vCenter_user,
                                     esxi_password=vCenter_password)
+
+                while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                         username=vCenter_user,
+                                         password=vCenter_password,
+                                         vm_name=clone_name) == False:
+                    print("VM Tools status kontrol ediliyor")
+                    time.sleep(3)
 
                 vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                                      username=vCenter_user,
@@ -242,7 +254,7 @@ def main():
                                                         esxi_host_ip=vCenter_host_ip,
                                                         esxi_user=vCenter_user,
                                                         esxi_password=vCenter_password,
-                                                        label="Glass_House_Disk " + str(counter),
+                                                        label="Glass_House_Disk_" + str(counter),
                                                         assign_letter=current_letter,
                                                         disk_number=counter)
 
@@ -255,49 +267,46 @@ def main():
                                                        esxi_password=vCenter_password,
                                                        os_user="root",
                                                        os_password="111111")
+
                 else:
-                    retry_count = 0
-                    max_retries = 3
-                    while retry_count < max_retries:
-                        time.sleep(10)
-                        vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                             username=vCenter_user,
-                                                             password=vCenter_password,
-                                                             vm_name=clone_name)
-                        if vm_tools_status:
+                    while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                             username=vCenter_user,
+                                             password=vCenter_password,
+                                             vm_name=clone_name) == False:
+                        time.sleep(3)
 
-                            if pfms_config_type == "SAPaaS":
-
-                                if vm_config_lists_OperatingSystemInformation == "Windows":
-                                    execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
-                                                                       vCenter_user=vCenter_user,
-                                                                       vCenter_password=vCenter_password,
-                                                                       vm_name=clone_name,
-                                                                       disk_mount_location=disk_mount_location)
-
-                                    disk_mount_location = disk_mount_location + str(counter)
-
-                            elif pfms_config_type == "IaaS":
-
-                                if vm_config_lists_OperatingSystemInformation == "Windows":
-                                    execute_disk_to_windows.main(target_vm_name=clone_name,
-                                                                 esxi_host_ip=vCenter_host_ip,
-                                                                 esxi_user=vCenter_user,
-                                                                 esxi_password=vCenter_password,
-                                                                 label="Glass_House_Disk " + str(counter),
-                                                                 assign_letter=current_letter,
-                                                                 disk_number=counter)
-
-                                    current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
-
-                                elif vm_config_lists_OperatingSystemInformation == "Linux":
-                                    execute_disk_to_linux.main(vm_name=clone_name,
-                                                               esxi_host_ip=vCenter_host_ip,
-                                                               esxi_user=vCenter_user,
-                                                               esxi_password=vCenter_password,
-                                                               os_user="root",
-                                                               os_password="111111")
-                        retry_count += 1
+                    vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                         username=vCenter_user,
+                                                         password=vCenter_password,
+                                                         vm_name=clone_name)
+                    if vm_tools_status:
+                        if pfms_config_type == "SAPaaS":
+                            if vm_config_lists_OperatingSystemInformation == "Windows":
+                                execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
+                                                               vCenter_user=vCenter_user,
+                                                               vCenter_password=vCenter_password,
+                                                               vm_name=clone_name,
+                                                               disk_mount_location=disk_mount_location)
+                            disk_mount_location = disk_mount_location + str(counter)
+                        elif pfms_config_type == "IaaS":
+                            if vm_config_lists_OperatingSystemInformation == "Windows":
+                                execute_disk_to_windows.main(target_vm_name=clone_name,
+                                                             esxi_host_ip=vCenter_host_ip,
+                                                             esxi_user=vCenter_user,
+                                                             esxi_password=vCenter_password,
+                                                             label="Glass_House_Disk_" + str(counter),
+                                                             assign_letter=current_letter,
+                                                             disk_number=counter)
+                                current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+                            elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                execute_disk_to_linux.main(vm_name=clone_name,
+                                                           esxi_host_ip=vCenter_host_ip,
+                                                           esxi_user=vCenter_user,
+                                                           esxi_password=vCenter_password,
+                                                           os_user="root",
+                                                           os_password="111111")
+                        break
+                    retry_count += 1
 
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
