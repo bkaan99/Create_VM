@@ -333,11 +333,7 @@ def main():
                                                                disk_mount_location=disk_mount_location)
 
                             disk_mount_location = disk_mount_location + str(counter)
-
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             execute_disk_to_linux.main(vm_name=clone_name,
@@ -347,10 +343,7 @@ def main():
                                                        os_user="root",
                                                        os_password="111111")
 
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                     elif pfms_config_type == "IaaS":
 
@@ -364,11 +357,7 @@ def main():
                                                         disk_number=counter)
 
                             current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
-
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             execute_disk_to_linux.main(vm_name=clone_name,
@@ -378,10 +367,7 @@ def main():
                                                        os_user="root",
                                                        os_password="111111")
 
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                 else:
                     while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
@@ -403,11 +389,7 @@ def main():
                                                                vm_name=clone_name,
                                                                disk_mount_location=disk_mount_location)
                             disk_mount_location = disk_mount_location + str(counter)
-
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif pfms_config_type == "IaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
@@ -419,11 +401,7 @@ def main():
                                                              assign_letter=current_letter,
                                                              disk_number=counter)
                                 current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
-
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1], 1202,
-                                                                  vmid)
+                                diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 execute_disk_to_linux.main(vm_name=clone_name,
@@ -433,11 +411,7 @@ def main():
                                                            os_user="root",
                                                            os_password="111111")
 
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1], 1202,
-                                                                  vmid)
-
+                                diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
                         break
 
                 if not vm_tools_status:
