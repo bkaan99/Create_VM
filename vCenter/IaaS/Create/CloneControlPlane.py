@@ -9,6 +9,40 @@ from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
 from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
 from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows, execute_ipAddress_to_linux
+import createitsmtaskLast
+import updateItsmTask
+
+
+def connect_to_postgres():
+    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
+    connectionForPostgres = psycopg2.connect(
+        host="10.14.45.69",
+        port="7100",
+        database="karcin_pfms",
+        user="postgres",
+        password="Cekino.123!")
+    cursorForPostgres = connectionForPostgres.cursor()
+    return connectionForPostgres, cursorForPostgres
+
+def diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList):
+    for f in range(len(diskSetSAPaaSTaskList)):
+        updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                      1202,
+                                      vmid)
+
+def delete_itsm_tasks(vmidToDelete):
+    connectionForPostgres, cursorForPostgres = connect_to_postgres()
+    query_to_execute_delete_tasks = "delete from kr_create_task where vmlist_id="+str(vmidToDelete)
+    cursorForPostgres.execute(query_to_execute_delete_tasks)
+    connectionForPostgres.commit()
+
+def get_itsm_values(vmidToGetInfo, operationCode):
+    connectionForPostgres, cursorForPostgres = connect_to_postgres()
+    query_to_execute ="select description, title, matchedpytocode from kr_create_task kct where vmlist_id = "+str(vmidToGetInfo)+" and matchedpytocode = '"+str(operationCode)+"' and is_deleted = false;"
+    #query_to_execute = "select kstd.description, ktd.taskname, ktd.matchedpytocode from kr_service_task_definition kstd inner join kr_task_definition ktd on kstd.id = ktd.service_task_definition_id where kstd.id in (select kvl.servicetaskdefinition_id from kr_vm_list kvl where kvl.id = "+str(vmidToGetInfo)+" and kvl.is_deleted =false limit 1 ) and ktd.is_deleted = false and kstd.is_deleted = false and matchedpytocode = '"+str(operationCode)+"'"
+    cursorForPostgres.execute(query_to_execute)
+    itsm_data_list = cursorForPostgres.fetchall()
+    return itsm_data_list
 
 
 def get_id_list():
@@ -99,17 +133,17 @@ def main():
 
         #get first disk config
         vm_disk_list = get_first_disik_Config(vmid)
-
         vm_disk_size_gb = int(vm_disk_list[0])
-
         vm_disk_list.pop(0)
-
         other_disk_list = vm_disk_list
 
         template_name = check_vm_os_family(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
         clone_name = vm_config_lists_VmName
         copied_folder_name = clone_name
 
+        #ITSM task kontrolü
+        delete_itsm_tasks(vmid)
+        createitsmtaskLast.createTaskItsm(vmid)
 
         ### Clone VM from template
         clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
@@ -127,6 +161,22 @@ def main():
             print("VM Tools status kontrol ediliyor")
             time.sleep(3)
 
+
+        createIaasVMTaskList = get_itsm_values(vmid, 1)
+        for f in range(len(createIaasVMTaskList)):
+            updateItsmTask.updateTaskItsm(createIaasVMTaskList[f][0], createIaasVMTaskList[f][1], 1202, vmid)
+
+        updateIaasVMTaskList = get_itsm_values(vmid, 2)
+        for f in range(len(updateIaasVMTaskList)):
+            updateItsmTask.updateTaskItsm(updateIaasVMTaskList[f][0], updateIaasVMTaskList[f][1], 1202,
+                                          vmid)
+
+        startIaasVmTaskList = get_itsm_values(vmid, 3)
+        for f in range(len(startIaasVmTaskList)):
+            updateItsmTask.updateTaskItsm(startIaasVmTaskList[f][0], startIaasVmTaskList[f][1], 1202, vmid)
+
+
+
         # check internet connection
         if vm_config_lists_InternetConnection == True:
             network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
@@ -140,6 +190,9 @@ def main():
                                                      password=vCenter_password,
                                                      vm_name=clone_name)
 
+
+                assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
                 if vm_tools_status:
                     if vm_config_lists_OperatingSystemInformation == "Windows":
                         execute_ipAddress_windows.main(vm_name=clone_name,
@@ -147,12 +200,21 @@ def main():
                                                        vCenter_user=vCenter_user,
                                                        vCenter_password=vCenter_password,
                                                        ipAddress=vm_config_lists_IpAdress)
+
+                        for f in range(len(assignIpToIaasVmTaskList)):
+                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                          assignIpToIaasVmTaskList[f][1], 1202, vmid)
+
                     elif vm_config_lists_OperatingSystemInformation == "Linux":
                         execute_ipAddress_to_linux.main(vm_name=clone_name,
                                                         vCenter_host_ip=vCenter_host_ip,
                                                         vCenter_user=vCenter_user,
                                                         vCenter_password=vCenter_password,
                                                         ipAddress=vm_config_lists_IpAdress)
+
+                        for f in range(len(assignIpToIaasVmTaskList)):
+                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                          assignIpToIaasVmTaskList[f][1], 1202, vmid)
 
                 else:
                     time.sleep(5)
@@ -164,6 +226,9 @@ def main():
                                                              username=vCenter_user,
                                                              password=vCenter_password,
                                                              vm_name=clone_name)
+
+                        assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
                         if vm_tools_status:
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 execute_ipAddress_windows.main(vm_name=clone_name,
@@ -172,12 +237,22 @@ def main():
                                                                vCenter_password=vCenter_password,
                                                                ipAddress=vm_config_lists_IpAdress)
 
+                                for f in range(len(assignIpToIaasVmTaskList)):
+                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                                  assignIpToIaasVmTaskList[f][1], 1202, vmid)
+
+
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 execute_ipAddress_to_linux.main(vm_name=clone_name,
                                                                 vCenter_host_ip=vCenter_host_ip,
                                                                 vCenter_user=vCenter_user,
                                                                 vCenter_password=vCenter_password,
                                                                 ipAddress=vm_config_lists_IpAdress)
+
+                                for f in range(len(assignIpToIaasVmTaskList)):
+                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                                  assignIpToIaasVmTaskList[f][1], 1202, vmid)
+
                             break
                         retry_count += 1
 
@@ -190,6 +265,8 @@ def main():
                                          vCenter_user=vCenter_user,
                                          vCenter_password=vCenter_password)
 
+                assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
                 if vm_config_lists_OperatingSystemInformation == "Windows":
                     execute_ipAddress_windows.main(vm_name=clone_name,
                                                    vCenter_host_ip=vCenter_host_ip,
@@ -197,12 +274,21 @@ def main():
                                                    vCenter_password=vCenter_password,
                                                    ipAddress=vm_config_lists_IpAdress)
 
+                    for f in range(len(assignIpToIaasVmTaskList)):
+                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                      assignIpToIaasVmTaskList[f][1], 1202, vmid)
+
+
                 elif vm_config_lists_OperatingSystemInformation == "Linux":
                     execute_ipAddress_to_linux.main(vm_name=clone_name,
                                                     vCenter_host_ip=vCenter_host_ip,
                                                     vCenter_user=vCenter_user,
                                                     vCenter_password=vCenter_password,
                                                     ipAddress=vm_config_lists_IpAdress)
+
+                    for f in range(len(assignIpToIaasVmTaskList)):
+                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
+                                                      assignIpToIaasVmTaskList[f][1], 1202, vmid)
 
         # add disk to VM
         if len(other_disk_list) > 0:
@@ -232,6 +318,9 @@ def main():
 
                 counter += 1
 
+                diskSetSAPaaSTaskList = get_itsm_values(vmid, 5)
+
+
                 if vm_tools_status:
 
                     if pfms_config_type == "SAPaaS":
@@ -245,6 +334,11 @@ def main():
 
                             disk_mount_location = disk_mount_location + str(counter)
 
+                            for f in range(len(diskSetSAPaaSTaskList)):
+                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                                              1202,
+                                                              vmid)
+
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             execute_disk_to_linux.main(vm_name=clone_name,
                                                        esxi_host_ip=vCenter_host_ip,
@@ -253,6 +347,10 @@ def main():
                                                        os_user="root",
                                                        os_password="111111")
 
+                            for f in range(len(diskSetSAPaaSTaskList)):
+                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                                              1202,
+                                                              vmid)
 
                     elif pfms_config_type == "IaaS":
 
@@ -267,6 +365,11 @@ def main():
 
                             current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
 
+                            for f in range(len(diskSetSAPaaSTaskList)):
+                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                                              1202,
+                                                              vmid)
+
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             execute_disk_to_linux.main(vm_name=clone_name,
                                                        esxi_host_ip=vCenter_host_ip,
@@ -274,6 +377,11 @@ def main():
                                                        esxi_password=vCenter_password,
                                                        os_user="root",
                                                        os_password="111111")
+
+                            for f in range(len(diskSetSAPaaSTaskList)):
+                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                                              1202,
+                                                              vmid)
 
                 else:
                     while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
@@ -295,6 +403,12 @@ def main():
                                                                vm_name=clone_name,
                                                                disk_mount_location=disk_mount_location)
                             disk_mount_location = disk_mount_location + str(counter)
+
+                            for f in range(len(diskSetSAPaaSTaskList)):
+                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
+                                                              1202,
+                                                              vmid)
+
                         elif pfms_config_type == "IaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 execute_disk_to_windows.main(target_vm_name=clone_name,
@@ -305,6 +419,12 @@ def main():
                                                              assign_letter=current_letter,
                                                              disk_number=counter)
                                 current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+
+                                for f in range(len(diskSetSAPaaSTaskList)):
+                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
+                                                                  diskSetSAPaaSTaskList[f][1], 1202,
+                                                                  vmid)
+
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 execute_disk_to_linux.main(vm_name=clone_name,
                                                            esxi_host_ip=vCenter_host_ip,
@@ -312,12 +432,18 @@ def main():
                                                            esxi_password=vCenter_password,
                                                            os_user="root",
                                                            os_password="111111")
+
+                                for f in range(len(diskSetSAPaaSTaskList)):
+                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
+                                                                  diskSetSAPaaSTaskList[f][1], 1202,
+                                                                  vmid)
+
                         break
 
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
 
-
         print("Create işlemi tamamlandı")
+
 if __name__ == "__main__":
     main()
