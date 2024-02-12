@@ -34,11 +34,12 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password ,ipAddress):
             pid_del_ip = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_del_ip)
             print(f"Deleting current IP with PID {pid_del_ip}")
 
-        # Yeni IP adresini setle
-        cmd_set_ip = f"sudo ip addr add {new_ip}/24 dev ens192 && sudo ip route add default via 10.14.45.1"
-        spec_set_ip = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd_set_ip}'")
-        pid_set_ip = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_set_ip)
-        print(f"Setting new IP with PID {pid_set_ip}")
+            # Yeni IP adresini setle
+            cmd_set_ip = f"echo \"IPADDR='{new_ip}'\nNAME=''\nBOOTPROTO='static'\nSTARTMODE='auto'\nZONE=''\nDEVICE='eth0'\nONBOOT=yes\nPREFIX=24\" | sudo tee /etc/sysconfig/network/ifcfg-eth0 > /dev/null"
+            spec_set_ip = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash",
+                                                                  arguments=f"-c '{cmd_set_ip}'")
+            pid_set_ip = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_set_ip)
+            print(f"Setting new IP with PID {pid_set_ip}")
 
         # DNS adresini setle
         cmd2 = f'echo "nameserver {new_dns}" | sudo tee /etc/resolv.conf > /dev/null'
