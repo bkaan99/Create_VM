@@ -103,8 +103,6 @@ def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, es
 
     service_instance, content=create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
-    #TODO: VM Adı ve target_disk_size_gb değerini gereklidir. ESXi host ip, user ve password değerleride gereklidir.
-
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
     if vm_to_reconfigure is None:
