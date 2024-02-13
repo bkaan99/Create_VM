@@ -2,12 +2,11 @@ import requests
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
-from datetime import datetime
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+
 #statusId = 1202
-import time
 dataFrameColumns = ["title", "description", "vmlist_id", "status", "createdate", "is_deleted", "version","matchedpytocode","tcode"]
 dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
 connectionBerko = psycopg2.connect(user="postgres",
