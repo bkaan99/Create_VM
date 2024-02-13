@@ -293,7 +293,7 @@ def main():
         if len(other_disk_list) > 0:
             allowed_letters = string.ascii_uppercase[4:]  # "E" harfinden başlayarak "Z" harfine kadar olan harfler
             current_letter = allowed_letters[0]
-            counter = 0
+            disk_number_windows = 0
             disk_mount_location = "hana/shared"
             for disk_size_gb in other_disk_list:
 
@@ -315,7 +315,7 @@ def main():
                                                      password=vCenter_password,
                                                      vm_name=clone_name)
 
-                counter += 1
+                disk_number_windows += 1
 
                 diskSetSAPaaSTaskList = get_itsm_values(vmid, 5)
 
@@ -331,7 +331,7 @@ def main():
                                                                vm_name=clone_name,
                                                                disk_mount_location=disk_mount_location)
 
-                            disk_mount_location = disk_mount_location + str(counter)
+                            disk_mount_location = disk_mount_location + str(disk_number_windows)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
@@ -354,9 +354,9 @@ def main():
                                                         esxi_host_ip=vCenter_host_ip,
                                                         esxi_user=vCenter_user,
                                                         esxi_password=vCenter_password,
-                                                        label="Glass_House_Disk_" + str(counter),
+                                                        label="Glass_House_Disk_" + str(disk_number_windows),
                                                         assign_letter=current_letter,
-                                                        disk_number=counter)
+                                                        disk_number=disk_number_windows)
 
                             current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
 
@@ -394,7 +394,7 @@ def main():
                                                                    vm_name=clone_name,
                                                                    disk_mount_location=disk_mount_location)
 
-                            disk_mount_location = disk_mount_location + str(counter)
+                            disk_mount_location = disk_mount_location + str(disk_number_windows)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
@@ -405,9 +405,9 @@ def main():
                                                              esxi_host_ip=vCenter_host_ip,
                                                              esxi_user=vCenter_user,
                                                              esxi_password=vCenter_password,
-                                                             label="Glass_House_Disk_" + str(counter),
+                                                             label="Glass_House_Disk_" + str(disk_number_windows),
                                                              assign_letter=current_letter,
-                                                             disk_number=counter)
+                                                             disk_number=disk_number_windows)
                                 current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
 
                                 #itsm task list
