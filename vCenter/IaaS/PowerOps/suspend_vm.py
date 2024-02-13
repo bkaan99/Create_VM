@@ -1,16 +1,6 @@
-from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
-from pyVmomi import vim
 import time
-
-def get_vm_by_name(content, vm_name):
-    container = content.viewManager.CreateContainerView(
-        content.rootFolder, [vim.VirtualMachine], True
-    )
-    for child in container.view:
-        if child.name == vm_name:
-            return child
-    return None
+from pyVim.connect import Disconnect
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def suspend(vm):
     if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
