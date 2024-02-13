@@ -2,19 +2,19 @@
 # import sys
 # sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
 
-import createitsmtaskLast
-import updateItsmTask
 import base64
 import string
 import sys
 import time
 from vCenter.IaaS.Connections.db_connection import *
-from vCenter.IaaS.Create import vmtoolsstatus, clone_from_template
+from vCenter.IaaS.Create import clone_from_template
+from vCenter.IaaS.ExternelFiles import vmtoolsstatus
 from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
 from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
 from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows, execute_ipAddress_to_linux
+from vCenter.ITSM_Integration import createitsmtaskLast, updateItsmTask
 
 
 def connect_to_postgres():
