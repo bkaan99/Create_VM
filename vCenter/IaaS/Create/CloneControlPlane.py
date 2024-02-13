@@ -1,3 +1,7 @@
+## Sunucu için eklenmesi gereken sys path.
+# import sys
+# sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
+
 import createitsmtaskLast
 import updateItsmTask
 import base64
@@ -325,6 +329,7 @@ def main():
                     if pfms_config_type == "SAPaaS":
 
                         if vm_config_lists_OperatingSystemInformation == "Windows":
+                            print("SAPaaS Windows disk set işlemi yapılıyor.")
                             execute_disk_to_windows.main(target_vm_name=clone_name,
                                                          esxi_host_ip=vCenter_host_ip,
                                                          esxi_user=vCenter_user,
@@ -334,11 +339,13 @@ def main():
                                                          disk_number=disk_number_windows)
 
                             disk_mount_location = disk_mount_location + str(disk_number_windows)
+                            time.sleep(5)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
+                            print("SAPaaS Linux disk set işlemi yapılıyor.")
                             execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
                                                                vCenter_user=vCenter_user,
                                                                vCenter_password=vCenter_password,
@@ -352,6 +359,7 @@ def main():
                     elif pfms_config_type == "IaaS":
 
                         if vm_config_lists_OperatingSystemInformation == "Windows":
+                            print("IaaS Windows disk set işlemi yapılıyor.")
                             execute_disk_to_windows.main(target_vm_name=clone_name,
                                                         esxi_host_ip=vCenter_host_ip,
                                                         esxi_user=vCenter_user,
@@ -361,11 +369,13 @@ def main():
                                                         disk_number=disk_number_windows)
 
                             current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+                            time.sleep(5)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
+                            print("IaaS Linux disk set işlemi yapılıyor.")
                             execute_disk_to_linux.main(vm_name=clone_name,
                                                        esxi_host_ip=vCenter_host_ip,
                                                        esxi_user=vCenter_user,
@@ -390,6 +400,7 @@ def main():
                     if vm_tools_status:
                         if pfms_config_type == "SAPaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
+                                print("SAPaaS Windows disk set işlemi yapılıyor.")
                                 execute_disk_to_windows.main(target_vm_name=clone_name,
                                                              esxi_host_ip=vCenter_host_ip,
                                                              esxi_user=vCenter_user,
@@ -399,11 +410,13 @@ def main():
                                                              disk_number=disk_number_windows)
 
                                 disk_mount_location = disk_mount_location + str(disk_number_windows)
+                                time.sleep(5)
 
                                 # itsm task list
                                 diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                print("SAPaaS Linux disk set işlemi yapılıyor.")
                                 execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
                                                                    vCenter_user=vCenter_user,
                                                                    vCenter_password=vCenter_password,
@@ -416,6 +429,7 @@ def main():
 
                         elif pfms_config_type == "IaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
+                                print("IaaS Windows disk set işlemi yapılıyor.")
                                 execute_disk_to_windows.main(target_vm_name=clone_name,
                                                              esxi_host_ip=vCenter_host_ip,
                                                              esxi_user=vCenter_user,
@@ -424,11 +438,13 @@ def main():
                                                              assign_letter=current_letter,
                                                              disk_number=disk_number_windows)
                                 current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+                                time.sleep(5)
 
                                 #itsm task list
                                 diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                print("IaaS Linux disk set işlemi yapılıyor.")
                                 execute_disk_to_linux.main(vm_name=clone_name,
                                                            esxi_host_ip=vCenter_host_ip,
                                                            esxi_user=vCenter_user,
