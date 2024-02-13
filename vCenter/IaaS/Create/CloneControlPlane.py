@@ -239,6 +239,7 @@ def main():
                                                                vCenter_password=vCenter_password,
                                                                ipAddress=vm_config_lists_IpAdress)
 
+                                #itsm task list
                                 assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
 
@@ -249,6 +250,7 @@ def main():
                                                                 vCenter_password=vCenter_password,
                                                                 ipAddress=vm_config_lists_IpAdress)
 
+                                #itsm task list
                                 assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
                             break
@@ -263,6 +265,7 @@ def main():
                                          vCenter_user=vCenter_user,
                                          vCenter_password=vCenter_password)
 
+                # itsm task list
                 assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
 
                 if vm_config_lists_OperatingSystemInformation == "Windows":
@@ -272,6 +275,7 @@ def main():
                                                    vCenter_password=vCenter_password,
                                                    ipAddress=vm_config_lists_IpAdress)
 
+                    # itsm task list
                     assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
 
@@ -282,6 +286,7 @@ def main():
                                                     vCenter_password=vCenter_password,
                                                     ipAddress=vm_config_lists_IpAdress)
 
+                    # itsm task list
                     assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
         # add disk to VM
@@ -327,6 +332,8 @@ def main():
                                                                disk_mount_location=disk_mount_location)
 
                             disk_mount_location = disk_mount_location + str(counter)
+
+                            # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
@@ -337,6 +344,7 @@ def main():
                                                        os_user="root",
                                                        os_password="111111")
 
+                            # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                     elif pfms_config_type == "IaaS":
@@ -351,6 +359,8 @@ def main():
                                                         disk_number=counter)
 
                             current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+
+                            # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
@@ -361,6 +371,7 @@ def main():
                                                        os_user="root",
                                                        os_password="111111")
 
+                            # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                 else:
@@ -378,11 +389,14 @@ def main():
                         if pfms_config_type == "SAPaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
-                                                               vCenter_user=vCenter_user,
-                                                               vCenter_password=vCenter_password,
-                                                               vm_name=clone_name,
-                                                               disk_mount_location=disk_mount_location)
+                                                                   vCenter_user=vCenter_user,
+                                                                   vCenter_password=vCenter_password,
+                                                                   vm_name=clone_name,
+                                                                   disk_mount_location=disk_mount_location)
+
                             disk_mount_location = disk_mount_location + str(counter)
+
+                            # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif pfms_config_type == "IaaS":
@@ -395,6 +409,8 @@ def main():
                                                              assign_letter=current_letter,
                                                              disk_number=counter)
                                 current_letter = allowed_letters[allowed_letters.index(current_letter) + 1]
+
+                                #itsm task list
                                 diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
@@ -405,6 +421,7 @@ def main():
                                                            os_user="root",
                                                            os_password="111111")
 
+                                #itsm task list
                                 diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
                         break
 
