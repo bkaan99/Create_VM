@@ -3,16 +3,28 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def connect_Postgres():
-    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
+    try:
+        engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
+        connectionForPostgres = psycopg2.connect(
+            host="10.14.45.69",
+            port="7100",
+            database="karcin_pfms",
+            user="postgres",
+            password="Cekino.123!")
+        cursorForPostgres = connectionForPostgres.cursor()
 
-    return connectionForPostgres
+        return connectionForPostgres
+
+    except psycopg2.OperationalError as e:
+        print(f"Operasyon Hatası: {e}")
+    except psycopg2.InterfaceError as e:
+        print(f"Arayüz Hatası: {e}")
+    except psycopg2.DatabaseError as e:
+        print(f"Veritabanı Hatası: {e}")
+    except Exception as e:
+        print(f"Beklenmeyen bir hata oluştu: {e}")
+
+    return None
 
 def get_vmList_Config(vmid):
 
