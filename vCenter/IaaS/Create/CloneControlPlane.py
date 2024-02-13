@@ -343,7 +343,8 @@ def main():
                                                                vCenter_user=vCenter_user,
                                                                vCenter_password=vCenter_password,
                                                                vm_name=clone_name,
-                                                               disk_mount_location=disk_mount_location)
+                                                               disk_mount_location=disk_mount_location,
+                                                               reboot_guest=True)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
@@ -407,7 +408,8 @@ def main():
                                                                    vCenter_user=vCenter_user,
                                                                    vCenter_password=vCenter_password,
                                                                    vm_name=clone_name,
-                                                                   disk_mount_location=disk_mount_location)
+                                                                   disk_mount_location=disk_mount_location,
+                                                                   reboot_guest=True)
 
                                 # itsm task list
                                 diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
