@@ -325,11 +325,13 @@ def main():
                     if pfms_config_type == "SAPaaS":
 
                         if vm_config_lists_OperatingSystemInformation == "Windows":
-                            execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
-                                                               vCenter_user=vCenter_user,
-                                                               vCenter_password=vCenter_password,
-                                                               vm_name=clone_name,
-                                                               disk_mount_location=disk_mount_location)
+                            execute_disk_to_windows.main(target_vm_name=clone_name,
+                                                         esxi_host_ip=vCenter_host_ip,
+                                                         esxi_user=vCenter_user,
+                                                         esxi_password=vCenter_password,
+                                                         label="Glass_House_Disk_" + str(disk_number_windows),
+                                                         assign_letter=current_letter,
+                                                         disk_number=disk_number_windows)
 
                             disk_mount_location = disk_mount_location + str(disk_number_windows)
 
@@ -387,11 +389,13 @@ def main():
                     if vm_tools_status:
                         if pfms_config_type == "SAPaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
-                                execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
-                                                                   vCenter_user=vCenter_user,
-                                                                   vCenter_password=vCenter_password,
-                                                                   vm_name=clone_name,
-                                                                   disk_mount_location=disk_mount_location)
+                                execute_disk_to_windows.main(target_vm_name=clone_name,
+                                                             esxi_host_ip=vCenter_host_ip,
+                                                             esxi_user=vCenter_user,
+                                                             esxi_password=vCenter_password,
+                                                             label="Glass_House_Disk_" + str(disk_number_windows),
+                                                             assign_letter=current_letter,
+                                                             disk_number=disk_number_windows)
 
                                 disk_mount_location = disk_mount_location + str(disk_number_windows)
 
