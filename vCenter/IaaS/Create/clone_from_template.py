@@ -81,7 +81,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
 
     if not service_instance:
         print("Failed to connect to vSphere server.")
-        return
+        sys.exit(1)
 
     try:
         # Call clone_template function with desired template name and clone name
@@ -98,6 +98,8 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
             if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
                 print(f"{clone_name} powered off olduğu için açılıyor...")
                 task = vm.PowerOnVM_Task()
+                #TODO: Buraya while ile power on işlemi beklenebilir.Şuan için gerekli değil.
+
     except Exception as e:
         print("Error:", e)
 
