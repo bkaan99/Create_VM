@@ -117,7 +117,7 @@ def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, es
         task = vm_to_reconfigure.ShutdownGuest()
         while vm_to_reconfigure.runtime.powerState != vim.VirtualMachinePowerState.poweredOff:
             print("VM Power Off olması bekleniyor...")
-            time.sleep(1)  # Her saniye güç durumunu kontrol edelim
+            time.sleep(3)  # Her saniye güç durumunu kontrol edelim
 
     # Modify only the disk size
     reconfigure_vm_disk_size(vm_to_reconfigure, target_disk_size_gb)
