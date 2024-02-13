@@ -1,3 +1,5 @@
+import createitsmtaskLast
+import updateItsmTask
 import base64
 import string
 import sys
@@ -9,8 +11,6 @@ from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
 from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
 from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows, execute_ipAddress_to_linux
-import createitsmtaskLast
-import updateItsmTask
 
 
 def connect_to_postgres():
