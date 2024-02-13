@@ -33,12 +33,12 @@ def get_letter_for_disk_number(disk_number):
 
 def main():
     # ESXi bilgileri
-    esxi_host = "10.14.45.11"
-    esxi_user = "root"
+    esxi_host = "10.14.45.10"
+    esxi_user = "administrator@vsphere.local"
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "esxi_centos_bkaan"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "bkaan_sapaas"  # Linux sanal makinenizin adını buraya ekleyin
 
     # ESXi'ye bağlan
     ssl_context = ssl.create_default_context()
@@ -59,7 +59,7 @@ def main():
     try:
         auth = vim.vm.guest.NamePasswordAuthentication(
             username="root",
-            password="1234"
+            password="111111"
         )
 
         highest_disk_number = find_highest_disk_number(target_vm)
