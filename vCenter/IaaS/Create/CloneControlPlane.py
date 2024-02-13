@@ -337,12 +337,11 @@ def main():
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
-                            execute_disk_to_linux.main(vm_name=clone_name,
-                                                       esxi_host_ip=vCenter_host_ip,
-                                                       esxi_user=vCenter_user,
-                                                       esxi_password=vCenter_password,
-                                                       os_user="root",
-                                                       os_password="111111")
+                            execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
+                                                               vCenter_user=vCenter_user,
+                                                               vCenter_password=vCenter_password,
+                                                               vm_name=clone_name,
+                                                               disk_mount_location=disk_mount_location)
 
                             # itsm task list
                             diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
@@ -394,10 +393,20 @@ def main():
                                                                    vm_name=clone_name,
                                                                    disk_mount_location=disk_mount_location)
 
-                            disk_mount_location = disk_mount_location + str(disk_number_windows)
+                                disk_mount_location = disk_mount_location + str(disk_number_windows)
 
-                            # itsm task list
-                            diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
+                                # itsm task list
+                                diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
+
+                            elif vm_config_lists_OperatingSystemInformation == "Linux":
+                                execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
+                                                                   vCenter_user=vCenter_user,
+                                                                   vCenter_password=vCenter_password,
+                                                                   vm_name=clone_name,
+                                                                   disk_mount_location=disk_mount_location)
+
+                                # itsm task list
+                                diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList)
 
                         elif pfms_config_type == "IaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
