@@ -18,7 +18,6 @@ def create_vsphere_connection(host, user, password, timeout=10):
                                                 pwd=password,
                                                 sslContext=ssl_context)
 
-
     except ssl.SSLError as e:
         print(f"SSL Hatası: {e}")
         sys.exit(1)
@@ -53,7 +52,7 @@ def create_vsphere_connection(host, user, password, timeout=10):
 
     content = service_instance.RetrieveContent()
 
-    return service_instance , content
+    return service_instance, content
 
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
