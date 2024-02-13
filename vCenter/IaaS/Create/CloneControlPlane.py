@@ -167,7 +167,7 @@ def main():
 
         while vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
                                  password=vCenter_password,
-                                 vm_name=clone_name) == False:
+                                 vm_name=clone_name) is False:
             print("VM Tools status kontrol ediliyor")
             time.sleep(3)
 
@@ -188,7 +188,7 @@ def main():
 
 
         # check internet connection
-        if vm_config_lists_InternetConnection == True:
+        if vm_config_lists_InternetConnection is True:
             network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
                                                                                                  vCenter_user=vCenter_user,
                                                                                                  vCenter_password=vCenter_password,
@@ -263,7 +263,7 @@ def main():
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
 
-            elif network_adapter_existence_value == False:
+            elif network_adapter_existence_value is False:
                 add_network_adapter.main(vm_name_to_reconfigure=clone_name,
                                          vCenter_host_ip=vCenter_host_ip,
                                          vCenter_user=vCenter_user,
@@ -310,7 +310,7 @@ def main():
                 while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                          username=vCenter_user,
                                          password=vCenter_password,
-                                         vm_name=clone_name) == False:
+                                         vm_name=clone_name) is False:
                     print("VM Tools status kontrol ediliyor")
                     time.sleep(3)
 
@@ -390,7 +390,7 @@ def main():
                     while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                              username=vCenter_user,
                                              password=vCenter_password,
-                                             vm_name=clone_name) == False:
+                                             vm_name=clone_name) is False:
                         time.sleep(3)
 
                     vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
