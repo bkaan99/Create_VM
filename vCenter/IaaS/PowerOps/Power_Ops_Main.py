@@ -1,12 +1,12 @@
 import base64
-import sys
 import re
-from vCenter.IaaS.PowerOps import powerOn
+import sys
+from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.PowerOps import powerOff
+from vCenter.IaaS.PowerOps import powerOn
 from vCenter.IaaS.PowerOps import reboot_vm
 from vCenter.IaaS.PowerOps import shut_down
 from vCenter.IaaS.PowerOps import suspend_vm
-from vCenter.IaaS.Connections.db_connection import *
 
 
 def get_id_list():
@@ -25,19 +25,17 @@ def get_id_list():
     else:
         print("Gelen değer istenen formatta değil.")
 
-
-    #TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
+    # TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
     if len(li) > 0:
-        #flowUUID = li[0];
-        #li.pop(0)
+        # flowUUID = li[0];
+        # li.pop(0)
         print(f"Removed value: {li}")
     else:
         print("List is empty.")
 
-    return li , powerOpsCode_value#, flowUUID
+    return li, powerOpsCode_value  # , flowUUID
 
 def main():
-
     # vSphere server credentials
     vCenter_host_ip = "10.14.45.10"
     vCenter_user = "administrator@vsphere.local"
@@ -46,7 +44,7 @@ def main():
     # TODO: flowUUID tekrar eklenecek.
     id_list = get_id_list()
     vmIdList = id_list[0]
-    PowerOpsCode  = id_list[1]
+    PowerOpsCode = id_list[1]
 
     for vmid in vmIdList:
         print(f"VM ID: {vmid}")
