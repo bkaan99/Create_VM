@@ -1,6 +1,5 @@
 import ssl
 import time
-
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 from ESXi.SAPaaS import add_disk_to_vm
@@ -41,7 +40,7 @@ def main():
     esxi_password = "Aa112233!"
 
     # VM bilgileri
-    vm_name = "Clone-SUSE-Temp-15-3"  # Linux sanal makinenizin adını buraya ekleyin
+    vm_name = "bkaan_sapaas"  # Linux sanal makinenizin adını buraya ekleyin
 
     # TODO : Disk mount edilecek konum (örneğin, /hana/shared, /hana/data, /hana/log, /hana/backup gibi) veri tabanından alınacak
     disk_mount_location = "hana/shared"
@@ -65,7 +64,7 @@ def main():
         Disconnect(service_instance)
         return
 
-    add_disk_to_vm.main(vm_name, target_disk_size_gb)
+    #add_disk_to_vm.main(vm_name, target_disk_size_gb)
 
     time.sleep(2)
 
@@ -131,6 +130,17 @@ def main():
         spec_mount = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd_mount}'")
         pid_mount = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_mount)
         print(f"Mounting new disk with PID {pid_mount}")
+
+        time.sleep(5)
+
+
+        #TODO: reboot_guest kullanacağı zaman main metodu içerisine parametrelere eklenenerek kullanılması doğrudur.
+        reboot_guest = True
+
+        if reboot_guest:
+            print("Guest OS yeniden başlatılıyor...")
+            task = target_vm.RebootGuest()
+
     except Exception as e:
         print(f"Error: {e}")
     finally:

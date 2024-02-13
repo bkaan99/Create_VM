@@ -35,7 +35,7 @@ def get_letter_for_disk_number(disk_number):
         quotient, remainder = divmod(disk_number - 1, len(alphabet))
         return alphabet[quotient - 1] + alphabet[remainder]
 
-def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name, disk_mount_location):
+def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name, disk_mount_location, reboot_guest):
 
     service_instance, content = create_vsphere_connection(host=vCenter_host_ip,
                                                           user=vCenter_user,
@@ -115,6 +115,13 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name, disk_mount_lo
         spec_mount = vim.vm.guest.ProcessManager.ProgramSpec(programPath="/bin/bash", arguments=f"-c '{cmd_mount}'")
         pid_mount = content.guestOperationsManager.processManager.StartProgramInGuest(target_vm, auth, spec_mount)
         print(f"Mounting new disk with PID {pid_mount}")
+
+        time.sleep(5)
+
+        if reboot_guest:
+            print("Guest OS yeniden başlatılıyor...")
+            task = target_vm.RebootGuest()
+
     except Exception as e:
         print(f"Error: {e}")
     finally:
