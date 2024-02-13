@@ -33,16 +33,16 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(vm_name_to_reboot, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    vm_to_reboot = get_vm_by_name(content, vm_name_to_reboot)
+    vm_to_reboot = get_vm_by_name(content, vm_name)
 
     if vm_to_reboot is not None:
         reboot_vm(vm_to_reboot)
         
     else:
-        print(f"VM with name {vm_name_to_reboot} not found")
+        print(f"VM with name {vm_name} not found")
 
     Disconnect(service_instance)
 

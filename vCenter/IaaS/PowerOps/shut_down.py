@@ -29,10 +29,10 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(vm_name_to_shut_down, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    vm_to_shut_down = get_vm_by_name(content, vm_name_to_shut_down)
+    vm_to_shut_down = get_vm_by_name(content, vm_name)
 
     if vm_to_shut_down is not None:
         # Shut down the VM
@@ -40,7 +40,7 @@ def main(vm_name_to_shut_down, esxi_host_ip, esxi_user, esxi_password):
 
         print("VM is shutting down...")
     else:
-        print(f"VM with name {vm_name_to_shut_down} not found")
+        print(f"VM with name {vm_name} not found")
 
     # Disconnect from vCenter
     Disconnect(service_instance)

@@ -33,16 +33,16 @@ def WaitForTask(task):
         time.sleep(1)
     return task.info.state
 
-def main(vm_name_to_suspend, esxi_host_ip, esxi_user, esxi_password):
-    si, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
-    vm_to_suspend = get_vm_by_name(content, vm_name_to_suspend)
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+    si, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
+    vm_to_suspend = get_vm_by_name(content, vm_name)
 
     if vm_to_suspend is not None:
         #reboot the VM
         suspend(vm_to_suspend)
 
     else:
-        print(f"VM with name {vm_name_to_suspend} not found")
+        print(f"VM with name {vm_name} not found")
 
     # Disconnect from vCenter
     Disconnect(si)

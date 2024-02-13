@@ -1,11 +1,11 @@
 import base64
 import sys
 import re
-from ESXi.IaaS.PowerOps import powerOn
-from ESXi.IaaS.PowerOps import powerOff
-from ESXi.IaaS.PowerOps import reboot_vm
-from ESXi.IaaS.PowerOps import shut_down
-from ESXi.IaaS.PowerOps import suspend_vm
+from vCenter.IaaS.PowerOps import powerOn
+from vCenter.IaaS.PowerOps import powerOff
+from vCenter.IaaS.PowerOps import reboot_vm
+from vCenter.IaaS.PowerOps import shut_down
+from vCenter.IaaS.PowerOps import suspend_vm
 from vCenter.IaaS.Connections.db_connection import *
 
 
@@ -60,23 +60,38 @@ def main():
 
         if PowerOpsCode == 1:
             print("VM powerOn işlemi başlatıldı")
-            powerOn.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)
+            powerOn.main(vm_name=vm_name,
+                         vCenter_host_ip=vCenter_host_ip,
+                         vCenter_user=vCenter_user,
+                         vCenter_password=vCenter_password)
 
         if PowerOpsCode == 2:
             print("VM powerOff işlemi başlatıldı")
-            powerOff.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)
+            powerOff.main(vm_name=vm_name,
+                          vCenter_host_ip=vCenter_host_ip,
+                          vCenter_user=vCenter_user,
+                          vCenter_password=vCenter_password)
 
         if PowerOpsCode == 3:
             print("VM reboot işlemi başlatıldı")
-            reboot_vm.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)
+            reboot_vm.main(vm_name=vm_name,
+                           vCenter_host_ip=vCenter_host_ip,
+                           vCenter_user=vCenter_user,
+                           vCenter_password=vCenter_password)
 
         if PowerOpsCode == 4:
             print("VM shut_down işlemi başlatıldı")
-            shut_down.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)
+            shut_down.main(vm_name=vm_name,
+                           vCenter_host_ip=vCenter_host_ip,
+                           vCenter_user=vCenter_user,
+                           vCenter_password=vCenter_password)
 
         if PowerOpsCode == 5:
             print("VM suspend işlemi başlatıldı")
-            suspend_vm.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)
+            suspend_vm.main(vm_name=vm_name,
+                            vCenter_host_ip=vCenter_host_ip,
+                            vCenter_user=vCenter_user,
+                            vCenter_password=vCenter_password)
 
         else:
             print("Yanlış seçim yaptınız.")

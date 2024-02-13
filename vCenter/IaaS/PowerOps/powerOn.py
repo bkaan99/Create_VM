@@ -26,14 +26,14 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(vm_name_to_power_on, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
-    vm_to_power_on = get_vm_by_name(content, vm_name_to_power_on)
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
+    vm_to_power_on = get_vm_by_name(content, vm_name)
 
     if vm_to_power_on is not None:
         power_on_vm(vm_to_power_on)
     else:
-        print(f"VM with name {vm_name_to_power_on} not found")
+        print(f"VM with name {vm_name} not found")
 
     # Disconnect from vCenter
     Disconnect(service_instance)
