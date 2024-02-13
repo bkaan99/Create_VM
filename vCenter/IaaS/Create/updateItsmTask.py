@@ -1,5 +1,4 @@
 import requests
-import requests
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
