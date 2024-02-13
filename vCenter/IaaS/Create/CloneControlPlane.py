@@ -30,6 +30,12 @@ def diskSetSAPaaSTaskList_For(vmid, diskSetSAPaaSTaskList):
                                       1202,
                                       vmid)
 
+def assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList):
+    for f in range(len(assignIpToIaasVmTaskList)):
+        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0], assignIpToIaasVmTaskList[f][1],
+                                      1202,
+                                      vmid)
+
 def delete_itsm_tasks(vmidToDelete):
     connectionForPostgres, cursorForPostgres = connect_to_postgres()
     query_to_execute_delete_tasks = "delete from kr_create_task where vmlist_id="+str(vmidToDelete)
@@ -201,9 +207,7 @@ def main():
                                                        vCenter_password=vCenter_password,
                                                        ipAddress=vm_config_lists_IpAdress)
 
-                        for f in range(len(assignIpToIaasVmTaskList)):
-                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                          assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                        assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
                     elif vm_config_lists_OperatingSystemInformation == "Linux":
                         execute_ipAddress_to_linux.main(vm_name=clone_name,
@@ -212,9 +216,7 @@ def main():
                                                         vCenter_password=vCenter_password,
                                                         ipAddress=vm_config_lists_IpAdress)
 
-                        for f in range(len(assignIpToIaasVmTaskList)):
-                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                          assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                        assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
                 else:
                     time.sleep(5)
@@ -237,9 +239,7 @@ def main():
                                                                vCenter_password=vCenter_password,
                                                                ipAddress=vm_config_lists_IpAdress)
 
-                                for f in range(len(assignIpToIaasVmTaskList)):
-                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                                  assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                                assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
@@ -249,9 +249,7 @@ def main():
                                                                 vCenter_password=vCenter_password,
                                                                 ipAddress=vm_config_lists_IpAdress)
 
-                                for f in range(len(assignIpToIaasVmTaskList)):
-                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                                  assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                                assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
                             break
                         retry_count += 1
@@ -274,9 +272,7 @@ def main():
                                                    vCenter_password=vCenter_password,
                                                    ipAddress=vm_config_lists_IpAdress)
 
-                    for f in range(len(assignIpToIaasVmTaskList)):
-                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                      assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                    assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
 
                 elif vm_config_lists_OperatingSystemInformation == "Linux":
@@ -286,9 +282,7 @@ def main():
                                                     vCenter_password=vCenter_password,
                                                     ipAddress=vm_config_lists_IpAdress)
 
-                    for f in range(len(assignIpToIaasVmTaskList)):
-                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                      assignIpToIaasVmTaskList[f][1], 1202, vmid)
+                    assignIpToIaasVmTaskList_For(vmid, assignIpToIaasVmTaskList)
 
         # add disk to VM
         if len(other_disk_list) > 0:
