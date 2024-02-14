@@ -29,7 +29,7 @@ def get_available_unit_number(vm, max_unit_number=15):
     return min(available_unit_numbers)
 
 
-def reconfigure_vm_disk_size(vm, disk_size_gb):
+def reconfigure_vm_disk_size(vm, disk_size_gb, disk_mode):
     try:
         # Değişiklikleri belirtmek için bir VimVMConfigSpec nesnesi oluşturun
         spec = vim.vm.ConfigSpec()
@@ -46,6 +46,13 @@ def reconfigure_vm_disk_size(vm, disk_size_gb):
         new_disk_spec.device.capacityInKB = disk_size_gb * 1024 * 1024
         # Yeni disk için disk modunu belirtin
         new_disk_spec.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+
+        if disk_mode == 0:
+            new_disk_spec.device.backing.diskMode = 'persistent'
+        elif disk_mode == 1:
+            new_disk_spec.device.backing.diskMode = 'independent_persistent'
+        elif disk_mode == 2:
+            new_disk_spec.device.backing.diskMode = 'independent_nonpersistent'
         new_disk_spec.device.backing.diskMode = 'persistent'
         # Yeni disk için disk türünü belirtin
         new_disk_spec.device.backing.thinProvisioned = True
@@ -99,7 +106,7 @@ def WaitForTask(task):
             print(f"Hata: {task.info.error}")
             task_done = True
 
-def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name_to_reconfigure, target_disk_size_gb, disk_mode, esxi_host_ip, esxi_user, esxi_password):
 
     service_instance, content=create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
@@ -118,7 +125,7 @@ def main(vm_name_to_reconfigure, target_disk_size_gb,esxi_host_ip, esxi_user, es
             time.sleep(3)  # Her saniye güç durumunu kontrol edelim
 
     # Modify only the disk size
-    reconfigure_vm_disk_size(vm_to_reconfigure, target_disk_size_gb)
+    reconfigure_vm_disk_size(vm_to_reconfigure, disk_size_gb=target_disk_size_gb, disk_mode=disk_mode)
 
     print("VM açılıyor...")
     if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
