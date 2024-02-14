@@ -1,10 +1,8 @@
 import base64
 import sys
-
 from ESXi.IaaS.Delete import destroyVm
-from ESXi.IaaS.Delete import unRegister_Vm
 from vCenter.IaaS.Connections.db_connection import *
-from vCenter.IaaS.Create.CloneControlPlane import get_id_list
+
 
 def get_id_list():
     global flowUUID
