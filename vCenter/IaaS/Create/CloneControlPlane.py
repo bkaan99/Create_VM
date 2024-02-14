@@ -6,6 +6,7 @@ import base64
 import string
 import sys
 import time
+from itertools import product
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.Create import clone_from_template
 from vCenter.IaaS.ExternelFiles import vmtoolsstatus
@@ -143,9 +144,16 @@ def main():
 
         #get first disk config
         vm_disk_list = get_first_disik_Config(vmid)
-        vm_disk_size_gb = int(vm_disk_list[0])
-        vm_disk_list.pop(0)
-        other_disk_list = vm_disk_list
+        vm_all_disks =vm_disk_list[0]
+        vm_first_disk_size_gb = int(vm_disk_list[0][0])
+        vm_all_disks.pop(0)
+
+        vm_disk_mods = vm_disk_list[1]
+        vm_first_disk_mod = vm_disk_mods[0]
+        vm_disk_mods.pop(0)
+
+        other_disk_list = vm_all_disks
+        other_disk_mods = vm_disk_mods
 
         template_name = check_vm_os_family(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
         clone_name = vm_config_lists_VmName
@@ -155,19 +163,20 @@ def main():
         delete_itsm_tasks(vmid)
         createitsmtaskLast.createTaskItsm(vmid)
 
-        ### Clone VM from template
+        ## Clone VM from template
         clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
                                  vCenter_user=vCenter_user,
                                  vCenter_password=vCenter_password,
                                  template_name=template_name,
                                  clone_name=clone_name,
-                                 disk_size_gb=vm_disk_size_gb,
+                                 disk_size_gb=vm_first_disk_size_gb,
+                                 disk_mode=vm_first_disk_mod,
                                  memory_mb=vm_config_lists_RamSize,
                                  cpu_count=vm_config_lists_Cpu)
 
         while vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
                                  password=vCenter_password,
-                                 vm_name=clone_name) is False:
+                                 vm_name=clone_name) == False:
             print("VM Tools status kontrol ediliyor")
             time.sleep(3)
 
@@ -188,7 +197,7 @@ def main():
 
 
         # check internet connection
-        if vm_config_lists_InternetConnection is True:
+        if vm_config_lists_InternetConnection == True:
             network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
                                                                                                  vCenter_user=vCenter_user,
                                                                                                  vCenter_password=vCenter_password,
@@ -263,7 +272,7 @@ def main():
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
 
-            elif network_adapter_existence_value is False:
+            elif network_adapter_existence_value == False:
                 add_network_adapter.main(vm_name_to_reconfigure=clone_name,
                                          vCenter_host_ip=vCenter_host_ip,
                                          vCenter_user=vCenter_user,
@@ -299,10 +308,11 @@ def main():
             current_letter = allowed_letters[0]
             disk_number_windows = 0
             disk_mount_location = "hana/shared"
-            for disk_size_gb in other_disk_list:
+            for disk_size_gb, disk_mods in zip(other_disk_list, other_disk_mods):
 
                 add_disk_to_vm.main(vm_name_to_reconfigure=clone_name,
                                     target_disk_size_gb=disk_size_gb,
+                                    disk_mode=vm_disk_mods,
                                     esxi_host_ip=vCenter_host_ip,
                                     esxi_user=vCenter_user,
                                     esxi_password=vCenter_password)
@@ -310,7 +320,7 @@ def main():
                 while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                          username=vCenter_user,
                                          password=vCenter_password,
-                                         vm_name=clone_name) is False:
+                                         vm_name=clone_name) == False:
                     print("VM Tools status kontrol ediliyor")
                     time.sleep(3)
 
@@ -390,7 +400,7 @@ def main():
                     while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                              username=vCenter_user,
                                              password=vCenter_password,
-                                             vm_name=clone_name) is False:
+                                             vm_name=clone_name) == False:
                         time.sleep(3)
 
                     vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
