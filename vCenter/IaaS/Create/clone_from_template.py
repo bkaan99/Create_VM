@@ -3,12 +3,12 @@ from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
 import time
 
-def clone_template(si, template_name, clone_name, disk_size_gb, memory_mb, cpu_count):
+def clone_template(si, template_name, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
     content = si.RetrieveContent()
     vm_folder = content.rootFolder.childEntity[0].vmFolder
     template = get_template_by_name(content, template_name)
 
-    clone_spec = create_clone_spec(content, template, vm_folder, clone_name, disk_size_gb, memory_mb, cpu_count)
+    clone_spec = create_clone_spec(content, template, vm_folder, clone_name, disk_size_gb, disk_mode ,memory_mb, cpu_count)
     clone_task = template.CloneVM_Task(folder=vm_folder, name=clone_name, spec=clone_spec)
 
     print(f"Cloning {template_name}. Please wait...")
@@ -27,7 +27,7 @@ def get_template_by_name(content, template_name):
             return vm
     return None
 
-def create_clone_spec(content, template, folder, clone_name, disk_size_gb, memory_mb, cpu_count):
+def create_clone_spec(content, template, folder, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
     clone_spec = vim.vm.CloneSpec()
     relocate_spec = vim.vm.RelocateSpec()
     relocate_spec.folder = folder
@@ -54,6 +54,15 @@ def create_clone_spec(content, template, folder, clone_name, disk_size_gb, memor
             disk_spec.device = device
             #disk_size_gb değeri var olan boyuttan büyük olmalı (GB)
             disk_spec.device.capacityInKB = disk_size_gb * 1024 * 1024
+
+            # Disk modunu ayarla
+            if disk_mode == 0:
+                disk_spec.device.backing.diskMode = 'persistent'
+            elif disk_mode == 1:
+                disk_spec.device.backing.diskMode = 'independent_persistent'
+            elif disk_mode == 2:
+                disk_spec.device.backing.diskMode = 'independent_nonpersistent'
+
             device_changes.append(disk_spec)
     clone_spec.config.deviceChange = device_changes
 
@@ -75,7 +84,7 @@ def get_cluster(content):
         break
     return cluster
 
-def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_name, disk_size_gb, memory_mb, cpu_count):
+def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_name, disk_size_gb, disk_mode, memory_mb, cpu_count):
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
@@ -89,6 +98,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
                        template_name= template_name,
                        clone_name= clone_name,
                        disk_size_gb= disk_size_gb,
+                       disk_mode= disk_mode,
                        memory_mb= memory_mb,
                        cpu_count= cpu_count)
         time.sleep(2)
