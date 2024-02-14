@@ -62,7 +62,7 @@ def get_first_disik_Config(vmid):
     #vmFirstDiskConfig_CreateDate = list(VmFirstDiskConfigurationTable.createdate)
     # vmFirstDiskConfig_isDeleted = VmFirstDiskConfigurationTable.get("isdeleted")[0]
     # vmFirstDiskConfig_DiskByte = VmFirstDiskConfigurationTable.get("diskbyte")[0]
-    # vmFirstDiskConfig_DiskMod = VmFirstDiskConfigurationTable.get("diskmod")[0] if "diskmod" in VmFirstDiskConfigurationTable else None
+    vmFirstDiskConfig_DiskMode = list(VmFirstDiskConfigurationTable.diskmode)
     #vmFirstDiskConfig_DiskProvisioning = VmFirstDiskConfigurationTable.get("diskprovisioning")[0]
     vmFirstDiskConfig_DiskSize = list(VmFirstDiskConfigurationTable.disksize)
     #vmFirstDiskConfig_LimitOps = VmFirstDiskConfigurationTable.get("limitops")[0] if "limitops" in VmFirstDiskConfigurationTable else None
@@ -73,4 +73,4 @@ def get_first_disik_Config(vmid):
     # vmFirstDiskConfig_Version = VmFirstDiskConfigurationTable.get("version")[0]
     #vmFirstDiskConfig_VmListId = VmFirstDiskConfigurationTable.get("vmlist_id")[0]
 
-    return vmFirstDiskConfig_DiskSize
+    return vmFirstDiskConfig_DiskSize, vmFirstDiskConfig_DiskMode
