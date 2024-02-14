@@ -6,7 +6,6 @@ import base64
 import string
 import sys
 import time
-from itertools import product
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.Create import clone_from_template
 from vCenter.IaaS.ExternelFiles import vmtoolsstatus
