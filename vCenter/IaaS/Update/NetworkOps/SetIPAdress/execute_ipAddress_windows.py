@@ -52,6 +52,7 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
             )
             pid = pm.StartProgramInGuest(target_vm, auth, ps)
             print(f"Command started with PID {pid}")
+            print(f"Komutlar sırayla çalıştırıldı.")
             wait_for_task(pm.ListProcessesInGuest(target_vm, auth, [pid])[0])
     except Exception as e:
         print(f"Error: {e}")

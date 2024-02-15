@@ -11,12 +11,12 @@ def clone_template(si, template_name, clone_name, disk_size_gb, disk_mode,memory
     clone_spec = create_clone_spec(content, template, vm_folder, clone_name, disk_size_gb, disk_mode ,memory_mb, cpu_count)
     clone_task = template.CloneVM_Task(folder=vm_folder, name=clone_name, spec=clone_spec)
 
-    print(f"Cloning {template_name}. Please wait...")
+    print(f"{template_name} Template VM'i kopyalanıyor. Lütfen bekleyin...")
     while clone_task.info.state not in [vim.TaskInfo.State.success, vim.TaskInfo.State.error]:
         continue
 
     if clone_task.info.state == vim.TaskInfo.State.success:
-        print("Template cloned successfully as", clone_name)
+        print("Template Clone işlemi başarılı:", clone_name)
     else:
         print("Error cloning template:", clone_task.info.error.msg)
 

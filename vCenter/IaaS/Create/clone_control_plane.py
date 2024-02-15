@@ -64,12 +64,12 @@ def check_vm_os_family(os_family, os_version):
     if "Windows" in os_family:
         if "Windows Server 2016" in os_version:
             template_name = "bkaan_windows_template"
-            print("Windows işletim sistemi için VM oluşturuluyor")
+            print("Windows işletim sistemi için VM Template'i seçildi.")
             return template_name
 
         if "Windows 2018" in os_version:
             template_name = "bkaan_windows_template"
-            print("Windows işletim sistemi için VM oluşturuluyor")
+            print("Windows işletim sistemi için VM Template'i seçildi.")
             return template_name
 
         else:
@@ -79,12 +79,12 @@ def check_vm_os_family(os_family, os_version):
     elif "Linux" in os_family:
         if "SUSE" in os_version:
             template_name = "SUSE-Temp-15-3"
-            print("Linux işletim sistemi için VM oluşturuluyor")
+            print("Linux işletim sistemi için VM Template'i seçildi.")
             return template_name
 
         if "Ubuntu" in os_version:
             template_name = "Ubuntu_Deneme"
-            print("Linux işletim sistemi için VM oluşturuluyor")
+            print("Linux işletim sistemi için VM Template'i seçildi.")
             return template_name
 
     elif os_family == "Other":
@@ -161,11 +161,13 @@ def main():
                                  memory_mb=vm_config_lists_RamSize,
                                  cpu_count=vm_config_lists_Cpu)
 
+        print("VM Tools Kontrol ediliyor.")
         while vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
                                  password=vCenter_password,
                                  vm_name=clone_name) == False:
-            print("VM Tools status kontrol ediliyor")
+            print("VM Tools status kontrol döngüsü başlatıldı...")
             time.sleep(3)
+        print("VM Tools status kontrol döngüsü tamamlandı.")
 
 
         createIaasVMTaskList = get_itsm_values(vmid, 1)
