@@ -5,8 +5,8 @@ import time
 
 def clone_template(si, template_name, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
     content = si.RetrieveContent()
-    vm_folder = content.rootFolder.childEntity[0].vmFolder
     template = get_template_by_name(content, template_name)
+    vm_folder = template.parent
 
     clone_spec = create_clone_spec(content, template, vm_folder, clone_name, disk_size_gb, disk_mode ,memory_mb, cpu_count)
     clone_task = template.CloneVM_Task(folder=vm_folder, name=clone_name, spec=clone_spec)
