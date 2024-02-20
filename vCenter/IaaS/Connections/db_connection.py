@@ -13,7 +13,7 @@ def connect_Postgres():
             password="Cekino.123!")
         cursorForPostgres = connectionForPostgres.cursor()
 
-        return connectionForPostgres
+        return connectionForPostgres, cursorForPostgres
 
     except psycopg2.OperationalError as e:
         print(f"Operasyon Hatası: {e}")
@@ -28,7 +28,7 @@ def connect_Postgres():
 
 def get_vmList_Config(vmid):
 
-    connectionForPostgres = connect_Postgres()
+    connectionForPostgres, cursorForPostgres = connect_Postgres()
     VmListConfigrurationTable = pd.read_sql_query("select * from kr_vm_list where id=" + str(vmid),
                                                   connectionForPostgres)
 
@@ -52,7 +52,7 @@ def get_vmList_Config(vmid):
     return vmListConfig_Id, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_VmName, vmListConfig_HostName, vmListConfig_IpAdress, vmListConfig_Environment, vmListConfig_OperatingSystemInformation, vmListConfig_OperatingSystemVersion, vmListConfig_InternetConnection, vmListConfig_VirtualizationTechnology, vmListConfig_PFMSConfigurationId, pfmsConfigType
 
 def get_first_disik_Config(vmid):
-    connectionForPostgres = connect_Postgres()
+    connectionForPostgres, cursorForPostgres = connect_Postgres()
     VmFirstDiskConfigurationTable = pd.read_sql_query("select * from kr_vm_first_disk where vmlist_id=" + str(vmid) +" and is_deleted=false ORDER BY id",
                                                       connectionForPostgres)
 
