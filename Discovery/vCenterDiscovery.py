@@ -110,6 +110,17 @@ def vm_information_getter(vms):
         except:
             pass
 
+        #hostname
+        try:
+            vmHostName = vm.summary.guest.hostName
+            keyToInsert = "hostname"
+            append_dataframe_given_values(keyToInsert, vmHostName, isDeletedValueForAppend, versionForAppend,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          vmHostName)
+        except:
+            pass
+
+
 
 
         for device in vm.config.hardware.device:
