@@ -8,7 +8,7 @@ import sys
 import time
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.Create import clone_from_template
-from vCenter.IaaS.ExternelFiles import vmtoolsstatus
+from vCenter.IaaS.ExternelFiles import vmtoolsstatus, check_vm_os_family
 from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
@@ -17,25 +17,14 @@ from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows
 from vCenter.ITSM_Integration import createitsmtaskLast, updateItsmTask
 
 
-def connect_to_postgres():
-    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
-    return connectionForPostgres, cursorForPostgres
-
 def delete_itsm_tasks(vmidToDelete):
-    connectionForPostgres, cursorForPostgres = connect_to_postgres()
+    connectionForPostgres, cursorForPostgres = connect_Postgres()
     query_to_execute_delete_tasks = "delete from kr_create_task where vmlist_id="+str(vmidToDelete)
     cursorForPostgres.execute(query_to_execute_delete_tasks)
     connectionForPostgres.commit()
 
 def get_itsm_values(vmidToGetInfo, operationCode):
-    connectionForPostgres, cursorForPostgres = connect_to_postgres()
+    connectionForPostgres, cursorForPostgres = connect_Postgres()
     query_to_execute ="select description, title, matchedpytocode from kr_create_task kct where vmlist_id = "+str(vmidToGetInfo)+" and matchedpytocode = '"+str(operationCode)+"' and is_deleted = false;"
     #query_to_execute = "select kstd.description, ktd.taskname, ktd.matchedpytocode from kr_service_task_definition kstd inner join kr_task_definition ktd on kstd.id = ktd.service_task_definition_id where kstd.id in (select kvl.servicetaskdefinition_id from kr_vm_list kvl where kvl.id = "+str(vmidToGetInfo)+" and kvl.is_deleted =false limit 1 ) and ktd.is_deleted = false and kstd.is_deleted = false and matchedpytocode = '"+str(operationCode)+"'"
     cursorForPostgres.execute(query_to_execute)
@@ -58,43 +47,6 @@ def get_id_list():
         print("List is empty.")
 
     return li #, flowUUID
-
-def check_vm_os_family(os_family, os_version):
-
-    if "Windows" in os_family:
-        if "Windows Server 2016" in os_version:
-            template_name = "bkaan_windows_template"
-            print("Windows işletim sistemi için VM Template'i seçildi.")
-            return template_name
-
-        if "Windows 2018" in os_version:
-            template_name = "bkaan_windows_template"
-            print("Windows işletim sistemi için VM Template'i seçildi.")
-            return template_name
-
-        else:
-            template_name = "bkaan_windows_template"
-            return template_name
-
-    elif "Linux" in os_family:
-        if "SUSE" in os_version:
-            template_name = "SUSE-Temp-15-3"
-            print("Linux işletim sistemi için VM Template'i seçildi.")
-            return template_name
-
-        if "Ubuntu" in os_version:
-            template_name = "Ubuntu_Deneme"
-            print("Linux işletim sistemi için VM Template'i seçildi.")
-            return template_name
-
-    elif os_family == "Other":
-        pass
-
-    elif os_family == "MacOS":
-        pass
-
-    else:
-        print("OS family not found")
 
 def main():
     print("IAAS Create işlemi başlatıldı")
@@ -142,9 +94,8 @@ def main():
         other_disk_list = vm_all_disks
         other_disk_mods = vm_disk_mods
 
-        template_name = check_vm_os_family(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
+        template_name = check_vm_os_family.main(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
         clone_name = vm_config_lists_VmName
-        copied_folder_name = clone_name
 
         # #ITSM task kontrolü
         delete_itsm_tasks(vmid)
