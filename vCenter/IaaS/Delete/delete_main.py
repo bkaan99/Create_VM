@@ -1,3 +1,6 @@
+# import sys
+# sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
+
 import base64
 import sys
 from ESXi.IaaS.Delete import destroyVm

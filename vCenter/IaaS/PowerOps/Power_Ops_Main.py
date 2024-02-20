@@ -1,5 +1,6 @@
-import base64
-import re
+# import sys
+# sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
+
 import sys
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.PowerOps import powerOff
@@ -7,33 +8,8 @@ from vCenter.IaaS.PowerOps import powerOn
 from vCenter.IaaS.PowerOps import reboot_vm
 from vCenter.IaaS.PowerOps import shut_down
 from vCenter.IaaS.PowerOps import suspend_vm
+from vCenter.IaaS.ExternelFiles import get_id_list_controller
 
-
-def get_id_list():
-    global flowUUID
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
-    li = list(mystring.replace(' ', '').split(","))
-
-    powerOpsCode = base64.b64decode(sys.argv[2]).decode('UTF-8')
-    match = re.match(r"\[([^:]+):(\d+)\]", powerOpsCode)
-
-    if match:
-        powerOpsCode_key = match.group(1)
-        powerOpsCode_value = int(match.group(2))  # Eğer sayı olarak almak istiyorsanız int dönüşümü yapabilirsiniz
-        print(f"Key: {powerOpsCode_key}, Value: {powerOpsCode_value}")
-    else:
-        print("Gelen değer istenen formatta değil.")
-
-    # TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
-    if len(li) > 0:
-        # flowUUID = li[0];
-        # li.pop(0)
-        print(f"Removed value: {li}")
-    else:
-        print("List is empty.")
-
-    return li, powerOpsCode_value  # , flowUUID
 
 def main():
     # vSphere server credentials
@@ -42,9 +18,9 @@ def main():
     vCenter_password = "Aa112233!"
 
     # TODO: flowUUID tekrar eklenecek.
-    id_list = get_id_list()
-    vmIdList = id_list[0]
-    PowerOpsCode = id_list[1]
+    vmIdList = get_id_list_controller.get_id_list()
+
+    PowerOpsCode = get_id_list_controller.get_powerOpsCode_from_id()
 
     for vmid in vmIdList:
         print(f"VM ID: {vmid}")
