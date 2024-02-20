@@ -17,12 +17,6 @@ def clone_vm(si, vm_name, clone_name):
     else:
         print("Error cloning VM:", template.info.error.msg)
 
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
 
 def create_clone_spec(vm):
     clone_spec = vim.vm.CloneSpec()
