@@ -1,3 +1,6 @@
+import warnings
+from Discovery.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
+import phpipamsdk
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
@@ -10,6 +13,17 @@ from datetime import datetime
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
+
+def Connect_IPAM():
+    warnings.filterwarnings('ignore')
+    IPAM = phpipamsdk.PhpIpamApi(
+        api_uri='https://172.28.0.27/api/0002/', api_verify_ssl=False)
+    IPAM.login(auth=('ansible', 'Cekino123!'))
+    token = IPAM._api_token
+
+    return IPAM
+
+
 def connect_esxi_environment(esxi_host, username, password):
 
 
@@ -110,13 +124,54 @@ def vm_information_getter(vms):
         except:
             pass
 
-        #hostname
+        # hostname
         try:
             vmHostName = vm.summary.guest.hostName
             keyToInsert = "hostname"
             append_dataframe_given_values(keyToInsert, vmHostName, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
+                                          None,
                                           vmHostName)
+
+            ipam = Connect_IPAM()
+            ipam_return = check_ip_addres_with_hostname(IPAM=ipam, hostname=vmHostName)
+
+            if ipam_return is None:
+                continue
+
+            else:
+                ipam_ip = ipam_return[0]
+                keyToInsert = "ipam_ip"
+                append_dataframe_given_values(keyToInsert, ipam_ip, isDeletedValueForAppend, versionForAppend,
+                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
+                                              None,
+                                              ipam_ip)
+
+                ipam_subnet = ipam_return[1]
+                keyToInsert = "ipam_subnet_id"
+                append_dataframe_given_values(keyToInsert, ipam_subnet, isDeletedValueForAppend, versionForAppend,
+                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
+                                              None,
+                                              ipam_subnet)
+
+                subnet_info = get_subnet(IPAM=ipam, subnet_id=ipam_subnet)
+
+                if subnet_info is not None:
+                    subnet_ip = subnet_info[0]
+                    subnet_mask = subnet_info[1]
+
+                    keyToInsert = "subnet_ip"
+                    append_dataframe_given_values(keyToInsert, subnet_ip, isDeletedValueForAppend, versionForAppend,
+                                                  createdDateForAppend, vmID, virtualizationEnvironmentType,
+                                                  esxi_host, None,
+                                                  subnet_ip)
+
+                    keyToInsert = "subnet_mask"
+                    append_dataframe_given_values(keyToInsert, subnet_mask, isDeletedValueForAppend,
+                                                  versionForAppend,
+                                                  createdDateForAppend, vmID, virtualizationEnvironmentType,
+                                                  esxi_host, None,
+                                                  subnet_mask)
         except:
             pass
 
