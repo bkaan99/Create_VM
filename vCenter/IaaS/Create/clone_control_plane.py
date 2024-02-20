@@ -147,8 +147,8 @@ def main():
         copied_folder_name = clone_name
 
         # #ITSM task kontrolü
-        # delete_itsm_tasks(vmid)
-        # createitsmtaskLast.createTaskItsm(vmid)
+        delete_itsm_tasks(vmid)
+        createitsmtaskLast.createTaskItsm(vmid)
 
         ## Clone VM from template
         clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
