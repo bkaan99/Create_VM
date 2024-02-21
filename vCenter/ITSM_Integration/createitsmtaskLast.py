@@ -50,8 +50,7 @@ def seleniumItsm():
 def append_dataframe_given_values(title, description, vmlistid, status,date,is_deleted,version,pythoncode,tcode):
     #dataFrameForInsert._append(pd.DataFrame([key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes],columns=dataFrameForInsert.columns,ignore_index=True))
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[title, description, vmlistid, status,date, is_deleted, version,pythoncode,tcode]
-def createTaskItsm(vmid):
-    cookie = seleniumItsm()
+def createTaskItsm(vmid, cookie):
     #cookie = seleniumItsm()
     query = """select
                             kstd.description ,

@@ -79,8 +79,8 @@ def seleniumItsm():
     finally:
         driver.quit()
     return full_cookie
-def updateTaskItsm(description, title, statusId, vmid):
-    cookie = seleniumItsm()
+def updateTaskItsm(description, title, statusId, vmid, cookie):
+    #cookie = seleniumItsm()
     start_index = cookie.find("_zcsr_tmp=") + len("_zcsr_tmp=")
     end_index = cookie.find(";", start_index)
     zcsr_tmp_value = cookie[start_index:end_index]
