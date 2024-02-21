@@ -31,17 +31,17 @@ def get_itsm_values(vmidToGetInfo, operationCode):
 def task_sender(stage_name, vmid, operationCode, cookie, task_mod):
     if task_mod == 1:
         stage_name = get_itsm_values(vmid, operationCode=operationCode)
-        for f in range(len(stage_name)):
-            updateItsmTask.updateTaskItsm(stage_name[f][0],
-                                          stage_name[f][1],
+        for f, item in enumerate(stage_name):
+            updateItsmTask.updateTaskItsm(item[0],
+                                          item[1],
                                           1202,
                                           vmid,
                                           cookie=cookie)
 
     elif task_mod == 2:
-        for f in range(len(stage_name)):
-            updateItsmTask.updateTaskItsm(stage_name[f][0],
-                                          stage_name[f][1],
+        for f, item in enumerate(stage_name):
+            updateItsmTask.updateTaskItsm(item[0],
+                                          item[1],
                                           1202,
                                           vmid,
                                           cookie=cookie)
