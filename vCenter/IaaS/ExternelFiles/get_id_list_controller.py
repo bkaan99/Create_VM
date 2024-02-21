@@ -3,20 +3,11 @@ import re
 import sys
 
 def get_id_list():
-    global flowUUID
     mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
     mystring = mystring.replace("[", "").replace("]", "")
     li = list(mystring.replace(' ', '').split(","))
 
-    #TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
-    if len(li) > 0:
-        #flowUUID = li[0];
-        #li.pop(0)
-        print(f"Removed value: {li}")
-    else:
-        print("List is empty.")
-
-    return li #, flowUUID
+    return li
 
 
 def get_powerOpsCode_from_id():
