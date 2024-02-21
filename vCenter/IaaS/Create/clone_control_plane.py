@@ -55,6 +55,7 @@ def main():
     vCenter_user = "administrator@vsphere.local"
     vCenter_password = "Aa112233!"
 
+    #vm id arguments
     vmIdList = get_id_list_controller.get_id_list()
 
     #get cookie for itsm task
@@ -78,9 +79,8 @@ def main():
         vm_config_lists_VirtualizationTechnology = vm_config_lists[10]
         vm_config_lists_PFMSConfigurationId = vm_config_lists[11]
 
-        #get pfms config type
+        #get pfms config type / SAPaaS - IaaS
         pfms_config_type = vm_config_lists[12]
-
 
         #get first disk config
         vm_disk_list = get_first_disik_Config(vmid)
@@ -88,13 +88,16 @@ def main():
         vm_first_disk_size_gb = int(vm_disk_list[0][0])
         vm_all_disks.pop(0)
 
+        #get first disk mods
         vm_disk_mods = vm_disk_list[1]
         vm_first_disk_mod = vm_disk_mods[0]
         vm_disk_mods.pop(0)
 
+        #get other disk configs
         other_disk_list = vm_all_disks
         other_disk_mods = vm_disk_mods
 
+        #get template name
         template_name = check_vm_os_family.main(vm_config_lists_OperatingSystemInformation, vm_config_lists_OperatingSystemVersion)
         clone_name = vm_config_lists_VmName
 
@@ -121,6 +124,7 @@ def main():
                                  vm_name=clone_name) == False:
             print("VM Tools status kontrol döngüsü başlatıldı...")
             time.sleep(3)
+
         print("VM Tools status kontrol döngüsü tamamlandı.")
 
         #task send number 1
