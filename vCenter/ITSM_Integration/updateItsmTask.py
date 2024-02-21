@@ -1,7 +1,6 @@
 import requests
 import psycopg2
 import pandas as pd
-from sqlalchemy import create_engine
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -15,8 +14,8 @@ connectionBerko = psycopg2.connect(user="postgres",
                                    port="7100",
                                    database="karcin_pfms"
                                    )
-engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
 cursorForExecute = connectionBerko.cursor()
+
 def getIdList(cookie,description):
     url = "https://supporttest.glasshouse.com.tr/api/v3/tasks?input_data=%7B%22list_info%22%3A%7B%22row_count%22%3A%22500%22%2C%22sort_field%22%3A%22id%22%2C%22sort_order%22%3A%22D%22%2C%22filter%22%3A%220%22%7D%2C%22fields_required%22%3A%5B%22id%22%2C%22title%22%2C%22status%22%2C%22priority%22%2C%22group%22%2C%22owner%22%2C%22scheduled_start_time%22%2C%22description%22%5D%7D&SUBREQUEST=XMLHTTP&_=1707406665"
     #url = "https://supporttest.glasshouse.com.tr/api/v3/tasks?input_data=%7B%22list_info%22%3A%7B%22row_count%22%3A%2250%22%2C%22sort_field%22%3A%22id%22%2C%22sort_order%22%3A%22D%22%2C%22filter%22%3A%220%22%7D%2C%22fields_required%22%3A%5B%22id%22%2C%22title%22%2C%22status%22%2C%22priority%22%2C%22group%22%2C%22owner%22%2C%22scheduled_start_time%22%2C%22description%22%5D%7D&SUBREQUEST=XMLHTTP&_=1707406665"
