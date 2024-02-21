@@ -1,14 +1,11 @@
 ## Sunucu için eklenmesi gereken sys path.
 # import sys
 # sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
-
-import base64
 import string
-import sys
 import time
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.Create import clone_from_template
-from vCenter.IaaS.ExternelFiles import vmtoolsstatus, check_vm_os_family
+from vCenter.IaaS.ExternelFiles import check_vm_os_family, vmtoolsstatus, get_id_list_controller
 from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
@@ -31,22 +28,24 @@ def get_itsm_values(vmidToGetInfo, operationCode):
     itsm_data_list = cursorForPostgres.fetchall()
     return itsm_data_list
 
+def task_sender(stage_name, vmid, operationCode, cookie, task_mod):
+    if task_mod == 1:
+        stage_name = get_itsm_values(vmid, operationCode=operationCode)
+        for f in range(len(stage_name)):
+            updateItsmTask.updateTaskItsm(stage_name[f][0],
+                                          stage_name[f][1],
+                                          1202,
+                                          vmid,
+                                          cookie=cookie)
 
-def get_id_list():
-    global flowUUID
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
-    li = list(mystring.replace(' ', '').split(","))
+    elif task_mod == 2:
+        for f in range(len(stage_name)):
+            updateItsmTask.updateTaskItsm(stage_name[f][0],
+                                          stage_name[f][1],
+                                          1202,
+                                          vmid,
+                                          cookie=cookie)
 
-    #TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
-    if len(li) > 0:
-        #flowUUID = li[0];
-        #li.pop(0)
-        print(f"Removed value: {li}")
-    else:
-        print("List is empty.")
-
-    return li #, flowUUID
 
 def main():
     print("IAAS Create işlemi başlatıldı")
@@ -56,8 +55,10 @@ def main():
     vCenter_user = "administrator@vsphere.local"
     vCenter_password = "Aa112233!"
 
-    #TODO: flowUUID tekrar eklenecek.
-    vmIdList = get_id_list()
+    vmIdList = get_id_list_controller.get_id_list()
+
+    #get cookie for itsm task
+    cookie = createitsmtaskLast.seleniumItsm()
 
     for vmid in vmIdList:
         print(f"VM ID: {vmid}")
@@ -98,8 +99,10 @@ def main():
         clone_name = vm_config_lists_VmName
 
         # #ITSM task kontrolü
+
         delete_itsm_tasks(vmid)
-        createitsmtaskLast.createTaskItsm(vmid)
+        createitsmtaskLast.createTaskItsm(vmid, cookie= cookie)
+
 
         ## Clone VM from template
         clone_from_template.main(vCenter_host_ip=vCenter_host_ip,
@@ -120,21 +123,17 @@ def main():
             time.sleep(3)
         print("VM Tools status kontrol döngüsü tamamlandı.")
 
+        #task send number 1
+        task_sender(stage_name="_", vmid=vmid, operationCode=1, cookie=cookie, task_mod=1)
 
-        createIaasVMTaskList = get_itsm_values(vmid, 1)
-        for f in range(len(createIaasVMTaskList)):
-            updateItsmTask.updateTaskItsm(createIaasVMTaskList[f][0], createIaasVMTaskList[f][1], 1202, vmid)
+        #task send number 2
+        task_sender(stage_name="_", vmid=vmid, operationCode=2, cookie=cookie , task_mod=1)
 
-        updateIaasVMTaskList = get_itsm_values(vmid, 2)
-        for f in range(len(updateIaasVMTaskList)):
-            updateItsmTask.updateTaskItsm(updateIaasVMTaskList[f][0], updateIaasVMTaskList[f][1], 1202,
-                                          vmid)
+        #task send number 3
+        task_sender(stage_name="_", vmid=vmid, operationCode=3, cookie=cookie, task_mod=1)
 
-        startIaasVmTaskList = get_itsm_values(vmid, 3)
-        for f in range(len(startIaasVmTaskList)):
-            updateItsmTask.updateTaskItsm(startIaasVmTaskList[f][0], startIaasVmTaskList[f][1], 1202, vmid)
-
-
+        # task send number 6
+        task_sender(stage_name="_", vmid=vmid, operationCode=6, cookie=cookie, task_mod=1)
 
         # check internet connection
         if vm_config_lists_InternetConnection == True:
@@ -160,11 +159,10 @@ def main():
                                                        vCenter_password=vCenter_password,
                                                        ipAddress=vm_config_lists_IpAdress)
 
-                        for f in range(len(assignIpToIaasVmTaskList)):
-                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                          assignIpToIaasVmTaskList[f][1],
-                                                          1202,
-                                                          vmid)
+                        # itsm task list
+                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                    cookie=cookie,task_mod=2)
+
                     elif vm_config_lists_OperatingSystemInformation == "Linux":
                         execute_ipAddress_to_linux.main(vm_name=clone_name,
                                                         vCenter_host_ip=vCenter_host_ip,
@@ -172,11 +170,10 @@ def main():
                                                         vCenter_password=vCenter_password,
                                                         ipAddress=vm_config_lists_IpAdress)
 
-                        for f in range(len(assignIpToIaasVmTaskList)):
-                            updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                          assignIpToIaasVmTaskList[f][1],
-                                                          1202,
-                                                          vmid)
+                        # itsm task list
+                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                    cookie=cookie,task_mod=2)
+
                 else:
                     time.sleep(5)
                     retry_count = 0
@@ -198,12 +195,10 @@ def main():
                                                                vCenter_password=vCenter_password,
                                                                ipAddress=vm_config_lists_IpAdress)
 
-                                #itsm task list
-                                for f in range(len(assignIpToIaasVmTaskList)):
-                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                                  assignIpToIaasVmTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                # itsm task list
+                                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                            cookie=cookie, task_mod=2)
+
 
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 execute_ipAddress_to_linux.main(vm_name=clone_name,
@@ -212,12 +207,10 @@ def main():
                                                                 vCenter_password=vCenter_password,
                                                                 ipAddress=vm_config_lists_IpAdress)
 
-                                #itsm task list
-                                for f in range(len(assignIpToIaasVmTaskList)):
-                                    updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0],
-                                                                  assignIpToIaasVmTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                # itsm task list
+                                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                            cookie=cookie, task_mod=2)
+
                             break
                         retry_count += 1
 
@@ -241,10 +234,8 @@ def main():
                                                    ipAddress=vm_config_lists_IpAdress)
 
                     # itsm task list
-                    for f in range(len(assignIpToIaasVmTaskList)):
-                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0], assignIpToIaasVmTaskList[f][1],
-                                                      1202,
-                                                      vmid)
+                    task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                cookie=cookie, task_mod=2)
 
                 elif vm_config_lists_OperatingSystemInformation == "Linux":
                     execute_ipAddress_to_linux.main(vm_name=clone_name,
@@ -254,10 +245,9 @@ def main():
                                                     ipAddress=vm_config_lists_IpAdress)
 
                     # itsm task list
-                    for f in range(len(assignIpToIaasVmTaskList)):
-                        updateItsmTask.updateTaskItsm(assignIpToIaasVmTaskList[f][0], assignIpToIaasVmTaskList[f][1],
-                                                      1202,
-                                                      vmid)
+                    task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                cookie=cookie, task_mod=2)
+
         # add disk to VM
         if len(other_disk_list) > 0:
             allowed_letters = string.ascii_uppercase[4:]  # "E" harfinden başlayarak "Z" harfine kadar olan harfler
@@ -307,11 +297,9 @@ def main():
                             disk_mount_location = disk_mount_location + str(disk_number_windows)
                             time.sleep(5)
 
-                            # itsm task list
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            #itsm task list
+                            task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                        cookie=cookie, task_mod=2)
 
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             print("SAPaaS Linux disk set işlemi yapılıyor.")
@@ -322,11 +310,10 @@ def main():
                                                                disk_mount_location=disk_mount_location,
                                                                reboot_guest=True)
 
-                            # itsm task list
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            #itsm task list
+                            task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                        cookie=cookie, task_mod=2)
+
                     elif pfms_config_type == "IaaS":
 
                         if vm_config_lists_OperatingSystemInformation == "Windows":
@@ -343,10 +330,9 @@ def main():
                             time.sleep(5)
 
                             # itsm task list
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                        cookie=cookie, task_mod=2)
+
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             print("IaaS Linux disk set işlemi yapılıyor.")
                             execute_disk_to_linux.main(vm_name=clone_name,
@@ -357,10 +343,9 @@ def main():
                                                        os_password="111111")
 
                             # itsm task list
-                            for f in range(len(diskSetSAPaaSTaskList)):
-                                updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0], diskSetSAPaaSTaskList[f][1],
-                                                              1202,
-                                                              vmid)
+                            task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                        cookie=cookie, task_mod=2)
+
                 else:
                     while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                              username=vCenter_user,
@@ -387,12 +372,10 @@ def main():
                                 disk_mount_location = disk_mount_location + str(disk_number_windows)
                                 time.sleep(5)
 
-                                # itsm task list
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                #itsm task list
+                                task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                            cookie=cookie, task_mod=2)
+
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 print("SAPaaS Linux disk set işlemi yapılıyor.")
                                 execute_sapaas_disk_to_centos.main(vCenter_host_ip=vCenter_host_ip,
@@ -402,12 +385,11 @@ def main():
                                                                    disk_mount_location=disk_mount_location,
                                                                    reboot_guest=True)
 
-                                # itsm task list
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                #itsm task list
+                                task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                            cookie=cookie, task_mod=2)
+
+
                         elif pfms_config_type == "IaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 print("IaaS Windows disk set işlemi yapılıyor.")
@@ -422,11 +404,9 @@ def main():
                                 time.sleep(5)
 
                                 #itsm task list
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                            cookie=cookie, task_mod=2)
+
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 print("IaaS Linux disk set işlemi yapılıyor.")
                                 execute_disk_to_linux.main(vm_name=clone_name,
@@ -437,11 +417,9 @@ def main():
                                                            os_password="111111")
 
                                 #itsm task list
-                                for f in range(len(diskSetSAPaaSTaskList)):
-                                    updateItsmTask.updateTaskItsm(diskSetSAPaaSTaskList[f][0],
-                                                                  diskSetSAPaaSTaskList[f][1],
-                                                                  1202,
-                                                                  vmid)
+                                task_sender(stage_name=diskSetSAPaaSTaskList, vmid=vmid, operationCode=5,
+                                            cookie=cookie, task_mod=2)
+
                         break
 
                 if not vm_tools_status:
