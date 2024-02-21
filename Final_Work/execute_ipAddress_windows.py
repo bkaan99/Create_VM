@@ -25,8 +25,8 @@ def main():
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    host = "10.14.45.11"
-    user = "root"
+    host = "10.14.45.10"
+    user = "administrator@vsphere.local"
     password = "Aa112233!"
 
     service_instance = SmartConnect(host=host,
@@ -48,7 +48,7 @@ def main():
     # Komut istemcisine yazılacak komutları oluşturun
     cmd_command = (
         f'netsh interface ip set address name="Ethernet0" static '
-        f'10.14.45.187 255.255.255.0 10.14.45.1'
+        f'10.14.45.188 255.255.255.0 10.14.45.1'
     )
 
     dns_script = (
@@ -57,13 +57,14 @@ def main():
         f'netsh interface ip add dns name="Ethernet0" 8.8.4.4'
     )
 
+    auth = vim.vm.guest.NamePasswordAuthentication(
+        username="cekino",
+        password="1234"
+    )
+    pm = content.guestOperationsManager.processManager
+
     # Komutu sanal makinede çalıştırma
     try:
-        auth = vim.vm.guest.NamePasswordAuthentication(
-            username="cekino",
-            password="1234"
-        )
-        pm = content.guestOperationsManager.processManager
 
         # Komutları sırayla çalıştırma
         for script in [cmd_command]:

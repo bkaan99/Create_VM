@@ -1,4 +1,3 @@
-from pyVmomi import vim
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
@@ -36,14 +35,14 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
         f'netsh interface ip add dns name="Ethernet0" 8.8.4.4'
     )
 
+    auth = vim.vm.guest.NamePasswordAuthentication(
+        username="cekino",
+        password="1234"
+    )
+    pm = content.guestOperationsManager.processManager
+
     # Komutu sanal makinede çalıştırma
     try:
-        auth = vim.vm.guest.NamePasswordAuthentication(
-            username="cekino",
-            password="1234"
-        )
-        pm = content.guestOperationsManager.processManager
-
         # Komutları sırayla çalıştırma
         for script in [cmd_command]:
             ps = vim.vm.guest.ProcessManager.ProgramSpec(
