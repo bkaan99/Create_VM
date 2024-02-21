@@ -5,23 +5,7 @@ import base64
 import sys
 from ESXi.IaaS.Delete import destroyVm
 from vCenter.IaaS.Connections.db_connection import *
-
-
-def get_id_list():
-    global flowUUID
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
-    li = list(mystring.replace(' ', '').split(","))
-
-    #TODO: flowUUID tekrar eklenecek. Yorumda olan yerler açılacak.
-    if len(li) > 0:
-        #flowUUID = li[0];
-        #li.pop(0)
-        print(f"Removed value: {li}")
-    else:
-        print("List is empty.")
-
-    return li #, flowUUID
+from vCenter.IaaS.ExternelFiles import get_id_list_controller
 
 def main():
 
@@ -30,8 +14,7 @@ def main():
     vCenter_user = "administrator@vsphere.local"
     vCenter_password = "Aa112233!"
 
-    # TODO: flowUUID tekrar eklenecek.
-    vmIdList = get_id_list()
+    vmIdList = get_id_list_controller.get_id_list()
 
     for vmid in vmIdList:
 
