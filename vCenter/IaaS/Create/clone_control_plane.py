@@ -1,6 +1,8 @@
 ## Sunucu için eklenmesi gereken sys path.
 # import sys
 # sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
+import json
+import os
 import string
 import time
 from vCenter.IaaS.Connections.db_connection import *
