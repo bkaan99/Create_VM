@@ -265,9 +265,9 @@ def main():
                 add_disk_to_vm.main(vm_name_to_reconfigure=clone_name,
                                     target_disk_size_gb=disk_size_gb,
                                     disk_mode=vm_disk_mods,
-                                    esxi_host_ip=vCenter_host_ip,
-                                    esxi_user=vCenter_user,
-                                    esxi_password=vCenter_password)
+                                    vCenter_host_ip=vCenter_host_ip,
+                                    vCenter_user=vCenter_user,
+                                    vCenter_password=vCenter_password)
 
                 while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
                                          username=vCenter_user,
