@@ -1,5 +1,18 @@
+import string
+
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
+
+def get_vm_disk_info(vm):
+    disk_info = []
+
+    for device in vm.config.hardware.device:
+        if isinstance(device, vim.VirtualDisk):
+            disk_name = device.deviceInfo.label
+            disk_size_gb = device.capacityInKB / (1024 * 1024)  # Byte cinsinden kapasiteyi GB'ye çevir
+            disk_info.append({"Disk Name": disk_name, "Disk Size (GB)": disk_size_gb})
+
+    return disk_info
 
 def wait_for_task(task):
     """Waits and provides updates on a vSphere task until it is completed."""
@@ -22,10 +35,19 @@ def main(target_vm_name, esxi_host_ip, esxi_user, esxi_password):
         Disconnect(service_instance)
         return
 
+    # Sanal makine disk bilgileri
+    vm_disk_info = get_vm_disk_info(target_vm)
+    #sonuncu disk numarasını al
+    last_disk_number = int(vm_disk_info[-1]["Disk Name"].split(" ")[-1]) - 1
+
+    allowed_letters = string.ascii_uppercase[4 + len(vm_disk_info):]  # "E" harfinden başlayarak "Z" harfine kadar olan harfler
+    current_letter = allowed_letters[0]
+
+
     # Disk set ayarları
-    label = "Glass_House_Disk"
-    assign_letter = "G"
-    disk_number = 1
+    label = "Glass_House_Disk_" + str(last_disk_number)
+    assign_letter = current_letter
+    disk_number = last_disk_number
     create_partition_type = "primary"
 
     #os credentials
