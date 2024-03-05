@@ -9,6 +9,8 @@ def reconfigure_vm(vm, disk_size_gb):
         # Modify the first virtual disk (assuming there is only one disk)
         if len(vm.config.hardware.device) > 0 and isinstance(vm.config.hardware.device[0], vim.vm.device.VirtualDisk):
             disk = vm.config.hardware.device[0]
+            if disk_size_gb < disk.capacityInKB / 1024 ** 2:
+                disk_size_gb = disk.capacityInKB / 1024 ** 2
             disk.capacityInKB = disk_size_gb * 1024 * 1024
 
         # Invoke ReconfigVM_Task to apply the changes
