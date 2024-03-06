@@ -19,6 +19,8 @@ def create_vsphere_connection(host, user, password, timeout=10):
 
         content = service_instance.RetrieveContent()
 
+        return service_instance, content
+
     except ssl.SSLError as e:
         print(f"SSL Hatası: {e}")
         sys.exit(1)
@@ -51,14 +53,13 @@ def create_vsphere_connection(host, user, password, timeout=10):
         print(f"Beklenmeyen bir hata oluştu: {e}")
         sys.exit(1)
 
-    return service_instance, content
-
 def get_vm_by_name(content, vm_name):
     try:
         container_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
         for vm in container_view.view:
             if vm.name == vm_name:
                 return vm
+        return None
+
     except Exception as e:
         print("Sanal makine aranırken hata oluştu:", str(e))
-    return None
