@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def find_first_vm(content):
     for child in content.rootFolder.childEntity:
@@ -73,9 +73,9 @@ def WaitForTask(task):
             task_done = True
 
 
-def main(register_vm_name, esxi_host_ip, esxi_user, esxi_password , copied_folder_name):
+def main(register_vm_name, vCenter_host_ip, vCenter_user, vCenter_password , copied_folder_name):
 
-    service_instance, content = create_vsphere_connection( esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     source_vm = find_first_vm(content)
 

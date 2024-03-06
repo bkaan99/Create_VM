@@ -1,8 +1,8 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     # TODO: Burada hangi kullanıcıya yetki verilecekse onun adı yazılacak
     os_username = "bkaan"

@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def reconfigure_vm(vm, cpu_count, memory_mb, disk_size_gb):
     try:

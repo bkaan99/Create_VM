@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def rename_vm(vm, new_name):
     spec = vim.vm.ConfigSpec()
@@ -15,9 +15,9 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(old_vm_name, new_vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(old_vm_name, new_vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     vm_to_rename = get_vm_by_name(content, old_vm_name)
 

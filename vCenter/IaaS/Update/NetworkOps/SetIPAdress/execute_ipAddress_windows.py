@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def wait_for_task(task):
     """Waits and provides updates on a vSphere task until it is completed."""

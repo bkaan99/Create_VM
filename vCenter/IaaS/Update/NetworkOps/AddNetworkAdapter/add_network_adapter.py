@@ -1,6 +1,5 @@
 from pyVim.connect import Disconnect
-from pyVmomi import vim
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 
 def get_available_unit_number(vm, max_unit_number=10):

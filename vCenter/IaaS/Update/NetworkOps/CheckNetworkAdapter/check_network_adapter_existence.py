@@ -1,6 +1,5 @@
 import time
 from pyVim.connect import Disconnect
-from pyVmomi import vim
 from vCenter.IaaS.Connections.vSphere_connection import *
 
 def get_all_networks(content):

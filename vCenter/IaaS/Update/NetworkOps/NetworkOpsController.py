@@ -1,10 +1,10 @@
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
-from ESXi.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
-from ESXi.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
-from ESXi.IaaS.Update.NetworkOps.DeleteNetworkAdapter import delete_network_adapter
-from ESXi.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_to_linux
-from ESXi.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows
-from ESXi.IaaS.Update import GuestOsFamilyFinder
+from vCenter.IaaS.Connections.vSphere_connection import *
+from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
+from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
+from vCenter.IaaS.Update.NetworkOps.DeleteNetworkAdapter import delete_network_adapter
+from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_to_linux
+from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows
+from vCenter.IaaS.Update import GuestOsFamilyFinder
 
 def WaitForTask(task):
     """Bir vSphere görevi tamamlanana kadar bekler ve güncellemeler sağlar."""
@@ -17,10 +17,10 @@ def WaitForTask(task):
             print(f"Hata: {task.info.error}")
             task_done = True
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user,
-                                         esxi_password=esxi_password)
+    os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
+                                         vCenter_password=vCenter_password)
 
     result = check_network_adapter_existence.main()
     network_adapter_existence_value = result[0]
@@ -29,15 +29,15 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
     network_ops_mod = input("1- Add_Network_Adapter\n2- Delete_Network_Adapter\n3-Set Ip Address\n4-Chech Network Adapter Existence\n")
 
     if network_ops_mod == "1":
-        add_network_adapter.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
+        add_network_adapter.main(vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif network_ops_mod == "2":
-        delete_network_adapter.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
+        delete_network_adapter.main(vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif network_ops_mod == "3":
         if network_adapter_existence_value is True:
 
-            service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+            service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
             vm_to_reconfigure = get_vm_by_name(content, vm_name)
 
             if vm_to_reconfigure.runtime.powerState == vim.VirtualMachinePowerState.poweredOff:
@@ -46,9 +46,9 @@ def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
 
             #TODO: buraya şimdilik Windows ve Linux için ayrı ayrı yazıldı. Diğer işletim sistemleri için de ayrı ayrı yazılabilir.
             if os_family == "Linux":
-                execute_ipAddress_to_linux.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
+                execute_ipAddress_to_linux.main(vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
             elif os_family == "Windows":
-                execute_ipAddress_windows.main(vm_name, esxi_host_ip=esxi_host_ip, esxi_user=esxi_user, esxi_password=esxi_password)
+                execute_ipAddress_windows.main(vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif network_ops_mod == "4":
         if network_adapter_existence_value is True:
