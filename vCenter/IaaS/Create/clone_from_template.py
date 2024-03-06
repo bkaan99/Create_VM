@@ -111,7 +111,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
                 #TODO: Buraya while ile power on işlemi beklenebilir.Şuan için gerekli değil.
 
     except Exception as e:
-        print("Error:", e)
+        print("Clone Error:", e)
 
     # Disconnect from vSphere server
     Disconnect(service_instance)

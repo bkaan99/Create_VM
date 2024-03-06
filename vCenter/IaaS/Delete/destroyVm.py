@@ -2,14 +2,20 @@ from pyVim.connect import Disconnect
 from vCenter.IaaS.Connections.vSphere_connection import *
 
 def destroy_vm(vm):
+    try:
+        if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+            print("Shutting down VM...")
+            task = vm.PowerOff()
+            WaitForTask(task)
 
-    if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
-        print("Shutting down VM...")
-        task = vm.PowerOff()
+        task = vm.Destroy_Task()
         WaitForTask(task)
 
-    task = vm.Destroy_Task()
-    WaitForTask(task)
+    except (vim.fault.InvalidPowerState, vim.fault.VimFault, vim.fault.TaskInProgress) as e:
+        print("Sanal makineyi yok etme sırasında bir hata oluştu:", e)
+
+    except Exception as e:
+        print("Beklenmeyen bir hata oluştu:", e)
 
 def WaitForTask(task):
     while task.info.state not in [vim.TaskInfo.State.success, vim.TaskInfo.State.error]:
@@ -32,7 +38,6 @@ def main(destroy_vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
     else:
         print(f"VM with name {vm_name_to_destroy} not found")
 
-    # Disconnect from vCenter
     Disconnect(service_instance)
 
 if __name__ == "__main__":

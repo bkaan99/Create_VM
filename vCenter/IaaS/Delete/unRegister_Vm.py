@@ -5,15 +5,20 @@ import time
 
 
 def unregister_vm(vm):
-    if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
-        poweroff = vm.PowerOffVM_Task()
+    try:
+        if vm.runtime.powerState == vim.VirtualMachinePowerState.poweredOn:
+            poweroff = vm.PowerOffVM_Task()
+            WaitForTask(poweroff)
+
         task = vm.Unregister()
-        if task:
-            WaitForTask(task)
-        else:
-            print("Failed to initiate the shutdown process.")
-    else:
-        vm.Unregister()
+        WaitForTask(task)
+
+    except vim.fault.InvalidPowerState:
+        print("Sanal makine belirli bir işlem sırasında beklenen güç durumunda değil.")
+    except vim.fault.VimFault:
+        print("VMware vSphere API'lerinden birinde bir hata oluştu.")
+    except Exception as e:
+        print("Beklenmeyen bir hata oluştu:", e)
 
 
 def WaitForTask(task):
