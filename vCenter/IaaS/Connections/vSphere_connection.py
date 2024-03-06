@@ -1,4 +1,3 @@
-# vsphere_connection.py
 import sys
 from pyVim import connect
 import ssl
@@ -55,8 +54,11 @@ def create_vsphere_connection(host, user, password, timeout=10):
     return service_instance, content
 
 def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
+    try:
+        container_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
+        for vm in container_view.view:
+            if vm.name == vm_name:
+                return vm
+    except Exception as e:
+        print("Sanal makine aranırken hata oluştu:", str(e))
     return None
