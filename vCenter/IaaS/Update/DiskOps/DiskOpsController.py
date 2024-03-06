@@ -26,15 +26,15 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
             print("VMTools is not running. Waiting for 3 seconds...")
             time.sleep(3)
 
-        os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, esxi_host_ip=vCenter_host_ip,
-                                             esxi_user=vCenter_user, esxi_password=vCenter_password)
+        os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip,
+                                             vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
         if os_family == "Windows":
-            disk_executor_windows_with_windows.main(target_vm_name=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user,
-                                         esxi_password=vCenter_password)
+            disk_executor_windows_with_windows.main(target_vm_name=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
+                                         vCenter_password=vCenter_password)
         elif os_family == "Linux":
-            disk_executor_linux_with_linux.main(vm_name=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user,
-                                       esxi_password=vCenter_password)
+            disk_executor_linux_with_linux.main(vm_name=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
+                                       vCenter_password=vCenter_password)
 
 
     #Delete Disk
@@ -45,8 +45,8 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
     #Resize Disk
     elif disk_mod == "3":
-        resizeDisk.main(vm_name_to_reconfigure=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user,
-                        esxi_password=vCenter_password)
+        resizeDisk.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
+                        vCenter_password=vCenter_password)
 
 
     #swap alanı oluşturma istiyor musunuz?

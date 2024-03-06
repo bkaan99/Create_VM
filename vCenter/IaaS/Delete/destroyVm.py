@@ -19,9 +19,9 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(destroy_vm_name ,esxi_host_ip, esxi_user, esxi_password):
+def main(destroy_vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
     vm_name_to_destroy = destroy_vm_name
 
     vm_to_destroy = get_vm_by_name(content, vm_name_to_destroy)

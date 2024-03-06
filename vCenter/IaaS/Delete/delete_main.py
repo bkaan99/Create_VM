@@ -1,8 +1,8 @@
 # import sys
 # sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
 
-from ESXi.IaaS.Delete import destroyVm
 from vCenter.IaaS.Connections.db_connection import *
+from vCenter.IaaS.Delete import destroyVm
 from vCenter.IaaS.ExternelFiles import get_id_list_controller
 
 def main():

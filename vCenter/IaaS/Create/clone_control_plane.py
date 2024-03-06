@@ -1,8 +1,7 @@
 ## Sunucu için eklenmesi gereken sys path.
 # import sys
 # sys.path.append('/home/gardiyan/Gardiyan/Server/pfms/apache-karaf-5005/GH-Plugins')
-import json
-import os
+
 import string
 import time
 from vCenter.IaaS.Connections.db_connection import *
@@ -293,9 +292,9 @@ def main():
                         if vm_config_lists_OperatingSystemInformation == "Windows":
                             print("SAPaaS Windows disk set işlemi yapılıyor.")
                             execute_disk_to_windows.main(target_vm_name=clone_name,
-                                                         esxi_host_ip=vCenter_host_ip,
-                                                         esxi_user=vCenter_user,
-                                                         esxi_password=vCenter_password,
+                                                         vCenter_host_ip=vCenter_host_ip,
+                                                         vCenter_user=vCenter_user,
+                                                         vCenter_password=vCenter_password,
                                                          label="Glass_House_Disk_" + str(disk_number_windows),
                                                          assign_letter=current_letter,
                                                          disk_number=disk_number_windows)
@@ -325,9 +324,9 @@ def main():
                         if vm_config_lists_OperatingSystemInformation == "Windows":
                             print("IaaS Windows disk set işlemi yapılıyor.")
                             execute_disk_to_windows.main(target_vm_name=clone_name,
-                                                        esxi_host_ip=vCenter_host_ip,
-                                                        esxi_user=vCenter_user,
-                                                        esxi_password=vCenter_password,
+                                                        vCenter_host_ip=vCenter_host_ip,
+                                                        vCenter_user=vCenter_user,
+                                                        vCenter_password=vCenter_password,
                                                         label="Glass_House_Disk_" + str(disk_number_windows),
                                                         assign_letter=current_letter,
                                                         disk_number=disk_number_windows)
@@ -342,9 +341,9 @@ def main():
                         elif vm_config_lists_OperatingSystemInformation == "Linux":
                             print("IaaS Linux disk set işlemi yapılıyor.")
                             execute_disk_to_linux.main(vm_name=clone_name,
-                                                       esxi_host_ip=vCenter_host_ip,
-                                                       esxi_user=vCenter_user,
-                                                       esxi_password=vCenter_password,
+                                                       vCenter_host_ip=vCenter_host_ip,
+                                                       vCenter_user=vCenter_user,
+                                                       vCenter_password=vCenter_password,
                                                        os_user="root",
                                                        os_password="111111")
 
@@ -368,9 +367,9 @@ def main():
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 print("SAPaaS Windows disk set işlemi yapılıyor.")
                                 execute_disk_to_windows.main(target_vm_name=clone_name,
-                                                             esxi_host_ip=vCenter_host_ip,
-                                                             esxi_user=vCenter_user,
-                                                             esxi_password=vCenter_password,
+                                                             vCenter_host_ip=vCenter_host_ip,
+                                                             vCenter_user=vCenter_user,
+                                                             vCenter_password=vCenter_password,
                                                              label="Glass_House_Disk_" + str(disk_number_windows),
                                                              assign_letter=current_letter,
                                                              disk_number=disk_number_windows)
@@ -400,9 +399,9 @@ def main():
                             if vm_config_lists_OperatingSystemInformation == "Windows":
                                 print("IaaS Windows disk set işlemi yapılıyor.")
                                 execute_disk_to_windows.main(target_vm_name=clone_name,
-                                                             esxi_host_ip=vCenter_host_ip,
-                                                             esxi_user=vCenter_user,
-                                                             esxi_password=vCenter_password,
+                                                             vCenter_host_ip=vCenter_host_ip,
+                                                             vCenter_user=vCenter_user,
+                                                             vCenter_password=vCenter_password,
                                                              label="Glass_House_Disk_" + str(disk_number_windows),
                                                              assign_letter=current_letter,
                                                              disk_number=disk_number_windows)
@@ -416,9 +415,9 @@ def main():
                             elif vm_config_lists_OperatingSystemInformation == "Linux":
                                 print("IaaS Linux disk set işlemi yapılıyor.")
                                 execute_disk_to_linux.main(vm_name=clone_name,
-                                                           esxi_host_ip=vCenter_host_ip,
-                                                           esxi_user=vCenter_user,
-                                                           esxi_password=vCenter_password,
+                                                           vCenter_host_ip=vCenter_host_ip,
+                                                           vCenter_user=vCenter_user,
+                                                           vCenter_password=vCenter_password,
                                                            os_user="root",
                                                            os_password="111111")
 
