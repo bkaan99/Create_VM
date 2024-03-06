@@ -135,6 +135,3 @@ def main(vm_name_to_reconfigure, target_disk_size_gb, disk_mode, vCenter_host_ip
     time.sleep(5)
 
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()
