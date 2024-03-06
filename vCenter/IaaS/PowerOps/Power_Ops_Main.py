@@ -17,7 +17,6 @@ def main():
     vCenter_user = "administrator@vsphere.local"
     vCenter_password = "Aa112233!"
 
-    # TODO: flowUUID tekrar eklenecek.
     vmIdList = get_id_list_controller.get_id_list()
 
     PowerOpsCode = get_id_list_controller.get_powerOpsCode_from_id()

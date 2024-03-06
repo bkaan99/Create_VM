@@ -25,7 +25,6 @@ def get_letter_for_disk_number(disk_number):
         return alphabet[quotient - 1] + alphabet[remainder]
 
 def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
-    # TODO: VM Adı ve ESXi bilgilerini parametre olarak al
 
     service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
 
@@ -36,7 +35,6 @@ def main(vm_name ,esxi_host_ip, esxi_user, esxi_password):
         Disconnect(service_instance)
         return
 
-    # TODO : Burada yeni disk oluşturma ve mount işlemlerini gerçekleştir.
     try:
         # Vm üzerinde ki kullanıcı adı ve şifre bilgileri
         auth = vim.vm.guest.NamePasswordAuthentication(
