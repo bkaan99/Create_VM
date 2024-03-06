@@ -1,6 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
-
+from vCenter.IaaS.Connections.vSphere_connection import *
 def reconfigure_vm(vm, disk_size_gb):
     try:
         # Create a VimVMConfigSpec object to specify the changes
@@ -32,8 +31,9 @@ def WaitForTask(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password):
+
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     target_disk_size_gb = 48  # Modify with the desired disk size in GB
 

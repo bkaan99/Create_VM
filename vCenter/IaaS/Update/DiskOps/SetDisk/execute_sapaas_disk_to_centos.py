@@ -1,17 +1,6 @@
-import ssl
 import time
-from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
-from ESXi.SAPaaS import add_disk_to_vm
-from vCenter.IaaS.Connections.vSphere_connection import create_vsphere_connection
-
-
-def get_vm_by_name(content, vm_name):
-    vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    for vm in vm_view.view:
-        if vm.name == vm_name:
-            return vm
-    return None
+from pyVim.connect import  Disconnect
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def find_highest_disk_number(vm):
     highest_disk_number = 0

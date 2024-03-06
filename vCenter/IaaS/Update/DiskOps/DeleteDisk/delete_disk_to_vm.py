@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from vCenter.IaaS.Connections import vSphere_connection
+from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
 
 def delete_disk_file_from_datastore(datastore, datastore_path):
@@ -64,9 +64,9 @@ def get_vm_disk_info(vm):
 
 def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password, hard_disk_name_to_delete: str):
 
-    service_instance, content = vSphere_connection.create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    vm_to_reconfigure = vSphere_connection.get_vm_by_name(content, vm_name_to_reconfigure)
+    vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
     if vm_to_reconfigure is None:
         print(f"VM {vm_name_to_reconfigure} bulunamadı.")

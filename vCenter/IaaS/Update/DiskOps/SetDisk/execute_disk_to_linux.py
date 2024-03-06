@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
 
 
@@ -25,9 +25,9 @@ def get_letter_for_disk_number(disk_number):
         quotient, remainder = divmod(disk_number - 1, len(alphabet))
         return alphabet[quotient - 1] + alphabet[remainder]
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password, os_user, os_password):
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password, os_user, os_password):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     target_vm = get_vm_by_name(content, vm_name)
 

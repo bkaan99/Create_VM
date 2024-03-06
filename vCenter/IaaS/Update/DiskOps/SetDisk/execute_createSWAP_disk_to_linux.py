@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
 
 
@@ -34,9 +34,9 @@ def create_swap(content, target_vm, auth, added_disk_full_path_name):
                                                                                          spec_create_swap)
     print(f"Creating swap on new disk with PID {pid_create_swap}")
 
-def main(vm_name, esxi_host_ip, esxi_user, esxi_password):
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     target_vm = get_vm_by_name(content, vm_name)
 
