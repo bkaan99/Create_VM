@@ -18,6 +18,8 @@ def create_vsphere_connection(host, user, password, timeout=10):
                                                 pwd=password,
                                                 sslContext=ssl_context)
 
+        content = service_instance.RetrieveContent()
+
     except ssl.SSLError as e:
         print(f"SSL Hatası: {e}")
         sys.exit(1)
@@ -49,8 +51,6 @@ def create_vsphere_connection(host, user, password, timeout=10):
     except Exception as e:
         print(f"Beklenmeyen bir hata oluştu: {e}")
         sys.exit(1)
-
-    content = service_instance.RetrieveContent()
 
     return service_instance, content
 
