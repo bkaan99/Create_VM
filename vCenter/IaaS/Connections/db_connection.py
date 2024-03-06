@@ -1,10 +1,8 @@
 import psycopg2
 import pandas as pd
-from sqlalchemy import create_engine
 
 def connect_Postgres():
     try:
-        engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
         connectionForPostgres = psycopg2.connect(
             host="10.14.45.69",
             port="7100",
