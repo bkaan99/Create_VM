@@ -17,25 +17,25 @@ def main():
         DiskOpsController.main(vm_name=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif update_mod == "2":
-        NetworkOpsController.main(vm_name=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password)
+        NetworkOpsController.main(vm_name=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif update_mod == "3":
         target_cpu_count = 2  # Modify with the desired CPU count
         target_memory_mb = 4096  # Modify with the desired memory size in MB
         target_disk_size_gb = 48  # Modify with the desired disk size in GB
 
-        reconfig_vm.main(vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password, target_cpu_count=target_cpu_count, target_memory_mb=target_memory_mb, target_disk_size_gb=target_disk_size_gb)
+        reconfig_vm.main(vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password, clone_name=vm_name, cpu_count=target_cpu_count, memory_mb=target_memory_mb, disk_size_gb=target_disk_size_gb)
 
     elif update_mod == "4":
         registry_vm_name = input("Registry VM Name: ")
-        registry_vm.main(registry_vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password, copied_folder_name=vm_name)
+        registry_vm.main(registry_vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password, copied_folder_name=vm_name)
 
     elif update_mod == "5":
-        unRegister_Vm.main(vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password)
+        unRegister_Vm.main(vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
     elif update_mod == "6":
         new_vm_name = input("New VM Name: ")
-        rename_vm.main(old_vm_name=vm_name, new_vm_name=new_vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password)
+        rename_vm.main(old_vm_name=vm_name, new_vm_name=new_vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
 if __name__ == "__main__":
     main()
