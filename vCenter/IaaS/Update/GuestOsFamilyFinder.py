@@ -1,11 +1,8 @@
 from pyVim.connect import Disconnect
 from ESXi.IaaS.ESXi_Connection.esxi_connection import *
 
-def Find_GuestFullName(vm):
+def Find_GuestFamily(vm):
     guest_full_name = vm.config.guestFullName
-    return guest_full_name
-
-def Find_GuestFamily(guest_full_name):
 
     windows_keywords = [
         "Microsoft MS-DOS",
@@ -158,9 +155,7 @@ def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
         print(f"VM {vm_name_to_reconfigure} bulunamadı.")
         return
 
-    guest_full_name = Find_GuestFullName(vm_to_reconfigure)
-
-    guest_family = Find_GuestFamily(guest_full_name)
+    guest_family = Find_GuestFamily(vm_name_to_reconfigure)
 
     Disconnect(service_instance)
 
