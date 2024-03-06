@@ -1,5 +1,5 @@
 from pyVim.connect import Disconnect
-from ESXi.IaaS.ESXi_Connection.esxi_connection import *
+from vCenter.IaaS.Connections.vSphere_connection import *
 
 def Find_GuestFamily(vm):
     guest_full_name = vm.config.guestFullName
@@ -135,19 +135,9 @@ def Find_GuestFamily(vm):
 
     return "Unknown Family"
 
-def WaitForTask(task):
-    task_done = False
-    while not task_done:
-        if task.info.state == vim.TaskInfo.State.success:
-            print("Görev başarıyla tamamlandı.")
-            task_done = True
-        elif task.info.state == vim.TaskInfo.State.error:
-            print(f"Hata: {task.info.error}")
-            task_done = True
+def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password):
 
-def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
-
-    service_instance, content = create_vsphere_connection(esxi_host_ip, esxi_user, esxi_password)
+    service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
@@ -160,6 +150,3 @@ def main(vm_name_to_reconfigure, esxi_host_ip, esxi_user, esxi_password):
     Disconnect(service_instance)
 
     return guest_family
-
-if __name__ == "__main__":
-    main()
