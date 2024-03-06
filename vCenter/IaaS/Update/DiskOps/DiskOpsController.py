@@ -10,9 +10,10 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
     disk_mod = input("1- Add_Disk\n2- Delete_Disk\n3- Resize_Disk\n")
 
+    target_disk_size = 1  # GB
+
     #Add Disk
     if disk_mod == "1":
-        target_disk_size = 1  # GB
         #FIXME: disk mode ve disk size değerleri dinamik gelecek.
 
         add_disk_to_vm.main(vm_name_to_reconfigure=vm_name, target_disk_size_gb=target_disk_size, disk_mode="persistent",
