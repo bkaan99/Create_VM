@@ -8,15 +8,13 @@ import time
 
 def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user, esxi_password=vCenter_password)
-
-    #TODO: buraya disk işlemleri için gerekli bilgiler alınacak
-    target_disk_size = 1 # GB
-
     disk_mod = input("1- Add_Disk\n2- Delete_Disk\n3- Resize_Disk\n")
 
     #Add Disk
     if disk_mod == "1":
+        target_disk_size = 1  # GB
+        #FIXME: disk mode ve disk size değerleri dinamik gelecek.
+
         add_disk_to_vm.main(vm_name_to_reconfigure=vm_name, target_disk_size_gb=target_disk_size, disk_mode="persistent",
                             vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
@@ -26,6 +24,9 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
                                  vm_name=vm_name) == False:
             print("VMTools is not running. Waiting for 3 seconds...")
             time.sleep(3)
+
+        os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, esxi_host_ip=vCenter_host_ip,
+                                             esxi_user=vCenter_user, esxi_password=vCenter_password)
 
         if os_family == "Windows":
             disk_executor_windows_with_windows.main(target_vm_name=vm_name, esxi_host_ip=vCenter_host_ip, esxi_user=vCenter_user,
