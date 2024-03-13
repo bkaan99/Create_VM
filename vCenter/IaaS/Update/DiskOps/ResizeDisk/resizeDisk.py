@@ -2,17 +2,27 @@ from pyVim.connect import Disconnect
 from vCenter.IaaS.Connections.vSphere_connection import *
 def reconfigure_vm(vm, disk_size_gb):
     try:
-        # Create a VimVMConfigSpec object to specify the changes
         spec = vim.vm.ConfigSpec()
 
-        # Modify the first virtual disk (assuming there is only one disk)
-        if len(vm.config.hardware.device) > 0 and isinstance(vm.config.hardware.device[0], vim.vm.device.VirtualDisk):
-            disk = vm.config.hardware.device[0]
-            if disk_size_gb < disk.capacityInKB / 1024 ** 2:
-                disk_size_gb = disk.capacityInKB / 1024 ** 2
-            disk.capacityInKB = disk_size_gb * 1024 * 1024
+        virtual_disks = []
+        for device in vm.config.hardware.device:
+            if isinstance(device, vim.vm.device.VirtualDisk):
+                virtual_disks.append(device)
 
-        # Invoke ReconfigVM_Task to apply the changes
+        if virtual_disks:
+            for disk in virtual_disks:
+                if disk.unitNumber == 0:
+                    if disk_size_gb < disk.capacityInKB / 1024 ** 2:
+                        disk_size_gb = disk.capacityInKB / 1024 ** 2
+                    disk.capacityInKB = int(disk_size_gb * 1024 * 1024)
+
+                    # Create a VirtualDeviceConfigSpec to apply the new disk size
+                    disk_spec = vim.vm.device.VirtualDeviceSpec()
+                    disk_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.edit
+                    disk_spec.device = disk
+
+                    spec.deviceChange = [disk_spec]
+
         task = vm.ReconfigVM_Task(spec=spec)
         WaitForTask(task)
 
@@ -35,7 +45,7 @@ def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    target_disk_size_gb = 48  # Modify with the desired disk size in GB
+    target_disk_size_gb = 60  # Modify with the desired disk size in GB
 
     vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
 
@@ -51,6 +61,3 @@ def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password
 
     reconfigure_vm(vm_to_reconfigure, target_disk_size_gb)
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()
