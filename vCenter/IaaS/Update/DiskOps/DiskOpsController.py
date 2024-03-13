@@ -8,7 +8,7 @@ import time
 
 def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    disk_mod = input("1- Add_Disk\n2- Delete_Disk\n3- Resize_Disk\n")
+    disk_mod = input("1- Add_Disk\n2- Delete_Disk\n3- Resize_Disk\n4- SWAP Disk\n")
 
     target_disk_size = 1  # GB
 
@@ -21,14 +21,14 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
                             vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
                             vCenter_password=vCenter_password)
 
-        while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                 username=vCenter_user,
-                                 password=vCenter_password,
-                                 vm_name=vm_name) == False:
+        while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                     username=vCenter_user,
+                                     password=vCenter_password,
+                                     vm_name=vm_name):
             print("VMTools is not running. Waiting for 3 seconds...")
             time.sleep(3)
 
-        os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip,
+        os_family = GuestOsFamilyFinder.main(vm_name=vm_name, vCenter_host_ip=vCenter_host_ip,
                                              vCenter_user=vCenter_user, vCenter_password=vCenter_password)
 
         if os_family == "Windows":
@@ -53,7 +53,6 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
         resizeDisk.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
                         vCenter_password=vCenter_password)
 
-    # swap alanı oluşturma istiyor musunuz?
-    swap_mod = input("1- Yes\n2- No\n")
-    if swap_mod == "1":
+    # SWAP Disk
+    elif disk_mod == "4":
         execute_createSWAP_disk_to_linux.main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password)

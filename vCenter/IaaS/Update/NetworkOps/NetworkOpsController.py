@@ -19,7 +19,7 @@ def WaitForTask(task):
 
 def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
-    os_family = GuestOsFamilyFinder.main(vm_name_to_reconfigure=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
+    os_family = GuestOsFamilyFinder.main(vm_name=vm_name, vCenter_host_ip=vCenter_host_ip, vCenter_user=vCenter_user,
                                          vCenter_password=vCenter_password)
 
     result = check_network_adapter_existence.main()

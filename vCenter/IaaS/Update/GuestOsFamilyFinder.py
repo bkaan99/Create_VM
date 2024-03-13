@@ -135,17 +135,17 @@ def Find_GuestFamily(vm):
 
     return "Unknown Family"
 
-def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password):
+def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    vm_to_reconfigure = get_vm_by_name(content, vm_name_to_reconfigure)
+    vm_to_reconfigure = get_vm_by_name(content, vm_name)
 
     if vm_to_reconfigure is None:
-        print(f"VM {vm_name_to_reconfigure} bulunamadı.")
+        print(f"VM {vm_name} bulunamadı.")
         return
 
-    guest_family = Find_GuestFamily(vm_name_to_reconfigure)
+    guest_family = Find_GuestFamily(vm_to_reconfigure)
 
     Disconnect(service_instance)
 
