@@ -5,7 +5,7 @@ from pyVmomi import vim
 import socket
 
 
-def create_vsphere_connection(host, user, password, timeout=10):
+def create_vsphere_connection(host: str, user: str, password: str, timeout=10):
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -53,7 +53,8 @@ def create_vsphere_connection(host, user, password, timeout=10):
         print(f"Beklenmeyen bir hata oluştu: {e}")
         sys.exit(1)
 
-def get_vm_by_name(content, vm_name):
+
+def get_vm_by_name(content, vm_name: str):
     try:
         container_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
         for vm in container_view.view:
