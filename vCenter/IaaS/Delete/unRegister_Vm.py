@@ -29,7 +29,7 @@ def WaitForTask(task):
     elif task.info.state == vim.TaskInfo.State.error:
         print("Error during task execution: %s" % task.info.error)
 
-def main(unregister_vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
+def main(unregister_vm_name :str ,vCenter_host_ip :str, vCenter_user :str, vCenter_password :str):
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 

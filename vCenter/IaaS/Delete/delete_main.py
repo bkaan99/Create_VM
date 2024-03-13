@@ -28,6 +28,5 @@ def main():
         print("VM destroy işlemi başlatıldı")
         destroyVm.main(clone_name, vCenter_host_ip, vCenter_user, vCenter_password)
 
-
 if __name__ == "__main__":
     main()
