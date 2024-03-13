@@ -23,7 +23,7 @@ def get_letter_for_disk_number(disk_number):
         quotient, remainder = divmod(disk_number - 1, len(alphabet))
         return alphabet[quotient - 1] + alphabet[remainder]
 
-def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
+def main(vm_name: str, vCenter_host_ip: str, vCenter_user: str, vCenter_password: str):
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
@@ -102,5 +102,3 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
     finally:
         Disconnect(service_instance)
 
-if __name__ == "__main__":
-    main()
