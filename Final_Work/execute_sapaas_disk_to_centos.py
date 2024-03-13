@@ -2,7 +2,6 @@ import ssl
 import time
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
-from ESXi.SAPaaS import add_disk_to_vm
 
 def get_vm_by_name(content, vm_name):
     vm_view = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
