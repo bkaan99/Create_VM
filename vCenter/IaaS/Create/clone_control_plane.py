@@ -120,9 +120,9 @@ def main():
                                  cpu_count=vm_config_lists_Cpu)
 
         print("VM Tools Kontrol ediliyor.")
-        while vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
-                                 password=vCenter_password,
-                                 vm_name=clone_name) == False:
+        while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
+                                     password=vCenter_password,
+                                     vm_name=clone_name):
             print("VM Tools status kontrol döngüsü başlatıldı...")
             time.sleep(3)
 
@@ -268,10 +268,10 @@ def main():
                                     vCenter_user=vCenter_user,
                                     vCenter_password=vCenter_password)
 
-                while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                         username=vCenter_user,
-                                         password=vCenter_password,
-                                         vm_name=clone_name) == False:
+                while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                             username=vCenter_user,
+                                             password=vCenter_password,
+                                             vm_name=clone_name):
                     print("VM Tools status kontrol ediliyor")
                     time.sleep(3)
 
@@ -352,10 +352,10 @@ def main():
                                         cookie=cookie, task_mod=2)
 
                 else:
-                    while vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                             username=vCenter_user,
-                                             password=vCenter_password,
-                                             vm_name=clone_name) == False:
+                    while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
+                                                 username=vCenter_user,
+                                                 password=vCenter_password,
+                                                 vm_name=clone_name):
                         time.sleep(3)
 
                     vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
