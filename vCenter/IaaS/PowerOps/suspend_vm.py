@@ -23,7 +23,7 @@ def WaitForTask(task):
         time.sleep(1)
     return task.info.state
 
-def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+def main(vm_name :str,vCenter_host_ip :str, vCenter_user :str, vCenter_password :str):
     si, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
     vm_to_suspend = get_vm_by_name(content, vm_name)
 
@@ -36,6 +36,3 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
 
     # Disconnect from vCenter
     Disconnect(si)
-
-if __name__ == "__main__":
-    main()
