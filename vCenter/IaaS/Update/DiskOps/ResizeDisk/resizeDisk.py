@@ -41,7 +41,7 @@ def WaitForTask(task):
             print(f"Error: {task.info.error}")
             task_done = True
 
-def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password):
+def main(vm_name_to_reconfigure: str, vCenter_host_ip: str, vCenter_user: str, vCenter_password: str):
 
     service_instance, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 

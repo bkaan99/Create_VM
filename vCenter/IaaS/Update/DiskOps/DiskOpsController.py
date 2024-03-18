@@ -6,7 +6,7 @@ from vCenter.IaaS.Update.DiskOps.ResizeDisk import resizeDisk
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_createSWAP_disk_to_linux
 import time
 
-def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
+def main(vm_name: str, vCenter_host_ip: str, vCenter_user: str, vCenter_password: str):
 
     disk_mod = input("1- Add_Disk\n2- Delete_Disk\n3- Resize_Disk\n4- SWAP Disk\n")
 
