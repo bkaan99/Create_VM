@@ -47,14 +47,16 @@ def reconfigure_vm_disk_size(vm, disk_size_gb, disk_mode):
         # Yeni disk için disk modunu belirtin
         new_disk_spec.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
 
+        #FIXME: Buraya ilgili düzeltme tartışılacak. Default olarak persistent yapıldı şuanlık.
+        new_disk_spec.device.backing.diskMode = 'persistent' # Default olarak ayarlandı.
+
         if disk_mode == 0:
             new_disk_spec.device.backing.diskMode = 'persistent'
         elif disk_mode == 1:
             new_disk_spec.device.backing.diskMode = 'independent_persistent'
         elif disk_mode == 2:
             new_disk_spec.device.backing.diskMode = 'independent_nonpersistent'
-        new_disk_spec.device.backing.diskMode = 'persistent'
-        # Yeni disk için disk türünü belirtin
+
         new_disk_spec.device.backing.thinProvisioned = True
 
         # Yeni birim numarasını alın
