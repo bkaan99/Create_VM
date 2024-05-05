@@ -208,6 +208,46 @@ def vm_layout_section(vm, vmID):
         append_section_info(file, vmID, f"vm.layoutEx.file.[{count}]")
 
 
+def vm_network_section(vm, vmID):
+    network_section = vm.network
+    for network_count, network in enumerate(network_section):
+        first_list = ["alarmActionsEnabled","configStatus","name","overallStatus"]
+        for item in first_list:
+            append_vm_info(vmID, item, getattr(network, item), f"vm.network.[{network_count}]")
+
+        #summary
+        append_section_info(network.summary, vmID, f"vm.network.[{network_count}].summary")
+
+def host_section(vm, vmID):
+    #host bilgisi
+    all_networks = vm.network
+    for network in all_networks:
+        for host in network.host:
+
+            host_basic_list = ["alarmActionsEnabled","answerFileValidationResult","answerFileValidationState","complianceCheckResult","complianceCheckState","configStatus","name","overallStatus","precheckRemediationResult","remediationResult","remediationState"]
+            for item in host_basic_list:
+                append_vm_info(vmID, item, getattr(host, item), f"vm.network.host")
+
+            list = ["capability","config","summary"]
+            for item in list:
+                append_section_info(getattr(host, item), vmID, f"vm.network.host.{item}")
+
+
+def resource_pool_section(vm, vmID):
+    resource_pool = vm.resourcePool
+
+    first_list = ["alarmActionsEnabled","configStatus","name","namespace","overallStatus"]
+    for item in first_list:
+        append_vm_info(vmID, item, getattr(resource_pool, item), "vm.resourcePool")
+
+    append_vm_info(vmID, "name", resource_pool.owner.name, "vm.resourcePool.owner")
+    append_vm_info(vmID, "configuredMemoryMB", resource_pool.summary.configuredMemoryMB, "vm.resourcePool.summary")
+
+    #vm's in resource pool
+    for vm in resource_pool.vm:
+        append_vm_info(vmID, "vm_name", vm.name, "vm.resourcePool.vm")
+
+
 def vm_information_getter(vms):
     for vm in vms:
         try:
@@ -218,9 +258,10 @@ def vm_information_getter(vms):
         except:
             vmID = None
 
-
-        # #alarmactionenabled description
-        # append_vm_info(vmID, "alarmActionsEnabled", vm.alarmActionsEnabled, "vm.alarmActionsEnabled")
+        # #smallDescription
+        # small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp","snapshot"]
+        # for item in small_list:
+        #     append_vm_info(vmID, item, getattr(vm, item), "vm")
         #
         # # Summary Section
         # vm_summary_section(vm, vmID)
@@ -244,11 +285,21 @@ def vm_information_getter(vms):
         # # guest
         # append_section_info(vm.guest, vmID, "vm.guest")
 
-        #guestHeartbeatStatus
-        #append_vm_info(vmID, "guestHeartbeatStatus", vm.guestHeartbeatStatus, "vm")
-
         #layout description
         #vm_layout_section(vm, vmID)
+
+        # #network section
+        # vm_network_section(vm, vmID)
+
+        ## #host section
+        #print("host section is starting")
+        #host_section(vm, vmID)
+
+        ## ResourcePool
+        #resource_pool_section(vm, vmID)
+
+        #runtime section
+        append_section_info(vm.runtime, vmID, "vm.runtime")
 
 
 
