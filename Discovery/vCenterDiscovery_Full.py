@@ -1,4 +1,3 @@
-from Discovery.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import ssl
@@ -8,6 +7,8 @@ import pandas as pd
 import sys
 from sqlalchemy import create_engine
 from datetime import datetime
+from tqdm import tqdm
+
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
@@ -25,10 +26,19 @@ def connect_esxi_environment(esxi_host, username, password):
     vms = container.view
     return vms, si
 
+def append_vm_info(vmID, key, value, additional_info=''):
+    try:
+        append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend,
+                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                      notes=f"{additional_info}")
+    except:
+        pass
+
 def append_section_info(section, vmID, section_name):
     try:
         section_info = vars(section)
-        for key, value in section_info.items():
+        filtered_info = {key: value for key, value in section_info.items() if key not in ['dynamicProperty', 'dynamicType']}
+        for key, value in filtered_info.items():
             value = str(value)
             keyToInsert = key
             append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
@@ -39,18 +49,122 @@ def append_section_info(section, vmID, section_name):
 
 def vm_summary_section(vm, vmID):
     main_section = "vm.summary"
+    sub_sections = ["config",
+                    "guest",
+                    "overallStatus",
+                    "quickStats",
+                    "runtime",
+                    "storage"]
 
-    vm_summary_sections = {
-        f"{main_section}.config": vm.summary.config,
-        f"{main_section}.guest": vm.summary.guest,
-        f"{main_section}.overallStatus": vm.summary.overallStatus,
-        f"{main_section}.quickStats": vm.summary.quickStats,
-        f"{main_section}.runtime": vm.summary.runtime,
-        f"{main_section}.storage": vm.summary.storage
-    }
+    vm_summary_sections = {f"{main_section}.{subsection}": getattr(vm.summary, subsection) for subsection in
+                           sub_sections}
 
     for section_name, section in vm_summary_sections.items():
         append_section_info(section, vmID, section_name)
+
+
+def vm_config_section(vm, vmID):
+    main_section = "vm.config"
+    sub_sections = [
+    "alternateGuestName",
+    "annotation",
+    "bootOptions",
+    "changeTrackingEnabled",
+    "changeVersion",
+    "consolePreferences",
+    "contentLibItemInfo",
+    "cpuAffinity",
+    "cpuAllocation",
+    "cpuFeatureMask",
+    "cpuHotAddEnabled",
+    "cpuHotRemoveEnabled",
+    "createDate",
+    "defaultPowerOps",
+    "deviceGroups",
+    "deviceSwap",
+    "files",
+    "firmware",
+    "fixedPassthruHotPlugEnabled",
+    "forkConfigInfo",
+    "ftEncryptionMode",
+    "ftInfo",
+    "guestAutoLockEnabled",
+    "guestFullName",
+    "guestId",
+    "guestIntegrityInfo",
+    "guestMonitoringModeInfo",
+    "hardware",
+    "hotPlugMemoryIncrementSize",
+    "hotPlugMemoryLimit",
+    "initialOverhead",
+    "instanceUuid",
+    "keyId",
+    "latencySensitivity",
+    "locationId",
+    "managedBy",
+    "maxMksConnections",
+    "memoryAffinity",
+    "memoryAllocation",
+    "memoryHotAddEnabled",
+    "memoryReservationLockedToMax",
+    "messageBusTunnelEnabled",
+    "migrateEncryption",
+    "modified",
+    "name",
+    "nestedHVEnabled",
+    "networkShaper",
+    "npivDesiredNodeWwns",
+    "npivDesiredPortWwns",
+    "npivNodeWorldWideName",
+    "npivOnNonRdmDisks",
+    "npivPortWorldWideName",
+    "npivTemporaryDisabled",
+    "npivWorldWideNameType",
+    "numaInfo",
+    "pmem",
+    "pmemFailoverEnabled",
+    "repConfig",
+    "rebootPowerOff",
+    "scheduledHardwareUpgradeInfo",
+    "sevEnabled",
+    "sgxInfo",
+    "swapPlacement",
+    "swapStorageObjectId",
+    "template",
+    "tools",
+    "uuid",
+    "vAppConfig",
+    "vAssertsEnabled",
+    "vFlashCacheReservation",
+    "version",
+    "vmOpNotificationTimeout",
+    "vmOpNotificationToAppEnabled",
+    "vmStorageObjectId",
+    "vmxConfigChecksum",
+    "vmxStatsCollectionEnabled"
+]
+
+    extra_sub_sections = [
+        "cpuAllocation.shares"
+        ]
+
+    vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
+                           sub_sections}
+
+    for section_name, section in vm_config_section.items():
+        append_section_info(section, vmID, section_name)
+
+    #datastoreUrl
+    datastoreUrlDesc = vm.config.datastoreUrl
+    for datastore in datastoreUrlDesc:
+        append_section_info(datastore, vmID, "vm.config.datastoreUrl")
+
+    #extraConfig
+    extraConfigDesc = vm.config.extraConfig
+    config_id = 0
+    for config in extraConfigDesc:
+        append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
+        config_id += 1
 
 def datastore_section(vm, vmID):
     try:
@@ -157,230 +271,38 @@ def vm_information_getter(vms):
         except:
             vmID = None
 
-        # Summary Section
-        vm_summary_section(vm, vmID)
+        vm_config_section(vm, vmID)
 
-        #alarmactionenabled description
-        try:
-            vmAlarmActionEnabled = vm.alarmActionsEnabled
-            keyToInsert = "alarmActionEnabled"
-            append_dataframe_given_values(keyToInsert, vmAlarmActionEnabled, isDeletedValueForAppend, versionForAppend,
-                                            createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                            "vm")
-        except:
-            pass
-
-
-        #Capability Section
-        capability = vars(vm.capability)
-        for key, value in capability.items():
-            value = str(value)
-            keyToInsert = key
-            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          notes="vm.capability")
-
-        #Config Section
-        config = vars(vm.config)
-        for key, value in config.items():
-            value = str(value)
-            keyToInsert = key
-            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          notes="vm.config")
-
-        #Config Status
-        vmConfigStatus = vm.configStatus
-        keyToInsert = "configStatus"
-        append_dataframe_given_values(keyToInsert, vmConfigStatus, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          notes="vm.configStatus")
-
-        #Datastore Section
-        datastore_section(vm, vmID)
-
-
-
-        try:
-            vmPowerState = vm.runtime.powerState
-            keyToInsert = "powerState"
-            append_dataframe_given_values(keyToInsert, vmPowerState, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmPowerState)
-        except:
-            pass
-        try:
-            vmCreateDate = vm.summary.runtime.bootTime
-            keyToInsert = "vmCreateDate"
-            append_dataframe_given_values(keyToInsert, vmCreateDate, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmCreateDate)
-        except:
-            pass
-        try:
-            vmCPUNumber = vm.summary.config.numCpu
-            keyToInsert = "cpu"
-            append_dataframe_given_values(keyToInsert, vmCPUNumber, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmCPUNumber)
-        except:
-            pass
-        try:
-            vmRamValue = vm.summary.config.memorySizeMB
-            keyToInsert = "memory"
-            append_dataframe_given_values(keyToInsert, vmRamValue, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmRamValue)
-        except:
-            pass
-        try:
-            vmOsInfo = vm.summary.config.guestFullName
-            keyToInsert = "ostype"
-            append_dataframe_given_values(keyToInsert, vmOsInfo, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmOsInfo)
-        except:
-            pass
-
-        #datastore
-        try:
-            vmDatastore = vm.datastore[0].info.name
-            keyToInsert = "datastore"
-            append_dataframe_given_values(keyToInsert, vmDatastore, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmDatastore)
-        except:
-            pass
-
-        #cluster name
-        try:
-            vmClusterName = vm.resourcePool.name
-            keyToInsert = "clusterName"
-            append_dataframe_given_values(keyToInsert, vmClusterName, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmClusterName)
-        except:
-            pass
-
-        # hostname
-        try:
-            vmHostName = vm.summary.guest.hostName
-            keyToInsert = "hostname"
-            append_dataframe_given_values(keyToInsert, vmHostName, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                          None,
-                                          vmHostName)
-
-            ipam = Connect_IPAM()
-            ipam_return = check_ip_addres_with_hostname(IPAM=ipam, hostname=vmHostName)
-
-            if ipam_return is None:
-                continue
-
-            else:
-                ipam_ip = ipam_return[0]
-                keyToInsert = "ipam_ip"
-                append_dataframe_given_values(keyToInsert, ipam_ip, isDeletedValueForAppend, versionForAppend,
-                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                              None,
-                                              ipam_ip)
-
-                ipam_subnet = ipam_return[1]
-                keyToInsert = "ipam_subnet_id"
-                append_dataframe_given_values(keyToInsert, ipam_subnet, isDeletedValueForAppend, versionForAppend,
-                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                              None,
-                                              ipam_subnet)
-
-                subnet_info = get_subnet(IPAM=ipam, subnet_id=ipam_subnet)
-
-                if subnet_info is not None:
-                    subnet_ip = subnet_info[0]
-                    subnet_mask = subnet_info[1]
-
-                    keyToInsert = "subnet_ip"
-                    append_dataframe_given_values(keyToInsert, subnet_ip, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType,
-                                                  esxi_host, None,
-                                                  subnet_ip)
-
-                    keyToInsert = "subnet_mask"
-                    append_dataframe_given_values(keyToInsert, subnet_mask, isDeletedValueForAppend,
-                                                  versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType,
-                                                  esxi_host, None,
-                                                  subnet_mask)
-        except:
-            pass
-
-
-
-
-        for device in vm.config.hardware.device:
-            if isinstance(device, vim.vm.device.VirtualDisk):
-                try:
-                    vmDiskName = device.deviceInfo.label
-                    keyToInsert = "diskname"
-                    append_dataframe_given_values(keyToInsert, vmDiskName, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                  None,
-                                                  vmDiskName)
-                except:
-                    pass
-                try:
-                    vmDiskCapacity = device.capacityInKB / 1024 / 1024
-                    keyToInsert = "diskSize"
-                    append_dataframe_given_values(keyToInsert, vmDiskCapacity, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                  None,
-                                                  vmDiskCapacity)
-                except:
-                    pass
-                try:
-                    vmDiskType = device.backing.diskMode
-                    keyToInsert = "diskType"
-                    append_dataframe_given_values(keyToInsert, vmDiskType, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                  None,
-                                                  vmDiskType)
-                except:
-                    pass
-
-                #total virtualdisk number of vm
-                try:
-                    vmDiskNumber = len(vm.config.hardware.device)
-                    keyToInsert = "diskNumber"
-                    append_dataframe_given_values(keyToInsert, vmDiskNumber, isDeletedValueForAppend, versionForAppend,
-                                                    createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                    None,
-                                                    vmDiskNumber)
-                except:
-                    pass
-
-
-
-        if (vm.snapshot is None):
-            pass
-        else:
-            for snapshot in vm.snapshot.rootSnapshotList:
-                try:
-                    vmSnapShotName = snapshot.name
-                    keyToInsert = "snapshotName"
-                    append_dataframe_given_values(keyToInsert, vmSnapShotName, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                  None,
-                                                  vmSnapShotName)
-                except:
-                    pass
-                try:
-                    vmSnapShotCreationTime = snapshot.createTime
-                    keyToInsert = "snapshotCreateDate"
-                    append_dataframe_given_values(keyToInsert, vmSnapShotCreationTime, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                  None,
-                                                  vmSnapShotCreationTime)
-                except:
-                    pass
+        # #alarmactionenabled description
+        # append_vm_info(vmID, "alarmActionsEnabled", vm.alarmActionsEnabled, "vm.alarmActionsEnabled")
+        #
+        # # Summary Section
+        # vm_summary_section(vm, vmID)
+        #
+        # #Capability Section
+        # append_section_info(vm.capability, vmID, "vm.capability")
+        #
+        # #Config Section
+        # config = vars(vm.config)
+        # for key, value in config.items():
+        #     value = str(value)
+        #     keyToInsert = key
+        #     append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+        #                                   notes="vm.config")
+        #
+        # #Config Status
+        # vmConfigStatus = vm.configStatus
+        # keyToInsert = "configStatus"
+        # append_dataframe_given_values(keyToInsert, vmConfigStatus, isDeletedValueForAppend, versionForAppend,
+        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+        #                                   notes="vm.configStatus")
+        #
+        # #Datastore Section
+        # datastore_section(vm, vmID)
+        #
+        #
+        #
 
 
 
