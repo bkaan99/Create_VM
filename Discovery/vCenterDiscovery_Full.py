@@ -7,7 +7,6 @@ import pandas as pd
 import sys
 from sqlalchemy import create_engine
 from datetime import datetime
-from tqdm import tqdm
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -65,94 +64,38 @@ def vm_summary_section(vm, vmID):
 
 def vm_config_section(vm, vmID):
     main_section = "vm.config"
-    sub_sections = [
-    "alternateGuestName",
-    "annotation",
-    "bootOptions",
-    "changeTrackingEnabled",
-    "changeVersion",
-    "consolePreferences",
-    "contentLibItemInfo",
-    "cpuAffinity",
-    "cpuAllocation",
-    "cpuFeatureMask",
-    "cpuHotAddEnabled",
-    "cpuHotRemoveEnabled",
-    "createDate",
-    "defaultPowerOps",
-    "deviceGroups",
-    "deviceSwap",
-    "files",
-    "firmware",
-    "fixedPassthruHotPlugEnabled",
-    "forkConfigInfo",
-    "ftEncryptionMode",
-    "ftInfo",
-    "guestAutoLockEnabled",
-    "guestFullName",
-    "guestId",
-    "guestIntegrityInfo",
-    "guestMonitoringModeInfo",
-    "hardware",
-    "hotPlugMemoryIncrementSize",
-    "hotPlugMemoryLimit",
-    "initialOverhead",
-    "instanceUuid",
-    "keyId",
-    "latencySensitivity",
-    "locationId",
-    "managedBy",
-    "maxMksConnections",
-    "memoryAffinity",
-    "memoryAllocation",
-    "memoryHotAddEnabled",
-    "memoryReservationLockedToMax",
-    "messageBusTunnelEnabled",
-    "migrateEncryption",
-    "modified",
-    "name",
-    "nestedHVEnabled",
-    "networkShaper",
-    "npivDesiredNodeWwns",
-    "npivDesiredPortWwns",
-    "npivNodeWorldWideName",
-    "npivOnNonRdmDisks",
-    "npivPortWorldWideName",
-    "npivTemporaryDisabled",
-    "npivWorldWideNameType",
-    "numaInfo",
-    "pmem",
-    "pmemFailoverEnabled",
-    "repConfig",
-    "rebootPowerOff",
-    "scheduledHardwareUpgradeInfo",
-    "sevEnabled",
-    "sgxInfo",
-    "swapPlacement",
-    "swapStorageObjectId",
-    "template",
-    "tools",
-    "uuid",
-    "vAppConfig",
-    "vAssertsEnabled",
-    "vFlashCacheReservation",
-    "version",
-    "vmOpNotificationTimeout",
-    "vmOpNotificationToAppEnabled",
-    "vmStorageObjectId",
-    "vmxConfigChecksum",
-    "vmxStatsCollectionEnabled"
-]
 
-    extra_sub_sections = [
-        "cpuAllocation.shares"
-        ]
+    new_list = ["bootOptions",
+                "cpuAllocation",
+                "defaultPowerOps",
+                "files",
+                "flags",
+                "guestIntegrityInfo",
+                "guestMonitoringModeInfo",
+                "hardware",
+                "initialOverhead",
+                "latencySensitivity",
+                "memoryAllocation",
+                "scheduledHardwareUpgradeInfo",
+                "sgxInfo",
+                "tools"]
 
     vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
-                           sub_sections}
+                           new_list}
 
     for section_name, section in vm_config_section.items():
         append_section_info(section, vmID, section_name)
+
+
+    vm_config_vars = vars(vm.config)
+    filtered_vm_config_vars = {key: value for key, value in vm_config_vars.items() if key not in new_list}
+
+    for key, value in filtered_vm_config_vars.items():
+        value = str(value)
+        keyToInsert = key
+        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                      notes=f"{main_section}")
 
     #datastoreUrl
     datastoreUrlDesc = vm.config.datastoreUrl
@@ -161,105 +104,79 @@ def vm_config_section(vm, vmID):
 
     #extraConfig
     extraConfigDesc = vm.config.extraConfig
-    config_id = 0
-    for config in extraConfigDesc:
+    for config_id, config in enumerate(extraConfigDesc):
         append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
-        config_id += 1
+
+
+    #hardware devices
+    hardwareDevices = vm.config.hardware.device
+    for device_count, device in enumerate(hardwareDevices):
+        #deviceInfo
+        deviceInfo = device.deviceInfo
+        append_vm_info(vmID, "deviceInfo.label", deviceInfo.label, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
+        append_vm_info(vmID, "deviceInfo.summary", deviceInfo.summary, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
+
+        append_section_info(device, vmID, f"vm.config.hardware.device.[{device_count}]")
+
 
 def datastore_section(vm, vmID):
     try:
         vmDatastore = vm.datastore
-        for datastore in vmDatastore:
-            try:
-                datastoreAlarmActions = datastore.alarmActionsEnabled
-                keyToInsert = "alarmActionsEnabled"
-                append_dataframe_given_values(keyToInsert, datastoreAlarmActions, isDeletedValueForAppend, versionForAppend,
-                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                              "vm.datastore.datastoreAlarmActions")
-            except:
-                pass
+        for datastore_count,datastore in enumerate(vmDatastore):
+            main_section = "vm.datastore"
+            sub_sections = ["capability","info","summary"]
+            addinational_list = ["alarmActionsEnabled",
+                                "configStatus",
+                                "name",
+                                "overallStatus"]
 
-            try:
-                datastoreCapabilities = vars(datastore.capability)
-                for key, value in datastoreCapabilities.items():
-                    value = str(value)
-                    keyToInsert = key
-                    append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                  "vm.datastore.capability")
-            except:
-                pass
+            for item in addinational_list:
+                append_vm_info(vmID, item, getattr(datastore, item), f"{main_section}.[{datastore_count}]")
 
-            try:
-                datastoreConfigStatus = datastore.configStatus
-                keyToInsert = "configStatus"
-                append_dataframe_given_values(keyToInsert, datastoreConfigStatus, isDeletedValueForAppend, versionForAppend,
-                                                createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                "vm.datastore.configStatus")
-            except:
-                pass
+            for section in sub_sections:
+                append_section_info(getattr(datastore, section), vmID, f"{main_section}.[{datastore_count}].{section}")
 
-            try:
-                declaredAlarmState = datastore.declaredAlarmState
-                for alarm in declaredAlarmState:
-                    alarmDesc = vars(alarm)
-                    for key, value in alarmDesc.items():
-                        value = str(value)
-                        keyToInsert = key
-                        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                      "vm.datastore.declaredAlarmState")
-            except:
-                pass
 
-            #disabledMethod
-            try:
-                disabledMethod = datastore.disabledMethod
-                for method in disabledMethod:
-                    keyToInsert = "disabledMethod"
-                    append_dataframe_given_values(keyToInsert, method, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                  "vm.datastore.disabledMethod")
-            except:
-                pass
+            #declaredAlarmState
+            declaredAlarmState = datastore.declaredAlarmState
+            for alarm in declaredAlarmState:
+                append_section_info(alarm, vmID, f"{main_section}.[{datastore_count}].declaredAlarmState")
 
-            #effectiveRole
-            try:
-                effectiveRole = datastore.effectiveRole
-                keyToInsert = "effectiveRole"
-                append_dataframe_given_values(keyToInsert, effectiveRole, isDeletedValueForAppend, versionForAppend,
-                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                              "vm.datastore.effectiveRole")
-            except:
-                pass
+            # #disabledMethod
+            disabledMethod = datastore.disabledMethod
+            for method in disabledMethod:
+                append_vm_info(vmID, "disabledMethod", method, f"{main_section}.[{datastore_count}].disabledMethod")
+
+            # #effectiveRole
+            effectiveRole = datastore.effectiveRole
+            for role in effectiveRole:
+                append_vm_info(vmID, "effectiveRole", role, f"{main_section}.[{datastore_count}].effectiveRole")
+
+
 
             #host bilgisi
-            try:
-                all_host = datastore.host
-                for host in all_host:
-                    #key bilgisi
-
-
-                    #mountInfo
-                    try:
-                        mountInfo = vars(host.mountInfo)
-                        for key, value in mountInfo.items():
-                            value = str(value)
-                            keyToInsert = key
-                            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
-                                                          None,
-                                                          "vm.datastore.host.mountInfo")
-                    except:
-                        pass
-
-
-            except:
-                pass
+            all_host = datastore.host
+            for host in all_host:
+                #mountInfo
+                mountInfo = host.mountInfo
+                append_section_info(mountInfo, vmID, f"{main_section}.[{datastore_count}].host.mountInfo")
 
     except:
         pass
 
+def vm_decalarmedstate_section(vm, vmID):
+    vmDeclaredAlarmState = vm.declaredAlarmState
+    for alarm_count, alarm in enumerate(vmDeclaredAlarmState):
+        main_section = "vm.declaredAlarmState"
+        description_list = ["acknowledged","acknowledgedByUser","acknowledgedTime","disabled",
+                            "eventKey","key","overallStatus"]
+        for item in description_list:
+            append_vm_info(vmID, item, getattr(alarm, item), f"{main_section}.[{alarm_count}]")
+
+        alarm_info = alarm.alarm.info
+        important_info = ["actionFrequency","creationEventId","description","enabled","lastModifiedUser","name","systemName"]
+        for item in important_info:
+            append_vm_info(vmID, item, getattr(alarm_info, item), f"{main_section}.[{alarm_count}].alarm.info")
 
 def vm_information_getter(vms):
     for vm in vms:
@@ -271,7 +188,6 @@ def vm_information_getter(vms):
         except:
             vmID = None
 
-        vm_config_section(vm, vmID)
 
         # #alarmactionenabled description
         # append_vm_info(vmID, "alarmActionsEnabled", vm.alarmActionsEnabled, "vm.alarmActionsEnabled")
@@ -283,26 +199,13 @@ def vm_information_getter(vms):
         # append_section_info(vm.capability, vmID, "vm.capability")
         #
         # #Config Section
-        # config = vars(vm.config)
-        # for key, value in config.items():
-        #     value = str(value)
-        #     keyToInsert = key
-        #     append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-        #                                   notes="vm.config")
-        #
-        # #Config Status
-        # vmConfigStatus = vm.configStatus
-        # keyToInsert = "configStatus"
-        # append_dataframe_given_values(keyToInsert, vmConfigStatus, isDeletedValueForAppend, versionForAppend,
-        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-        #                                   notes="vm.configStatus")
-        #
+        # vm_config_section(vm, vmID)
+
         # #Datastore Section
-        # datastore_section(vm, vmID)
+        #datastore_section(vm, vmID)
         #
-        #
-        #
+        # DeclaredAlarmState
+        vm_decalarmedstate_section(vm, vmID)
 
 
 
