@@ -1,5 +1,3 @@
-import json
-
 from Discovery.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
@@ -10,7 +8,6 @@ import pandas as pd
 import sys
 from sqlalchemy import create_engine
 from datetime import datetime
-import json
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
@@ -81,36 +78,47 @@ def datastore_section(vm, vmID):
     try:
         vmDatastore = vm.datastore
         for datastore in vmDatastore:
-            datastoreAlarmActions = datastore.alarmActionsEnabled
-            keyToInsert = "alarmActionsEnabled"
-            append_dataframe_given_values(keyToInsert, datastoreAlarmActions, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          "vm.datastore.datastoreAlarmActions")
-
-            datastoreCapabilities = vars(datastore.capability)
-            for key, value in datastoreCapabilities.items():
-                value = str(value)
-                keyToInsert = key
-                append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+            try:
+                datastoreAlarmActions = datastore.alarmActionsEnabled
+                keyToInsert = "alarmActionsEnabled"
+                append_dataframe_given_values(keyToInsert, datastoreAlarmActions, isDeletedValueForAppend, versionForAppend,
                                               createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                              "vm.datastore.capability")
+                                              "vm.datastore.datastoreAlarmActions")
+            except:
+                pass
 
-            datastoreConfigStatus = datastore.configStatus
-            keyToInsert = "configStatus"
-            append_dataframe_given_values(keyToInsert, datastoreConfigStatus, isDeletedValueForAppend, versionForAppend,
-                                            createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                            "vm.datastore.configStatus")
-
-            declaredAlarmState = datastore.declaredAlarmState
-
-            for alarm in declaredAlarmState:
-                alarmDesc = vars(alarm)
-                for key, value in alarmDesc.items():
+            try:
+                datastoreCapabilities = vars(datastore.capability)
+                for key, value in datastoreCapabilities.items():
                     value = str(value)
                     keyToInsert = key
                     append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
                                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                  "vm.datastore.declaredAlarmState")
+                                                  "vm.datastore.capability")
+            except:
+                pass
+
+            try:
+                datastoreConfigStatus = datastore.configStatus
+                keyToInsert = "configStatus"
+                append_dataframe_given_values(keyToInsert, datastoreConfigStatus, isDeletedValueForAppend, versionForAppend,
+                                                createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                                "vm.datastore.configStatus")
+            except:
+                pass
+
+            try:
+                declaredAlarmState = datastore.declaredAlarmState
+                for alarm in declaredAlarmState:
+                    alarmDesc = vars(alarm)
+                    for key, value in alarmDesc.items():
+                        value = str(value)
+                        keyToInsert = key
+                        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+                                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                                      "vm.datastore.declaredAlarmState")
+            except:
+                pass
 
             #disabledMethod
             try:
@@ -120,10 +128,42 @@ def datastore_section(vm, vmID):
                     append_dataframe_given_values(keyToInsert, method, isDeletedValueForAppend, versionForAppend,
                                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
                                                   "vm.datastore.disabledMethod")
-
             except:
                 pass
 
+            #effectiveRole
+            try:
+                effectiveRole = datastore.effectiveRole
+                keyToInsert = "effectiveRole"
+                append_dataframe_given_values(keyToInsert, effectiveRole, isDeletedValueForAppend, versionForAppend,
+                                              createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                              "vm.datastore.effectiveRole")
+            except:
+                pass
+
+            #host bilgisi
+            try:
+                all_host = datastore.host
+                for host in all_host:
+                    #key bilgisi
+
+
+                    #mountInfo
+                    try:
+                        mountInfo = vars(host.mountInfo)
+                        for key, value in mountInfo.items():
+                            value = str(value)
+                            keyToInsert = key
+                            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+                                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host,
+                                                          None,
+                                                          "vm.datastore.host.mountInfo")
+                    except:
+                        pass
+
+
+            except:
+                pass
 
     except:
         pass
