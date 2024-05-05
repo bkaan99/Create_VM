@@ -178,6 +178,36 @@ def vm_decalarmedstate_section(vm, vmID):
         for item in important_info:
             append_vm_info(vmID, item, getattr(alarm_info, item), f"{main_section}.[{alarm_count}].alarm.info")
 
+
+def vm_layout_section(vm, vmID):
+    layout= vm.layout
+
+    #configFile
+    configFile = layout.configFile
+    for count, file in enumerate(configFile):
+        append_vm_info(vmID, f"configFile-{count}", file, "vm.layout.configFile")
+
+    #diskFile
+    disks = layout.disk
+    for count, disk in enumerate(disks):
+        diskFiles = disk.diskFile
+        for count, file in enumerate(diskFiles):
+            append_vm_info(vmID, f"diskFile-{count}", file, "vm.layout.disk.diskFile")
+
+    #logFile
+    logFiles = layout.logFile
+    for count, file in enumerate(logFiles):
+        append_vm_info(vmID, f"logFile-{count}", file, "vm.layout.logFile")
+
+    #swapFile
+    append_vm_info(vmID, "swapFile", layout.swapFile, "vm.layout.swapFile")
+
+    #layoutFileEx
+    layout_ex_file = vm.layoutEx.file
+    for count, file in enumerate(layout_ex_file):
+        append_section_info(file, vmID, f"vm.layoutEx.file.[{count}]")
+
+
 def vm_information_getter(vms):
     for vm in vms:
         try:
@@ -205,7 +235,20 @@ def vm_information_getter(vms):
         #datastore_section(vm, vmID)
         #
         # DeclaredAlarmState
-        vm_decalarmedstate_section(vm, vmID)
+        #vm_decalarmedstate_section(vm, vmID)
+
+        # #DisabledMethod
+        # for count, method in enumerate(vm.disabledMethod):
+        #     append_vm_info(vmID, f"disabledMethod-{count}", method, "vm.disabledMethod")
+
+        # # guest
+        # append_section_info(vm.guest, vmID, "vm.guest")
+
+        #guestHeartbeatStatus
+        #append_vm_info(vmID, "guestHeartbeatStatus", vm.guestHeartbeatStatus, "vm")
+
+        #layout description
+        #vm_layout_section(vm, vmID)
 
 
 
