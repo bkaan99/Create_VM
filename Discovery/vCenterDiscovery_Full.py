@@ -25,54 +25,32 @@ def connect_esxi_environment(esxi_host, username, password):
     vms = container.view
     return vms, si
 
+def append_section_info(section, vmID, section_name):
+    try:
+        section_info = vars(section)
+        for key, value in section_info.items():
+            value = str(value)
+            keyToInsert = key
+            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          notes=f"{section_name}")
+    except:
+        pass
+
 def vm_summary_section(vm, vmID):
-    summary_config = vars(vm.summary.config)
-    for key, value in summary_config.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.config")
+    main_section = "vm.summary"
 
-    summary_guest = vars(vm.summary.guest)
-    for key, value in summary_guest.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.guest")
+    vm_summary_sections = {
+        f"{main_section}.config": vm.summary.config,
+        f"{main_section}.guest": vm.summary.guest,
+        f"{main_section}.overallStatus": vm.summary.overallStatus,
+        f"{main_section}.quickStats": vm.summary.quickStats,
+        f"{main_section}.runtime": vm.summary.runtime,
+        f"{main_section}.storage": vm.summary.storage
+    }
 
-    summary_overallStatus = vars(vm.summary.overallStatus)
-    for key, value in summary_overallStatus.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.overallStatus")
-
-    summary_quickStats = vars(vm.summary.quickStats)
-    for key, value in summary_quickStats.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.quickStats")
-
-    summary_runtime = vars(vm.summary.runtime)
-    for key, value in summary_runtime.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.runtime")
-
-    summary_storage = vars(vm.summary.storage)
-    for key, value in summary_storage.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes="vm.summary.storage")
+    for section_name, section in vm_summary_sections.items():
+        append_section_info(section, vmID, section_name)
 
 def datastore_section(vm, vmID):
     try:
