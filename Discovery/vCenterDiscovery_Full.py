@@ -85,32 +85,32 @@ def vm_config_section(vm, vmID):
                     "sgxInfo",
                     "tools"]
         #
-        # vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
-        #                        new_list}
-        #
-        # for section_name, section in vm_config_section.items():
-        #     append_section_info(section, vmID, section_name)
-        #
-        #
-        # vm_config_vars = vars(vm.config)
-        # filtered_vm_config_vars = {key: value for key, value in vm_config_vars.items() if key not in new_list}
-        #
-        # for key, value in filtered_vm_config_vars.items():
-        #     value = str(value)
-        #     keyToInsert = key
-        #     append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-        #                                   notes=f"{main_section}")
-        #
-        # #datastoreUrl
-        # datastoreUrlDesc = vm.config.datastoreUrl
-        # for datastore in datastoreUrlDesc:
-        #     append_section_info(datastore, vmID, "vm.config.datastoreUrl")
-        #
-        # #extraConfig
-        # extraConfigDesc = vm.config.extraConfig
-        # for config_id, config in enumerate(extraConfigDesc):
-        #     append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
+        vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
+                               new_list}
+
+        for section_name, section in vm_config_section.items():
+            append_section_info(section, vmID, section_name)
+
+
+        vm_config_vars = vars(vm.config)
+        filtered_vm_config_vars = {key: value for key, value in vm_config_vars.items() if key not in new_list}
+
+        for key, value in filtered_vm_config_vars.items():
+            value = str(value)
+            keyToInsert = key
+            append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          notes=f"{main_section}")
+
+        #datastoreUrl
+        datastoreUrlDesc = vm.config.datastoreUrl
+        for datastore in datastoreUrlDesc:
+            append_section_info(datastore, vmID, "vm.config.datastoreUrl")
+
+        #extraConfig
+        extraConfigDesc = vm.config.extraConfig
+        for config_id, config in enumerate(extraConfigDesc):
+            append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
 
 
         #hardware devices
@@ -298,7 +298,7 @@ def vm_information_getter(vms):
         #             continue
         # except:
         #     print(f"VM {vm_index} error")
-
+        #
         # # Summary Section
         # print("summary section is starting")
         # vm_summary_section(vm, vmID)
@@ -309,12 +309,12 @@ def vm_information_getter(vms):
         #
         # #Config Section
         # print("config section is starting")
-        # vm_config_section(vm, vmID)
+        #vm_config_section(vm, vmID)
 
         # #Datastore Section
         # print("datastore section is starting")
-        #datastore_section(vm, vmID)
-
+        # datastore_section(vm, vmID)
+        #
         # #DeclaredAlarmState
         # print("declared alarm state section is starting")
         # vm_decalarmedstate_section(vm, vmID)
@@ -331,7 +331,7 @@ def vm_information_getter(vms):
         # #layout description
         # print("layout section is starting")
         # vm_layout_section(vm, vmID)
-        #
+
         # #network section
         # print("network section is starting")
         # vm_network_section(vm, vmID)
@@ -340,15 +340,13 @@ def vm_information_getter(vms):
         # print("host section is starting")
         # host_section(vm, vmID)
         #
-        # ResourcePool
+        # #ResourcePool
         # print("resource pool section is starting")
         # resource_pool_section(vm, vmID)
         #
         # #runtime section
         # print("runtime section is starting")
         # append_section_info(vm.runtime, vmID, "vm.runtime")
-        #
-
 
 if __name__ == "__main__":
     createdDateForAppend = datetime.now()
