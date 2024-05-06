@@ -47,77 +47,84 @@ def append_section_info(section, vmID, section_name):
         pass
 
 def vm_summary_section(vm, vmID):
-    main_section = "vm.summary"
-    sub_sections = ["config",
-                    "guest",
-                    "overallStatus",
-                    "quickStats",
-                    "runtime",
-                    "storage"]
+    try:
+        main_section = "vm.summary"
+        sub_sections = ["config",
+                        "guest",
+                        "overallStatus",
+                        "quickStats",
+                        "runtime",
+                        "storage"]
 
-    vm_summary_sections = {f"{main_section}.{subsection}": getattr(vm.summary, subsection) for subsection in
-                           sub_sections}
+        vm_summary_sections = {f"{main_section}.{subsection}": getattr(vm.summary, subsection) for subsection in
+                               sub_sections}
 
-    for section_name, section in vm_summary_sections.items():
-        append_section_info(section, vmID, section_name)
+        for section_name, section in vm_summary_sections.items():
+            append_section_info(section, vmID, section_name)
 
+    except:
+        print("Summary is not available")
+        pass
 
 def vm_config_section(vm, vmID):
-    main_section = "vm.config"
+    try:
+        main_section = "vm.config"
 
-    new_list = ["bootOptions",
-                "cpuAllocation",
-                "defaultPowerOps",
-                "files",
-                "flags",
-                "guestIntegrityInfo",
-                "guestMonitoringModeInfo",
-                "hardware",
-                "initialOverhead",
-                "latencySensitivity",
-                "memoryAllocation",
-                "scheduledHardwareUpgradeInfo",
-                "sgxInfo",
-                "tools"]
+        new_list = ["bootOptions",
+                    "cpuAllocation",
+                    "defaultPowerOps",
+                    "files",
+                    "flags",
+                    "guestIntegrityInfo",
+                    "guestMonitoringModeInfo",
+                    "hardware",
+                    "initialOverhead",
+                    "latencySensitivity",
+                    "memoryAllocation",
+                    "scheduledHardwareUpgradeInfo",
+                    "sgxInfo",
+                    "tools"]
+        #
+        # vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
+        #                        new_list}
+        #
+        # for section_name, section in vm_config_section.items():
+        #     append_section_info(section, vmID, section_name)
+        #
+        #
+        # vm_config_vars = vars(vm.config)
+        # filtered_vm_config_vars = {key: value for key, value in vm_config_vars.items() if key not in new_list}
+        #
+        # for key, value in filtered_vm_config_vars.items():
+        #     value = str(value)
+        #     keyToInsert = key
+        #     append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
+        #                                   createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+        #                                   notes=f"{main_section}")
+        #
+        # #datastoreUrl
+        # datastoreUrlDesc = vm.config.datastoreUrl
+        # for datastore in datastoreUrlDesc:
+        #     append_section_info(datastore, vmID, "vm.config.datastoreUrl")
+        #
+        # #extraConfig
+        # extraConfigDesc = vm.config.extraConfig
+        # for config_id, config in enumerate(extraConfigDesc):
+        #     append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
 
-    vm_config_section = {f"{main_section}.{subsection}": getattr(vm.config, subsection) for subsection in
-                           new_list}
 
-    for section_name, section in vm_config_section.items():
-        append_section_info(section, vmID, section_name)
+        #hardware devices
+        hardwareDevices = vm.config.hardware.device
+        for device_count, device in enumerate(hardwareDevices):
+            #deviceInfo
+            deviceInfo = device.deviceInfo
+            append_vm_info(vmID, "deviceInfo.label", deviceInfo.label, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
+            append_vm_info(vmID, "deviceInfo.summary", deviceInfo.summary, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
 
-
-    vm_config_vars = vars(vm.config)
-    filtered_vm_config_vars = {key: value for key, value in vm_config_vars.items() if key not in new_list}
-
-    for key, value in filtered_vm_config_vars.items():
-        value = str(value)
-        keyToInsert = key
-        append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      notes=f"{main_section}")
-
-    #datastoreUrl
-    datastoreUrlDesc = vm.config.datastoreUrl
-    for datastore in datastoreUrlDesc:
-        append_section_info(datastore, vmID, "vm.config.datastoreUrl")
-
-    #extraConfig
-    extraConfigDesc = vm.config.extraConfig
-    for config_id, config in enumerate(extraConfigDesc):
-        append_section_info(config, vmID, f"vm.config.extraConfig.[{config_id}]")
-
-
-    #hardware devices
-    hardwareDevices = vm.config.hardware.device
-    for device_count, device in enumerate(hardwareDevices):
-        #deviceInfo
-        deviceInfo = device.deviceInfo
-        append_vm_info(vmID, "deviceInfo.label", deviceInfo.label, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
-        append_vm_info(vmID, "deviceInfo.summary", deviceInfo.summary, f"vm.config.hardware.device.deviceInfo.[{device_count}]")
-
-        append_section_info(device, vmID, f"vm.config.hardware.device.[{device_count}]")
-
+            append_section_info(device, vmID, f"vm.config.hardware.device.[{device_count}]")
+    except:
+        print("Config is not available")
+        pass
 
 def datastore_section(vm, vmID):
     try:
@@ -165,91 +172,110 @@ def datastore_section(vm, vmID):
         pass
 
 def vm_decalarmedstate_section(vm, vmID):
-    vmDeclaredAlarmState = vm.declaredAlarmState
-    for alarm_count, alarm in enumerate(vmDeclaredAlarmState):
-        main_section = "vm.declaredAlarmState"
-        description_list = ["acknowledged","acknowledgedByUser","acknowledgedTime","disabled",
-                            "eventKey","key","overallStatus"]
-        for item in description_list:
-            append_vm_info(vmID, item, getattr(alarm, item), f"{main_section}.[{alarm_count}]")
+    try:
+        vmDeclaredAlarmState = vm.declaredAlarmState
+        for alarm_count, alarm in enumerate(vmDeclaredAlarmState):
+            main_section = "vm.declaredAlarmState"
+            description_list = ["acknowledged","acknowledgedByUser","acknowledgedTime","disabled",
+                                "eventKey","key","overallStatus"]
+            for item in description_list:
+                append_vm_info(vmID, item, getattr(alarm, item), f"{main_section}.[{alarm_count}]")
 
-        alarm_info = alarm.alarm.info
-        important_info = ["actionFrequency","creationEventId","description","enabled","lastModifiedUser","name","systemName"]
-        for item in important_info:
-            append_vm_info(vmID, item, getattr(alarm_info, item), f"{main_section}.[{alarm_count}].alarm.info")
+            alarm_info = alarm.alarm.info
+            important_info = ["actionFrequency","creationEventId","description","enabled","lastModifiedUser","name","systemName"]
+            for item in important_info:
+                append_vm_info(vmID, item, getattr(alarm_info, item), f"{main_section}.[{alarm_count}].alarm.info")
 
+    except:
+        print("Declared Alarm State is not available")
+        pass
 
 def vm_layout_section(vm, vmID):
-    layout= vm.layout
+    try:
+        layout= vm.layout
 
-    #configFile
-    configFile = layout.configFile
-    for count, file in enumerate(configFile):
-        append_vm_info(vmID, f"configFile-{count}", file, "vm.layout.configFile")
+        #configFile
+        configFile = layout.configFile
+        for count, file in enumerate(configFile):
+            append_vm_info(vmID, f"configFile-{count}", file, "vm.layout.configFile")
 
-    #diskFile
-    disks = layout.disk
-    for count, disk in enumerate(disks):
-        diskFiles = disk.diskFile
-        for count, file in enumerate(diskFiles):
-            append_vm_info(vmID, f"diskFile-{count}", file, "vm.layout.disk.diskFile")
+        #diskFile
+        disks = layout.disk
+        for count, disk in enumerate(disks):
+            diskFiles = disk.diskFile
+            for count, file in enumerate(diskFiles):
+                append_vm_info(vmID, f"diskFile-{count}", file, "vm.layout.disk.diskFile")
 
-    #logFile
-    logFiles = layout.logFile
-    for count, file in enumerate(logFiles):
-        append_vm_info(vmID, f"logFile-{count}", file, "vm.layout.logFile")
+        #logFile
+        logFiles = layout.logFile
+        for count, file in enumerate(logFiles):
+            append_vm_info(vmID, f"logFile-{count}", file, "vm.layout.logFile")
 
-    #swapFile
-    append_vm_info(vmID, "swapFile", layout.swapFile, "vm.layout.swapFile")
+        #swapFile
+        append_vm_info(vmID, "swapFile", layout.swapFile, "vm.layout.swapFile")
 
-    #layoutFileEx
-    layout_ex_file = vm.layoutEx.file
-    for count, file in enumerate(layout_ex_file):
-        append_section_info(file, vmID, f"vm.layoutEx.file.[{count}]")
+        #layoutFileEx
+        layout_ex_file = vm.layoutEx.file
+        for count, file in enumerate(layout_ex_file):
+            append_section_info(file, vmID, f"vm.layoutEx.file.[{count}]")
+
+    except:
+        print("Layout is not available")
+        pass
 
 
 def vm_network_section(vm, vmID):
-    network_section = vm.network
-    for network_count, network in enumerate(network_section):
-        first_list = ["alarmActionsEnabled","configStatus","name","overallStatus"]
-        for item in first_list:
-            append_vm_info(vmID, item, getattr(network, item), f"vm.network.[{network_count}]")
+    try:
+        network_section = vm.network
+        for network_count, network in enumerate(network_section):
+            first_list = ["alarmActionsEnabled","configStatus","name","overallStatus"]
+            for item in first_list:
+                append_vm_info(vmID, item, getattr(network, item), f"vm.network.[{network_count}]")
 
-        #summary
-        append_section_info(network.summary, vmID, f"vm.network.[{network_count}].summary")
+            #summary
+            append_section_info(network.summary, vmID, f"vm.network.[{network_count}].summary")
+    except:
+        print("Network is not available")
+        pass
 
 def host_section(vm, vmID):
-    #host bilgisi
-    all_networks = vm.network
-    for network in all_networks:
-        for host in network.host:
+    try:
+        #host bilgisi
+        all_networks = vm.network
+        for network in all_networks:
+            for host in network.host:
 
-            host_basic_list = ["alarmActionsEnabled","answerFileValidationResult","answerFileValidationState","complianceCheckResult","complianceCheckState","configStatus","name","overallStatus","precheckRemediationResult","remediationResult","remediationState"]
-            for item in host_basic_list:
-                append_vm_info(vmID, item, getattr(host, item), f"vm.network.host")
+                host_basic_list = ["alarmActionsEnabled","answerFileValidationResult","answerFileValidationState","complianceCheckResult","complianceCheckState","configStatus","name","overallStatus","precheckRemediationResult","remediationResult","remediationState"]
+                for item in host_basic_list:
+                    append_vm_info(vmID, item, getattr(host, item), f"vm.network.host")
 
-            list = ["capability","config","summary"]
-            for item in list:
-                append_section_info(getattr(host, item), vmID, f"vm.network.host.{item}")
-
+                list = ["capability","config","summary"]
+                for item in list:
+                    append_section_info(getattr(host, item), vmID, f"vm.network.host.{item}")
+    except:
+        print("Host is not available")
+        pass
 
 def resource_pool_section(vm, vmID):
-    resource_pool = vm.resourcePool
+    try:
+        resource_pool = vm.resourcePool
 
-    first_list = ["alarmActionsEnabled","configStatus","name","namespace","overallStatus"]
-    for item in first_list:
-        append_vm_info(vmID, item, getattr(resource_pool, item), "vm.resourcePool")
+        first_list = ["alarmActionsEnabled","configStatus","name","namespace","overallStatus"]
+        for item in first_list:
+            append_vm_info(vmID, item, getattr(resource_pool, item), "vm.resourcePool")
 
-    append_vm_info(vmID, "name", resource_pool.owner.name, "vm.resourcePool.owner")
-    append_vm_info(vmID, "configuredMemoryMB", resource_pool.summary.configuredMemoryMB, "vm.resourcePool.summary")
+        append_vm_info(vmID, "name", resource_pool.owner.name, "vm.resourcePool.owner")
+        append_vm_info(vmID, "configuredMemoryMB", resource_pool.summary.configuredMemoryMB, "vm.resourcePool.summary")
 
-    #vm's in resource pool
-    for vm in resource_pool.vm:
-        append_vm_info(vmID, "vm_name", vm.name, "vm.resourcePool.vm")
-
+        #vm's in resource pool
+        for vm in resource_pool.vm:
+            append_vm_info(vmID, "vm_name", vm.name, "vm.resourcePool.vm")
+    except:
+        print("Resource pool is not available")
+        pass
 
 def vm_information_getter(vms):
-    for vm in vms:
+    for vm_index, vm in enumerate(vms, start=1):
         try:
             vmID = str(vm.summary.vm).split(":")[1].replace("'","")
 
@@ -258,54 +284,75 @@ def vm_information_getter(vms):
         except:
             vmID = None
 
-        # #smallDescription
-        # small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp","snapshot"]
-        # for item in small_list:
-        #     append_vm_info(vmID, item, getattr(vm, item), "vm")
+        print(f"VM {vm_index} / {len(vms)} is starting")
+        print("")
         #
+        # #smallDescription
+        # print("small description is starting")
+        # try:
+        #     small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp"]
+        #     for index, item in enumerate(small_list):
+        #         if getattr(vm, item) is not None:
+        #             append_vm_info(vmID, item, getattr(vm, item), "vm")
+        #         else:
+        #             continue
+        # except:
+        #     print(f"VM {vm_index} error")
+
         # # Summary Section
+        # print("summary section is starting")
         # vm_summary_section(vm, vmID)
         #
         # #Capability Section
+        # print("capability section is starting")
         # append_section_info(vm.capability, vmID, "vm.capability")
         #
         # #Config Section
+        # print("config section is starting")
         # vm_config_section(vm, vmID)
 
         # #Datastore Section
+        # print("datastore section is starting")
         #datastore_section(vm, vmID)
-        #
-        # DeclaredAlarmState
-        #vm_decalarmedstate_section(vm, vmID)
 
+        # #DeclaredAlarmState
+        # print("declared alarm state section is starting")
+        # vm_decalarmedstate_section(vm, vmID)
+        #
         # #DisabledMethod
+        # print("disabled method section is starting")
         # for count, method in enumerate(vm.disabledMethod):
         #     append_vm_info(vmID, f"disabledMethod-{count}", method, "vm.disabledMethod")
 
         # # guest
+        # print("guest section is starting")
         # append_section_info(vm.guest, vmID, "vm.guest")
-
-        #layout description
-        #vm_layout_section(vm, vmID)
-
+        #
+        # #layout description
+        # print("layout section is starting")
+        # vm_layout_section(vm, vmID)
+        #
         # #network section
+        # print("network section is starting")
         # vm_network_section(vm, vmID)
-
-        ## #host section
-        #print("host section is starting")
-        #host_section(vm, vmID)
-
-        ## ResourcePool
-        #resource_pool_section(vm, vmID)
-
-        #runtime section
-        append_section_info(vm.runtime, vmID, "vm.runtime")
-
+        #
+        # # #host section
+        # print("host section is starting")
+        # host_section(vm, vmID)
+        #
+        # ResourcePool
+        # print("resource pool section is starting")
+        # resource_pool_section(vm, vmID)
+        #
+        # #runtime section
+        # print("runtime section is starting")
+        # append_section_info(vm.runtime, vmID, "vm.runtime")
+        #
 
 
 if __name__ == "__main__":
     createdDateForAppend = datetime.now()
-    versionForAppend = 1
+    versionForAppend = 2
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "vCenter"
     esxi_host = "10.14.45.10"
@@ -333,5 +380,5 @@ if __name__ == "__main__":
     vmsFromESXI, si = connect_esxi_environment(esxi_host, username, password)
     vm_information_getter(vmsFromESXI)
     Disconnect(si)
-    dataFrameForInsert.to_sql("vcenter_disc", engineForPostgres, chunksize=5000, index=False, method=None,
+    dataFrameForInsert.to_sql("kr_discovery_findings", engineForPostgres, chunksize=5000, index=False, method=None,
                               if_exists='append')
