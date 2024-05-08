@@ -1,5 +1,5 @@
 import warnings
-from Discovery.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
+from Discovery.ipam.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
 import phpipamsdk
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim

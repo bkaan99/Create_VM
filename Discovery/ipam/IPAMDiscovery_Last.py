@@ -8,7 +8,7 @@ import sys
 from sqlalchemy import create_engine
 from datetime import datetime
 
-from Discovery.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
+from Discovery.ipam.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
