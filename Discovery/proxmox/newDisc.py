@@ -7,7 +7,7 @@ import sys
 from sqlalchemy import create_engine
 from datetime import datetime
 from Discovery.proxmox import get_vm_id_list_proxmox, get_ip_information_proxmox, get_disk_volumes_proxmox, \
-    get_os_info_proxmox
+    get_os_info_proxmox, get_host_name_proxmox
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -259,6 +259,13 @@ if __name__ == "__main__":
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-osinfo")
 
+        keyListForHostConfig, hostConfigOfVms, IdListFromHostConfig = get_host_name_proxmox.get_host_name(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
+
+        for t in range(len(keyListForHostConfig)):
+            append_dataframe_given_values(keyListForHostConfig[t], str(hostConfigOfVms[t]), isDeletedValueForAppend,
+                                          versionForAppend, createdDateForAppend, IdListFromHostConfig[t],
+                                          virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
+                                          "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-host-name")
 
     dataFrameForInsert.to_sql("proxmox_disc", engineForPostgres, chunksize=5000, index=False, method=None,
                               if_exists='append')
