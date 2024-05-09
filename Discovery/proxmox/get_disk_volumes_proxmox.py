@@ -10,7 +10,9 @@ def get_disk_information(environmentIp, nodeName, vmIdList, headersWithCookie):
         vmConfigResult = requests.get(urlToSendRequest, headers=headersWithCookie, verify=False).text
         vmConfigResult = json.loads(vmConfigResult)
         if vmConfigResult["data"] == None:
-            pass
+            keyList.append("error")
+            valueList.append(vmConfigResult["message"])
+            vmIdListToReturn.append(vmIdList[i])
         else:
             valueList.append(vmConfigResult["data"]["result"])
             keyList.append("disk_config")

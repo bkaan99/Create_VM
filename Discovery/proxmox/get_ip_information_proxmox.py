@@ -10,18 +10,13 @@ def get_ip_given_vm(environmentIp, nodeName, vmIdList, headersWithCookie):
         vmConfigResult = requests.get(urlToSendRequest, headers=headersWithCookie, verify=False).text
         vmConfigResult = json.loads(vmConfigResult)
         if vmConfigResult["data"] == None:
-            pass
+            keyList.append("error")
+            valueList.append(vmConfigResult["message"])
+            vmIdListToReturn.append(vmIdList[i])
         else:
             valueList.append(vmConfigResult["data"]["result"])
             keyList.append("ip_config")
             vmIdListToReturn.append(vmIdList[i])
+
     return keyList, valueList, vmIdListToReturn
 
-        # try:
-        #     for c in range(len(vmConfigResult["data"]["result"])):
-        #         keyList = vmConfigResult["data"]["result"][c].keys()
-        #         for key in keyList:
-        #             valueList.append(vmConfigResult["data"]["result"][c][key])
-        #     vmIdListToReturn.append(vmIdList[i])
-        # except:
-        #     pass
