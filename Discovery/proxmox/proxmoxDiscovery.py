@@ -5,15 +5,10 @@ import pandas as pd
 import sys
 from sqlalchemy import create_engine
 from datetime import datetime
-import get_vm_id_list_proxmox
-import get_vm_config_proxmox
-import get_nodes_proxmox
-import get_ip_information_proxmox
-import get_disk_volumes_proxmox
-import get_os_info_proxmox
-import get_host_name_proxmox
-import get_pool_info
-import get_pool_information
+
+from Discovery.proxmox import get_disk_volumes_proxmox, get_os_info_proxmox, get_host_name_proxmox, get_nodes_proxmox, \
+    get_vm_id_list_proxmox, get_pool_info, get_pool_information, get_vm_config_proxmox, get_ip_information_proxmox
+
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     #dataFrameForInsert._append(pd.DataFrame([key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes],columns=dataFrameForInsert.columns,ignore_index=True))
@@ -38,7 +33,6 @@ def get_id_from_discovered_data(firstDiscoveredJson):
     return listOfVMIDS
 
 def extract_useful_data_from_vm_config(configList,nodenameToInsert):
-
     for c in range(len(configList)):
         config = configList[c]
         keysOfConfig = config.keys()
@@ -727,7 +721,7 @@ def extract_useful_data_from_vm_config(configList,nodenameToInsert):
 
 if __name__ == "__main__":
     createdDateForAppend = datetime.now()
-    versionForAppend = 1
+    versionForAppend = 3
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "Proxmox"
     virtualizationEnvironmentIp = "10.14.46.11:8006"
@@ -739,7 +733,6 @@ if __name__ == "__main__":
     def Convert(string):
         li = list(string.replace(' ', '').split(","))
         return li
-
 
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
     connectionForPostgres = psycopg2.connect(
