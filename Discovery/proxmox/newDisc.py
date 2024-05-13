@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from datetime import datetime
 from Discovery.proxmox import get_vm_id_list_proxmox, get_ip_information_proxmox, get_disk_volumes_proxmox, \
     get_os_info_proxmox, get_host_name_proxmox
+from Discovery import Credentials
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -20,7 +21,6 @@ def append_vm_info(vmID, key, value, additional_info=''):
                                       notes=f"{additional_info}")
     except:
         pass
-
 
 def get_nodes(headers,url):
     resultFromRequest = requests.get(url,headers=headers,verify=False).text
@@ -164,15 +164,14 @@ def extract_useful_data_from_vm_config(configList, IdList):
 
 
 if __name__ == "__main__":
+    login, virtualizationEnvironmentIp =Credentials.proxmox_credential()
     createdDateForAppend = datetime.now()
     versionForAppend = 2
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "Proxmox"
-    virtualizationEnvironmentIp = "10.14.46.11:8006"
     dataFrameColumns = ["key", "value", "is_deleted", "version", "created_date", "vm_id",
                         "virtualization_environment_type", "virtualization_environment_ip", "node", "notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
-
 
     mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
     mystring = mystring.replace("[", "").replace("]", "")
@@ -191,12 +190,6 @@ if __name__ == "__main__":
     cursorForPostgres = connectionForPostgres.cursor()
     vmIdList = Convert(mystring)
 
-    login = {
-        "username": "root",
-        "password": "Aa112233!",
-        "realm": "pam",
-        "new-format": 1
-    }
     headers = {
         "Content-Type": "application/json",
     }
@@ -216,6 +209,7 @@ if __name__ == "__main__":
         for key, value in node_description:
             append_vm_info(vmID=0, key=key, value=value, additional_info="/api2/json/nodes/")
 
+    print("Nodes are discovered")
 
     clearedNodeInfo = get_node_information_from_json(nodesOfGivenEnvironment)
     for node in clearedNodeInfo:
@@ -225,11 +219,15 @@ if __name__ == "__main__":
             for key, value in vm.items():
                 append_vm_info(vmID=vm["vmid"], key=key, value=value, additional_info=f"api2/extjs/nodes/{node}/qemu")
 
+        print("VMs are discovered")
+
         listOfVMIDS = get_id_from_discovered_data(discoveredNodeData)
         configListOfVms, IdList = get_vm_config(headersWithCookie, listOfVMIDS, node)
         for vm_config, vm_id in zip(configListOfVms, IdList):
             for key, value in vm_config.items():
                 append_vm_info(vmID=vm_id, key=key, value=value, additional_info=f"api2/extjs/nodes/{node}/qemu/{vm_id}/config")
+
+        print("VM Configs are discovered")
 
         lastDataFrameForInsert = extract_useful_data_from_vm_config(configListOfVms, IdList)
 
@@ -241,6 +239,7 @@ if __name__ == "__main__":
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           f"api2/extjs/nodes/{node}/qemu/{IdListForIpConfig[t]}/agent/network-get-interfaces")
 
+        print("IPs are discovered")
 
         keyListForDiskConfig, diskConfigOfVms, IdListForDiskConfig = get_disk_volumes_proxmox.get_disk_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
@@ -250,6 +249,7 @@ if __name__ == "__main__":
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           f"api2/extjs/nodes/{node}/qemu/{IdListForIpConfig[t]}/agent/get-fsinfo")
 
+        print("Disks are discovered")
 
         keyListForOsConfig, osConfigOfVms, IdListFromOsConfig = get_os_info_proxmox.get_os_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
@@ -259,6 +259,8 @@ if __name__ == "__main__":
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-osinfo")
 
+        print("OS Info is discovered")
+
         keyListForHostConfig, hostConfigOfVms, IdListFromHostConfig = get_host_name_proxmox.get_host_name(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
         for t in range(len(keyListForHostConfig)):
@@ -267,5 +269,6 @@ if __name__ == "__main__":
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-host-name")
 
+        print("Host Info is discovered")
     dataFrameForInsert.to_sql("proxmox_disc", engineForPostgres, chunksize=5000, index=False, method=None,
                               if_exists='append')
