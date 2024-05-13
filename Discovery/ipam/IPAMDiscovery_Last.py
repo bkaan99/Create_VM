@@ -1,125 +1,224 @@
-from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
-import ssl
-import base64
+import socket
+import time
+import warnings
+import phpipamsdk
 import psycopg2
 import pandas as pd
-import sys
 from sqlalchemy import create_engine
 from datetime import datetime
+from Discovery import Credentials
 
-from Discovery.ipam.ipam_disck4 import check_ip_addres_with_hostname, Connect_IPAM, get_subnet
+def is_connected(host, port):
+    try:
+        # Bir soket nesnesi oluştur ve belirtilen host ve port'a bağlanmaya çalış
+        with socket.create_connection((host, port), timeout=5) as connection:
+            return True
+    except (socket.gaierror, socket.timeout, ConnectionRefusedError):
+        return False
 
+def Connect_IPAM(ipam_api_url, ipam_login):
+    warnings.filterwarnings('ignore')
+    if is_connected('172.28.0.27', 443):
+        try:
+            IPAM = phpipamsdk.PhpIpamApi(
+                api_uri=ipam_api_url, api_verify_ssl=False)
+            IPAM.login(auth=(ipam_login['username'], ipam_login['password']))
+            token = IPAM._api_token
+
+            return IPAM
+
+        except Exception as e:
+            print(f"Bağlantı Hatası: {e}")
+    else:
+        print("IPAM'a bağlanılamadı")
+        return None
+
+
+def get_ip_addresses(IPAM):
+    subnets_url2 = phpipamsdk.AddressesApi(phpipam=IPAM)
+    ips = subnets_url2.get_address()
+
+    if ips['success'] == True:
+        for count, ip in enumerate(ips['data']):
+            if count == 10:
+                break
+            print(count)
+            for key, value in (item for item in ip.items() if item[0] not in ["links"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend,
+                                              createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url,
+                                              "Adresses", f"{ipam_api_url}adresses/{ip['id']}")
+
+            ping = subnets_url2.ping_address(ip['id'])['data']
+            append_dataframe_given_values("ping", str(ping['result_code']), isDeletedValueForAppend, versionForAppend,
+                                          createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url,
+                                          "Adresses", f"{ipam_api_url}adresses/{ip['id']}")
+
+            percentage = (count / len(ips['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+    else:
+        print("IP Adresleri Bulunamadı")
+        return None
+
+def get_all_subnets(IPAM):
+    subnets_url2=  phpipamsdk.SubnetsApi(phpipam=IPAM)
+    subnets = subnets_url2.get_subnet()
+
+    start_time = time.time()
+
+    if subnets['success'] == True:
+        for count, subnet in enumerate(subnets['data']):
+            print(count)
+            for key, value in (item for item in subnet.items() if item[0] not in ["links", "permissions"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets", f"{ipam_api_url}subnets/{subnet['id']}")
+
+            #subnet permissions bilgisi
+            for perm in subnet['permissions']:
+                for key, value in perm.items():
+                    append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets/Permissions", f"{ipam_api_url}subnets/{subnet['id']}")
+
+            #subnet usage bilgisi
+            subnet_usage = subnets_url2.get_subnet_usage(subnet_id=subnet['id'])
+
+            if subnet_usage['success'] == True:
+                for key, value in subnet_usage['data'].items():
+                    append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets/Usage", f"{ipam_api_url}subnets/{subnet['id']}")
+
+            #subnete ait ip adresleri
+            ip_adresses = subnets_url2.list_subnet_addresses(subnet_id=subnet['id'])
+            if ip_adresses['success'] == True:
+                for ip in ip_adresses['data']:
+                    append_dataframe_given_values("ip", str(ip['ip']), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets/Adresses", f"{ipam_api_url}subnets/{subnet['id']}/adresses/{ip['id']}")
+
+            # Kalan süre ve yüzdelik hesaplama bilgisi
+            current_time = time.time()
+            elapsed_time = current_time - start_time
+            remaining_subnets = len(subnets['data']) - count - 1
+            if count > 0:
+                avg_time_per_subnet = elapsed_time / count
+                remaining_time = avg_time_per_subnet * remaining_subnets
+            else:
+                remaining_time = 0
+
+            percentage = (count / len(subnets['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+            print("Elapsed Time:", "{:.2f}".format(elapsed_time), "seconds")
+            print("Remaining Time:", "{:.2f}".format(remaining_time), "seconds")
+
+    else:
+        print("Subnetler Bulunamadı")
+        return None
+
+def get_sections(IPAM):
+    sections_url2=  phpipamsdk.SectionsApi(phpipam=IPAM)
+    sections = sections_url2.list_sections()
+
+    if sections['success'] == True:
+        for count, section in enumerate(sections['data']):
+            print(count)
+            for key, value in (item for item in section.items() if item[0] not in ["links"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Sections", f"{ipam_api_url}sections/{section['id']}")
+
+            # Kalan süre ve yüzdelik hesaplama bilgisi
+            percentage = (count / len(sections['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+
+    else:
+        print("Sectionlar Bulunamadı")
+        return None
+
+def get_circiuts(IPAM):
+    try:
+        circuits_url2=  phpipamsdk.CircuitsApi(phpipam=IPAM)
+        circuits = circuits_url2.list_circuits()
+
+        if circuits['success'] == True:
+            for count, circuit in enumerate(circuits['data']):
+                print(count)
+                for key, value in (item for item in circuit.items() if item[0] not in ["links"]):
+                    append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Circuits", f"{ipam_api_url}circuits/{circuit['id']}")
+
+        providers = circuits_url2.list_providers()
+        if providers['success'] == True:
+            for provider in providers['data']:
+                for key, value in provider.items():
+                    append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Circuits/Providers", f"{ipam_api_url}circuits/providers/{provider['id']}")
+        else:
+            print("Circuitler Bulunamadı")
+            return None
+
+    except Exception as e:
+        print(f"Circuitler Bulunamadı: {e}")
+        return None
+
+
+def get_devices(IPAM):
+    devices_url2=  phpipamsdk.DevicesApi(phpipam=IPAM)
+    devices = devices_url2.list_devices()
+
+    if devices['success'] == True:
+        for count, device in enumerate(devices['data']):
+            print(count)
+            for key, value in (item for item in device.items() if item[0] not in ["links"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Devices", f"{ipam_api_url}devices/{device['id']}")
+
+            # Kalan süre ve yüzdelik hesaplama bilgisi
+            percentage = (count / len(devices['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+
+    else:
+        print("Cihazlar Bulunamadı")
+        return None
+
+def get_vlan(IPAM):
+    vlans_url2=  phpipamsdk.VlansApi(phpipam=IPAM)
+    vlans = vlans_url2.list_vlans()
+
+    if vlans['success'] == True:
+        for count, vlan in enumerate(vlans['data']):
+            print(count)
+            for key, value in (item for item in vlan.items() if item[0] not in ["links"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Vlans", f"{ipam_api_url}vlans/{vlan['id']}")
+
+            # Kalan süre ve yüzdelik hesaplama bilgisi
+            percentage = (count / len(vlans['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+
+    else:
+        print("Vlanlar Bulunamadı")
+        return None
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
-def connect_esxi_environment(esxi_host, username, password):
 
+def vm_information_getter():
 
-    # Bağlantı yap
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.verify_mode = ssl.CERT_NONE  # Sertifika doğrulamasını devre dışı bırak
-
-    si = SmartConnect(host=esxi_host, user=username, pwd=password, port=443, sslContext=context)
-
-    # Sanal makineleri al
-    content = si.RetrieveContent()
-    container = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
-    vms = container.view
-    return vms, si
-
-def vm_information_getter(vms):
-    for vm in vms:
-        try:
-            vmID = str(vm.summary.vm).split(":")[1].replace("'","")
-
-            vmID = int(vmID.split('-')[-1])
-
-
-        except:
-            vmID = None
-        try:
-            vmName = vm.summary.config.name
-            keyToInsert = "vmname"
-            append_dataframe_given_values(keyToInsert, vmName, isDeletedValueForAppend, versionForAppend, createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None, vmName )
-        except:
-            pass
-        try:
-            vmIPAddress = vm.summary.guest.ipAddress
-            keyToInsert = "ipAddress"
-            append_dataframe_given_values(keyToInsert, vmIPAddress, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                      vmIPAddress)
-        except:
-            pass
-
-
-        #hostname
-        try:
-            vmHostName = vm.summary.guest.hostName
-            keyToInsert = "hostname"
-            append_dataframe_given_values(keyToInsert, vmHostName, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                          vmHostName)
-
-            ipam = Connect_IPAM()
-            ipam_return = check_ip_addres_with_hostname(IPAM=ipam, hostname=vmHostName)
-
-            if ipam_return is None:
-                continue
-
-            else :
-                ipam_ip = ipam_return[0]
-                keyToInsert = "ipam_ip"
-                append_dataframe_given_values(keyToInsert, ipam_ip, isDeletedValueForAppend, versionForAppend,
-                                                createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                ipam_ip)
-
-                ipam_subnet = ipam_return[1]
-                keyToInsert = "ipam_subnet_id"
-                append_dataframe_given_values(keyToInsert, ipam_subnet, isDeletedValueForAppend, versionForAppend,
-                                                createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                ipam_subnet)
-
-                subnet_info = get_subnet(IPAM=ipam, subnet_id=ipam_subnet)
-
-                if subnet_info is not None:
-                    subnet_ip = subnet_info[0]
-                    subnet_mask = subnet_info[1]
-
-                    keyToInsert = "subnet_ip"
-                    append_dataframe_given_values(keyToInsert, subnet_ip, isDeletedValueForAppend, versionForAppend,
-                                                  createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                  subnet_ip)
-
-                    keyToInsert = "subnet_mask"
-                    append_dataframe_given_values(keyToInsert, subnet_mask, isDeletedValueForAppend, versionForAppend,
-                                                    createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
-                                                    subnet_mask)
-        except:
-            pass
+    get_ip_addresses(IPAM)
+    #get_all_subnets(IPAM)
+    #get_sections(IPAM)
+    #get_circiuts(IPAM)
+    #get_devices(IPAM)
+    #get_vlan(IPAM)
 
 
 
 if __name__ == "__main__":
+    ipam_login, ipam_api_url, ipam_base_url = Credentials.ipam_credential()
+    IPAM = Connect_IPAM(ipam_api_url, ipam_login)
+
     createdDateForAppend = datetime.now()
     versionForAppend = 1
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "IPAM"
-    esxi_host = "10.14.45.10"
-    username = "administrator@vsphere.local"
-    password = "Aa112233!"
+
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
 
-    def Convert(string):
-        li = list(string.replace(' ', '').split(","))
-        return li
-
-    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
     connectionForPostgres = psycopg2.connect(
         host="10.14.45.69",
         port="7100",
@@ -127,9 +226,7 @@ if __name__ == "__main__":
         user="postgres",
         password="Cekino.123!")
     cursorForPostgres = connectionForPostgres.cursor()
-    vmIdList = Convert(mystring)
-    vmsFromESXI, si = connect_esxi_environment(esxi_host, username, password)
-    vm_information_getter(vmsFromESXI)
-    Disconnect(si)
-    dataFrameForInsert.to_sql("kr_discovery_findings", engineForPostgres, chunksize=5000, index=False, method=None,
+    vm_information_getter()
+
+    dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,
                               if_exists='append')
