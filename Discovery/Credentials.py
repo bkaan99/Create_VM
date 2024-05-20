@@ -1,4 +1,3 @@
-
 def proxmox_credential():
     proxmox_login = {
             "username": "root",
@@ -22,3 +21,16 @@ def ipam_credential():
     ipam_base_url = "172.28.0.27"
 
     return ipam_login, ipam_api_url, ipam_base_url
+
+def itsm_credential():
+
+    itsm_login = {
+        "username" : "cekinoitsmuser",
+        "password" : "Cekino123!!"
+    }
+
+    itsm_api_url = "https://supporttest.glasshouse.com.tr/api/v3"
+    itsm_api_key = "A919767F-C901-4874-B0D4-0D3EE04CD3F2"
+
+    return  itsm_api_url, itsm_api_key
+
