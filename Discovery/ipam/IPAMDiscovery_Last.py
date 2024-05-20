@@ -40,18 +40,16 @@ def get_ip_addresses(IPAM):
 
     if ips['success'] == True:
         for count, ip in enumerate(ips['data']):
-            if count == 10:
-                break
             print(count)
             for key, value in (item for item in ip.items() if item[0] not in ["links"]):
                 append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend,
                                               createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url,
                                               "Adresses", f"{ipam_api_url}adresses/{ip['id']}")
 
-            ping = subnets_url2.ping_address(ip['id'])['data']
-            append_dataframe_given_values("ping", str(ping['result_code']), isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url,
-                                          "Adresses", f"{ipam_api_url}adresses/{ip['id']}")
+            # ping = subnets_url2.ping_address(ip['id'])['data']
+            # append_dataframe_given_values("ping", str(ping['result_code']), isDeletedValueForAppend, versionForAppend,
+            #                               createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url,
+            #                               "Adresses/Ping", f"{ipam_api_url}adresses/{ip['id']}")
 
             percentage = (count / len(ips['data'])) * 100
             percentage_formatted = "{:.2f}".format(percentage)
@@ -188,8 +186,40 @@ def get_vlan(IPAM):
             percentage_formatted = "{:.2f}".format(percentage)
             print("Process Percentage : ", percentage_formatted, "%")
 
+            vlan_subnets = vlans_url2.list_vlan_subnets(vlan_id=vlan['id'])
+            if vlan_subnets['success'] == True:
+                for subnet in vlan_subnets['data']:
+                    for key, value in (item for item in subnet.items() if item[0] not in ["links"]):
+                        append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Vlans/Subnets", f"{ipam_api_url}vlans/{vlan['id']}/subnets/{subnet['id']}")
+
     else:
         print("Vlanlar Bulunamadı")
+        return None
+
+def get_l2domains(IPAM):
+    l2domains_url2=  phpipamsdk.L2DomainsApi(phpipam=IPAM)
+    l2domains = l2domains_url2.list_l2domains()
+
+    if l2domains['success'] == True:
+        for count, l2domain in enumerate(l2domains['data']):
+            print(count)
+            for key, value in (item for item in l2domain.items() if item[0] not in ["links"]):
+                append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "L2Domains", f"{ipam_api_url}l2domains/{l2domain['id']}")
+
+            # Kalan süre ve yüzdelik hesaplama bilgisi
+            percentage = (count / len(l2domains['data'])) * 100
+            percentage_formatted = "{:.2f}".format(percentage)
+            print("Process Percentage : ", percentage_formatted, "%")
+
+            vlans = l2domains_url2.get_l2domain_vlans(domain_id=l2domain['id'])
+            if vlans['success'] == True:
+                for vlan in vlans['data']:
+                    for key, value in (item for item in vlan.items() if item[0] not in ["links"]):
+                        append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "L2Domains/Vlans", f"{ipam_api_url}l2domains/{l2domain['id']}/vlans/{vlan['vlanId']}")
+
+
+    else:
+        print("L2Domainlar Bulunamadı")
         return None
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -203,6 +233,8 @@ def vm_information_getter():
     #get_circiuts(IPAM)
     #get_devices(IPAM)
     #get_vlan(IPAM)
+    #get_l2domains(IPAM)
+
 
 
 
@@ -211,7 +243,7 @@ if __name__ == "__main__":
     IPAM = Connect_IPAM(ipam_api_url, ipam_login)
 
     createdDateForAppend = datetime.now()
-    versionForAppend = 1
+    versionForAppend = 2
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "IPAM"
 
@@ -228,5 +260,7 @@ if __name__ == "__main__":
     cursorForPostgres = connectionForPostgres.cursor()
     vm_information_getter()
 
-    dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,
-                              if_exists='append')
+    #export csv
+    dataFrameForInsert.to_csv("subnets.csv", index=False)
+
+    #dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')
