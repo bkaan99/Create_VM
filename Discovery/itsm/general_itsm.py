@@ -1,12 +1,11 @@
 import json
 import math
+import requests
 from urllib.error import HTTPError
 from urllib.parse import urlencode
-import requests
 from Discovery import Credentials
 
-
-def get_response(endpoint='', params = None):
+def get_response(endpoint='', params=None):
     base_url, api_key = Credentials.itsm_credential()
 
     url = f"{base_url}{endpoint}"
@@ -70,7 +69,7 @@ def get_all_requests(startIndex=0, numberOfData = ''):
     return all_requests
 
 def get_all_request_ids(startIndex=0):
-    numberOfData = 156612
+    numberOfData = 200
     batchSize = 100
     requests_ids = []
 
@@ -120,16 +119,16 @@ def get_info_by_request_id(id=''):
 
     if response.status_code == 200:
         data = response.json()
-        print("Summary başarıyla alındı:")
         summary = data['request']
         for key in summary:
             print(f"{key}: {summary[key]}")
+        return summary
 
     else:
         print(f"Summary alınamadı. Hata kodu: {response.status_code}")
         print(response.json())
+        return None
 
-    return summary
 
 def get_request_summary_by_id(id=''):
     response = get_response(f'/requests/{id}/summary')
@@ -139,10 +138,68 @@ def get_request_summary_by_id(id=''):
         summary = data['request_summary']
         for key in summary:
             print(f"{key}: {summary[key]}")
-
+        return summary
     else:
         print(f"Summary alınamadı. Hata kodu: {response.status_code}")
         print(response.json())
+        return None
+
+def get_request_notes_by_id(id=''):
+    response = get_response(f'/requests/{id}/notes')
+    if response.status_code == 200:
+        data = response.json()
+        print("Notlar başarıyla alındı:")
+        notes = data['notes']
+        for note in notes:
+            print(note)
+        return notes
+    else:
+        print(f"Notlar alınamadı. Hata kodu: {response.status_code}")
+        print(response.json())
+        return None
+
+def get_request_approval_levels_by_id(id=''):
+    response = get_response(f'/requests/{id}/approval_levels')
+    if response.status_code == 200:
+        data = response.json()
+        print("Onay seviyeleri başarıyla alındı:")
+        approval_levels = data['approval_levels']
+        for level in approval_levels:
+            print(level)
+        return approval_levels
+    else:
+        print(f"Onay seviyeleri alınamadı. Hata kodu: {response.status_code}")
+        print(response.json())
+        return None
+
+def get_request_approval_by_id(id='', approval_level_id = ''):
+    response = get_response(f'/requests/{id}/approval_levels/{approval_level_id}/approvals')
+    if response.status_code == 200:
+        data = response.json()
+        print("Onay başarıyla alındı:")
+        approval = data['approval']
+        for key in approval:
+            print(f"{key}: {approval[key]}")
+        return approval
+    else:
+        print(f"Onay alınamadı. Hata kodu: {response.status_code}")
+        print(response.json())
+        return None
+
+def get_request_tasks_by_id(id=''):
+
+
+# def get_all_request_solutions():
+#     response = get_response('/solutions')
+#     if response.status_code == 200:
+#         data = response.json()
+#         print("Çözümler başarıyla alındı:")
+#         for solution in data['solutions']:
+#             print(solution)
+#     else:
+#         print(f"Çözümler alınamadı. Hata kodu: {response.status_code}")
+#         print(response.json())
+
 
 def add_request(summary, description, requester_id, assignee_id, priority):
     url = "https://supporttest.glasshouse.com.tr/api/v3/requests"
@@ -172,7 +229,6 @@ def add_request(summary, description, requester_id, assignee_id, priority):
     }'''
 
     data = json.loads(input_data)
-
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code == 201:
@@ -184,9 +240,11 @@ def add_request(summary, description, requester_id, assignee_id, priority):
 
 
 if __name__ == "__main__":
-
     #get_all_requests()
     #get_all_request_ids()
-    get_info_by_request_id('258497')
+    #get_info_by_request_id('258497')
     #get_request_summary_by_id('258471')
+    #get_request_notes_by_id('258471')
+    get_request_approval_levels_by_id('258471')
+    #get_all_request_solutions()
     #add_request('bkaandeneme', 'Test açıklama', '1', '1', 'High')

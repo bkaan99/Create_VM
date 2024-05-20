@@ -3,7 +3,7 @@ import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
 from Discovery import Credentials
-from Discovery.itsm.general_itsm import get_all_requests, get_info_by_request_id
+from Discovery.itsm.general_itsm import get_all_requests, get_info_by_request_id, get_request_summary_by_id
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -19,7 +19,6 @@ def flatten_dict(d, parent_key='', sep='_'):
             items.append((new_key, v))
     return dict(items)
 
-
 def call_all_requests():
     r= get_all_requests(numberOfData=100)
     for i in r:
@@ -29,11 +28,22 @@ def call_all_requests():
                 append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, int(d['id']), virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/requests", f"{base_url}/requests")
 
 def get_request_full_details():
-    get_info_by_request_id(258497)
+    if get_info_by_request_id(258497) is not None:
+        d = flatten_dict(get_info_by_request_id(258497))
+        for key, value in d.items():
+            append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, int(d['id']), virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/requests/{id}", f"{base_url}/requests/{d['id']}")
+
+def get_request_summary():
+    request_id = 258497
+    if get_request_summary_by_id(request_id) is not None:
+        d = flatten_dict(get_request_summary_by_id(request_id))
+        for key, value in d.items():
+            append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, request_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/requests/{id}/summary", f"{base_url}/requests/{request_id}/summary")
 
 def controller_method():
-    call_all_requests()
+    #call_all_requests()
     #get_request_full_details()
+    get_request_summary()
 
 if __name__ == "__main__":
     base_url, api_key = Credentials.itsm_credential()
