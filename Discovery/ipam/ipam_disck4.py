@@ -1,18 +1,35 @@
+import socket
 import warnings
 import phpipamsdk
 import psycopg2
 import requests
 from sqlalchemy import create_engine
 
+def is_connected(host, port):
+    try:
+        # Bir soket nesnesi oluştur ve belirtilen host ve port'a bağlanmaya çalış
+        with socket.create_connection((host, port), timeout=5) as connection:
+            return True
+    except (socket.gaierror, socket.timeout, ConnectionRefusedError):
+        return False
+
 
 def Connect_IPAM():
     warnings.filterwarnings('ignore')
-    IPAM = phpipamsdk.PhpIpamApi(
-        api_uri='https://172.28.0.27/api/0002/', api_verify_ssl=False)
-    IPAM.login(auth=('ansible', 'Cekino123!'))
-    token = IPAM._api_token
+    if is_connected('172.28.0.27', 443):
+        try:
+            IPAM = phpipamsdk.PhpIpamApi(
+                api_uri='https://172.28.0.27/api/0002/', api_verify_ssl=False)
+            IPAM.login(auth=('ansible', 'Cekino123!'))
+            token = IPAM._api_token
 
-    return IPAM
+            return IPAM
+
+        except Exception as e:
+            print(f"Bağlantı Hatası: {e}")
+    else:
+        print("IPAM'a bağlanılamadı")
+        return None
 
 def connect_Postgres():
     try:
@@ -107,16 +124,21 @@ def get_ip_addresses(IPAM):
     ips = subnets_url2.get_address()
 
     print("IP Adresleri")
-    for ip in ips['data']:
-        print("IP ID : ", ip['id'])
-        print("IP : ", ip['ip'])
-        print("IP Description : ", ip['description'])
-        print("IP Subnet ID : ", ip['subnetId'])
-        print("Hostname : ", ip['hostname'])
-        ping = subnets_url2.ping_address(ip['id'])['data']
-        print("Ping : ", ping['success'])
+    # ips succes code 200 ise
+    if ips['success'] == True:
+        for ip in ips['data']:
+            print("IP ID : ", ip['id'])
+            print("IP : ", ip['ip'])
+            print("IP Description : ", ip['description'])
+            print("IP Subnet ID : ", ip['subnetId'])
+            print("Hostname : ", ip['hostname'])
+            ping = subnets_url2.ping_address(ip['id'])['data']
+            print("Ping : ", ping['result_code'])
+            print(" ")
 
-        print(" ")
+    else:
+        print("IP Adresleri Bulunamadı")
+        return None
 
 def get_ip_addresses_from_subnet(IPAM, subnet_id):
     subnets_url2=  phpipamsdk.SubnetsApi(phpipam=IPAM)
@@ -161,7 +183,7 @@ if __name__ == "__main__":
     IPAM = Connect_IPAM()
 
     #get_ip_addresses(IPAM)
-    #get_all_subnets(IPAM)
+    get_all_subnets(IPAM)
     #print_subnets(IPAM)
     #get_ip_addresses_from_subnet(IPAM, 120)
     #get_first_free_addresses_from_subnet(IPAM, 120)
