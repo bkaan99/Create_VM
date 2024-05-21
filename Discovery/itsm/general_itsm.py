@@ -2,32 +2,28 @@ import json
 import math
 import requests
 from urllib.error import HTTPError
-from urllib.parse import urlencode
 from Discovery import Credentials
 
-def get_response(endpoint='', params=None):
+def get_response(endpoint : str ='', params=None) -> requests.Response:
     base_url, api_key = Credentials.itsm_credential()
-
     url = f"{base_url}{endpoint}"
-    api_key = "A919767F-C901-4874-B0D4-0D3EE04CD3F2"
-
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authtoken': api_key
     }
+    response = requests.get(url, headers=headers, params={"input_data": params} if params else None)
+    try:
+        response.raise_for_status()  # HTTPError varsa bir exception fırlatır
+        return response
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+        raise
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+        raise
 
-    if params:
-        url += "?" + urlencode({"input_data": params})
-
-    response = requests.get(url, headers=headers)
-    return response
-
-def get_all_requests(startIndex=0, numberOfData = ''):
-
-    if numberOfData == '':
-        numberOfData = 200
-
+def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
     batchSize = 100
     print("Tüm talepler alınıyor...")
     total_batches = math.ceil(numberOfData / batchSize)
@@ -46,13 +42,11 @@ def get_all_requests(startIndex=0, numberOfData = ''):
                 }
             }
 
-            input_data_str = json.dumps(input_data)
-
-            response = get_response('/requests', params=input_data_str)
+            response = get_response('/requests', params=json.dumps(input_data))
 
             if response.status_code == 200:
                 data = response.json()
-                all_requests.append(data['requests'])
+                all_requests.extend(data['requests'])
                 for request in data['requests']:
                     print(request)
             else:
@@ -62,13 +56,16 @@ def get_all_requests(startIndex=0, numberOfData = ''):
             startIndex += batchSize
 
         except HTTPError as e:
-            print(f"HTTP hatası: {e.code}")
-            print(e.read())
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
             break
 
     return all_requests
 
-def get_all_request_ids(startIndex=0):
+def get_all_request_ids(startIndex: int =0) -> list:
     numberOfData = 200
     batchSize = 100
     requests_ids = []
@@ -87,15 +84,15 @@ def get_all_request_ids(startIndex=0):
                 "get_total_count": True
             }
         }
-        input_data_str = json.dumps(input_data)
 
-        response = get_response('/requests', params=input_data_str)
+        response = get_response('/requests', params=json.dumps(input_data))
 
         if response.status_code == 200:
             data = response.json()
             for request in data['requests']:
-                print(request['id'])
-                requests_ids.append(request['id'])
+                if request.get('id'):
+                    print(request['id'])
+                    requests_ids.append(request['id'])
 
         else:
             print(f"Talep id'leri alınamadı. Hata kodu: {response.status_code}")
@@ -828,3 +825,6 @@ def get_list_products():
         else:
             print(f"Ürünler alınamadı. Hata kodu: {response.status_code}")
             print(response.json())
+
+if __name__ == '__main__':
+    get_all_request_ids()
