@@ -157,8 +157,8 @@ def get_request_notes_by_id(id=''):
         print(response.json())
         return None
 
-def get_request_approval_levels_by_id(id=''):
-    response = get_response(f'/requests/{id}/approval_levels')
+def get_request_approval_levels_by_id(request_id=''):
+    response = get_response(f'/requests/{request_id}/approval_levels')
     if response.status_code == 200:
         data = response.json()
         print("Onay seviyeleri başarıyla alındı:")
@@ -171,8 +171,8 @@ def get_request_approval_levels_by_id(id=''):
         print(response.json())
         return None
 
-def get_request_approval_by_id(id='', approval_level_id = ''):
-    response = get_response(f'/requests/{id}/approval_levels/{approval_level_id}/approvals')
+def get_request_approval_by_id(request_id='', approval_level_id = ''):
+    response = get_response(f'/requests/{request_id}/approval_levels/{approval_level_id}/approvals')
     if response.status_code == 200:
         data = response.json()
         print("Onay başarıyla alındı:")
@@ -185,7 +185,7 @@ def get_request_approval_by_id(id='', approval_level_id = ''):
         print(response.json())
         return None
 
-def get_request_tasks_by_id(id=''):
+def get_request_tasks_by_id(request_id=''):
     input_data = {
         "list_info": {
             "row_count": 100,
@@ -197,7 +197,7 @@ def get_request_tasks_by_id(id=''):
 
     input_data_str = json.dumps(input_data)
 
-    response = get_response(f'/requests/{id}/tasks', params=input_data_str)
+    response = get_response(f'/requests/{request_id}/tasks', params=input_data_str)
 
     if response.status_code == 200:
         data = response.json()
@@ -455,8 +455,9 @@ def get_list_projects():
     }
 
     input_data_str = json.dumps(input_data)
-
-    total_count = get_response('/projects', params=input_data_str).json()['list_info']['total_count']
+    #FIXME: total count olayını normal haline getir.
+    #total_count = get_response('/projects', params=input_data_str).json()['list_info']['total_count']
+    total_count = 100
     batch_size = 100
     total_batches = math.ceil(total_count / batch_size)
 
@@ -607,7 +608,9 @@ def get_list_aseests():
 
     input_data_str = json.dumps(input_data)
 
-    total_count = get_response('/assets', params=input_data_str).json()['list_info']['total_count']
+    #FIXME: total count olayını normal haline getir.
+    #total_count = get_response('/assets', params=input_data_str).json()['list_info']['total_count']
+    total_count = 100
     batch_size = 100
     total_batches = math.ceil(total_count / batch_size)
 
@@ -652,8 +655,9 @@ def get_list_workstations():
     }
 
     input_data_str = json.dumps(input_data)
-
-    total_count = get_response('/workstations', params=input_data_str).json()['list_info']['total_count']
+    #FIXME: total count olayını normal haline getir.
+    #total_count = get_response('/workstations', params=input_data_str).json()['list_info']['total_count']
+    total_count = 100
     batch_size = 100
     total_batches = math.ceil(total_count / batch_size)
 
@@ -721,7 +725,9 @@ def get_list_solutions():
     }
 
     input_data_str = json.dumps(input_data)
-    total_count = get_response('/solutions', params=input_data_str).json()['list_info']['total_count']
+    #FIXME: total count olayını normal haline getir.
+    #total_count = get_response('/solutions', params=input_data_str).json()['list_info']['total_count']
+    total_count = 100
     batch_size = 100
     total_batches = math.ceil(int(total_count) / batch_size)
 
@@ -790,7 +796,9 @@ def get_list_products():
 
     input_data_str = json.dumps(input_data)
 
-    total_count = get_response('/products', params=input_data_str).json()['list_info']['total_count']
+    #FIXME: total count olayını normal haline getir.
+    #total_count = get_response('/products', params=input_data_str).json()['list_info']['total_count']
+    total_count = 100
     batch_size = 100
     total_batches = math.ceil(int(total_count) / batch_size)
 
@@ -820,42 +828,3 @@ def get_list_products():
         else:
             print(f"Ürünler alınamadı. Hata kodu: {response.status_code}")
             print(response.json())
-
-
-if __name__ == "__main__":
-    #get_all_requests()
-    #get_all_request_ids()
-    #get_info_by_request_id('258497')
-    #get_request_summary_by_id('258471')
-    #get_request_notes_by_id('258471')
-    #get_request_approval_levels_by_id('258471')
-    #get_request_tasks_by_id('258356')
-    #get_request_worklogs_by_id('258356')
-    #get_list_promlebs(numberOfData=300)
-    #get_list_promlem_notes(60)
-    #get_list_problem_tasks(60)
-    #get_list_problem_worklogs(60)
-    #get_list_changes()
-    #get_changes_by_id(2317)
-    #get_list_change_approval_levels(2317)
-    #get_list_change_notes(2317)
-    #get_list_changes_tasks(2317)
-    #get_list_projects()
-    #get_project_by_id(32)
-    #get_list_project_members(32)
-    #get_list_project_comments(32)
-    #get_list_project_tasks(32)
-    #get_list_project_milestones(32)
-    #get_list_project_milestone_comments(32, 10)
-    #get_list_project_milestone_tasks(32, 10)
-    #get_list_releases()
-    #get_list_aseests()
-    #get_list_workstations()
-    #get_list_tasks()
-    #get_list_purchase_orders()
-    #get_list_solutions()
-    #get_list_admin_project_types()
-    #get_list_admin_project_statuses()
-    get_list_products()
-
-    #add_request('bkaandeneme', 'Test açıklama', '1', '1', 'High')
