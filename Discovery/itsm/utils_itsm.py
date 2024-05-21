@@ -115,15 +115,15 @@ def get_all_request_ids(startIndex: int =0) -> list:
 
     return requests_ids
 
-def get_info_by_request_id(id: Union[str, int]='') -> dict:
-    data = make_request_and_handle_errors(f'/requests/{id}', params={})
+def get_info_by_request_id(request_id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}', params={})
     if data:
         return data['request']
     else:
         return None
 
-def get_request_summary_by_id(id: Union[str, int]='') -> dict:
-    data = make_request_and_handle_errors(f'/requests/{id}/summary', params={})
+def get_request_summary_by_id(request_id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}/summary', params={})
     if data:
         for key in data['request_summary']:
             print(f"{key}: {data['request_summary'][key]}")
@@ -132,8 +132,8 @@ def get_request_summary_by_id(id: Union[str, int]='') -> dict:
         print(f"Summary alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_notes_by_id(id: Union[str, int]='') -> dict:
-    data = make_request_and_handle_errors(f'/requests/{id}/notes', params={})
+def get_request_notes_by_id(request_id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}/notes', params={})
     if data:
         print("Notlar başarıyla alındı:")
         for note in data['notes']:
@@ -143,35 +143,30 @@ def get_request_notes_by_id(id: Union[str, int]='') -> dict:
         print(f"Notlar alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_approval_levels_by_id(request_id=''):
-    response = get_response(f'/requests/{request_id}/approval_levels')
-    if response.status_code == 200:
-        data = response.json()
+def get_request_approval_levels_by_id(request_id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}/approval_levels', params={})
+    if data:
         print("Onay seviyeleri başarıyla alındı:")
-        approval_levels = data['approval_levels']
-        for level in approval_levels:
+        for level in data['approval_levels']:
             print(level)
-        return approval_levels
+        return data['approval_levels']
     else:
-        print(f"Onay seviyeleri alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Onay seviyeleri alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_approval_by_id(request_id='', approval_level_id = ''):
-    response = get_response(f'/requests/{request_id}/approval_levels/{approval_level_id}/approvals')
-    if response.status_code == 200:
-        data = response.json()
+def get_request_approval_by_id(request_id: Union[str, int]='', approval_level_id: Union[str, int] = '') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}/approval_levels/{approval_level_id}', params={})
+    if data:
         print("Onay başarıyla alındı:")
-        approval = data['approval']
-        for key in approval:
-            print(f"{key}: {approval[key]}")
-        return approval
+        for approval in data['approvals']:
+            print(approval)
+        return data['approvals']
     else:
-        print(f"Onay alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Onay alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_tasks_by_id(request_id=''):
+def get_request_tasks_by_id(request_id: Union[str, int]='') -> dict:
+
     input_data = {
         "list_info": {
             "row_count": 100,
@@ -181,34 +176,26 @@ def get_request_tasks_by_id(request_id=''):
         }
     }
 
-    input_data_str = json.dumps(input_data)
+    data = make_request_and_handle_errors(f'/requests/{request_id}/tasks', params=input_data)
 
-    response = get_response(f'/requests/{request_id}/tasks', params=input_data_str)
-
-    if response.status_code == 200:
-        data = response.json()
+    if data:
         print("Görevler başarıyla alındı:")
-        tasks = data['tasks']
-        for task in tasks:
+        for task in data['tasks']:
             print(task)
-        return tasks
+        return data['tasks']
     else:
-        print(f"Görevler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Görevler alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_worklogs_by_id(id=''):
-    response = get_response(f'/requests/{id}/worklogs')
-    if response.status_code == 200:
-        data = response.json()
+def get_request_worklogs_by_id(request_id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{request_id}/worklogs', params={})
+    if data:
         print("Çalışma günlükleri başarıyla alındı:")
-        worklogs = data['worklogs']
-        for worklog in worklogs:
+        for worklog in data['worklogs']:
             print(worklog)
-        return worklogs
+        return data['worklogs']
     else:
-        print(f"Çalışma günlükleri alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Çalışma günlükleri alınamadı. Hata kodu: {data['status_code']}")
         return None
 
 def get_list_promlebs(startIndex=0, numberOfData = None):
