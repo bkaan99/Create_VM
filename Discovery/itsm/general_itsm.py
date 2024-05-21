@@ -1,5 +1,7 @@
 import json
 import math
+from typing import Union
+
 import requests
 from urllib.error import HTTPError
 from Discovery import Credentials
@@ -23,6 +25,14 @@ def get_response(endpoint : str ='', params=None) -> requests.Response:
         print(f"Other error occurred: {err}")
         raise
 
+def make_request_and_handle_errors(endpoint: str, params: dict) -> dict:
+    try:
+        response = get_response(endpoint=endpoint, params=json.dumps(params))
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Hata oluştu: {e}")
+
 def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
     batchSize = 100
     print("Tüm talepler alınıyor...")
@@ -42,16 +52,14 @@ def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
                 }
             }
 
-            response = get_response('/requests', params=json.dumps(input_data))
+            data = make_request_and_handle_errors('/requests', params=input_data)
 
-            if response.status_code == 200:
-                data = response.json()
-                all_requests.extend(data['requests'])
-                for request in data['requests']:
+            if data:
+                all_requests.extend(data.get('requests', []))
+                for request in data.get('requests', []):
                     print(request)
             else:
-                print(f"Veri çekme hatası: {response.status_code}")
-                print(response.json())
+                break
 
             startIndex += batchSize
 
@@ -85,18 +93,16 @@ def get_all_request_ids(startIndex: int =0) -> list:
             }
         }
 
-        response = get_response('/requests', params=json.dumps(input_data))
+        data = make_request_and_handle_errors('/requests', params=input_data)
 
-        if response.status_code == 200:
-            data = response.json()
-            for request in data['requests']:
-                if request.get('id'):
-                    print(request['id'])
-                    requests_ids.append(request['id'])
-
+        if data:
+            for request in data.get('requests', []):
+                request_id = request.get('id')
+                if request_id:
+                    print(request_id)
+                    requests_ids.append(request_id)
         else:
-            print(f"Talep id'leri alınamadı. Hata kodu: {response.status_code}")
-            print(response.json())
+            break
 
         startIndex += batchSize
 
@@ -109,49 +115,32 @@ def get_all_request_ids(startIndex: int =0) -> list:
 
     return requests_ids
 
-def get_info_by_request_id(id=''):
-    #get request id from get_all_requests
-
-    response = get_response(f'/requests/{id}')
-
-    if response.status_code == 200:
-        data = response.json()
-        summary = data['request']
-        for key in summary:
-            print(f"{key}: {summary[key]}")
-        return summary
-
+def get_info_by_request_id(id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{id}', params={})
+    if data:
+        return data['request']
     else:
-        print(f"Summary alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
         return None
 
-def get_request_summary_by_id(id=''):
-    response = get_response(f'/requests/{id}/summary')
-    if response.status_code == 200:
-        data = response.json()
-        print("Summary başarıyla alındı:")
-        summary = data['request_summary']
-        for key in summary:
-            print(f"{key}: {summary[key]}")
-        return summary
+def get_request_summary_by_id(id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{id}/summary', params={})
+    if data:
+        for key in data['request_summary']:
+            print(f"{key}: {data['request_summary'][key]}")
+        return data['request_summary']
     else:
-        print(f"Summary alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Summary alınamadı. Hata kodu: {data['status_code']}")
         return None
 
-def get_request_notes_by_id(id=''):
-    response = get_response(f'/requests/{id}/notes')
-    if response.status_code == 200:
-        data = response.json()
+def get_request_notes_by_id(id: Union[str, int]='') -> dict:
+    data = make_request_and_handle_errors(f'/requests/{id}/notes', params={})
+    if data:
         print("Notlar başarıyla alındı:")
-        notes = data['notes']
-        for note in notes:
+        for note in data['notes']:
             print(note)
-        return notes
+        return data['notes']
     else:
-        print(f"Notlar alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+        print(f"Notlar alınamadı. Hata kodu: {data['status_code']}")
         return None
 
 def get_request_approval_levels_by_id(request_id=''):
@@ -827,4 +816,4 @@ def get_list_products():
             print(response.json())
 
 if __name__ == '__main__':
-    get_all_request_ids()
+    get_request_summary_by_id('258497')
