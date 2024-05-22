@@ -3,7 +3,7 @@ import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
 from Discovery import Credentials
-from Discovery.itsm.general_itsm import *
+from Discovery.itsm.utils_itsm import *
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
