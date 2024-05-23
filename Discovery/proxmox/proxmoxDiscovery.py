@@ -20,8 +20,8 @@ def append_dataframe_given_values(key, value, is_deleted, version, created_date,
 
 def get_node_information_from_json(jsonWithNodes):
     listOfNodeNames = []
-    for i in range(len(jsonWithNodes)):
-        listOfNodeNames.append(jsonWithNodes[i]["node"])
+    for i, item in enumerate(jsonWithNodes):
+        listOfNodeNames.append(item["node"])
     return listOfNodeNames
 def discover_proxmox_environment(nodeName):
     url = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu"
@@ -29,8 +29,8 @@ def discover_proxmox_environment(nodeName):
     return discoveredNodeData
 def get_id_from_discovered_data(firstDiscoveredJson):
     listOfVMIDS = []
-    for i in range(len(firstDiscoveredJson)):
-        listOfVMIDS.append(firstDiscoveredJson[i]["vmid"])
+    for i, item in enumerate(firstDiscoveredJson):
+        listOfVMIDS.append(item["vmid"])
     return listOfVMIDS
 
 def append_vm_info(vmID, key, value, additional_info='', nodeNametoInsert=''):
@@ -42,8 +42,7 @@ def append_vm_info(vmID, key, value, additional_info='', nodeNametoInsert=''):
         pass
 
 def extract_useful_data_from_vm_config(configList,nodenameToInsert):
-    for c in range(len(configList)):
-        config = configList[c]
+    for c, config in enumerate(configList):
         keysOfConfig = config.keys()
         for key in keysOfConfig:
             listOfValuesForDataFrame = []
@@ -729,13 +728,13 @@ if __name__ == "__main__":
         keyListForOsConfig, osConfigOfVms, IdListFromOsConfig = get_os_info_proxmox.get_os_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
         keyListForHostConfig, hostConfigOfVms, IdListFromHostConfig = get_host_name_proxmox.get_host_name(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
-        for t in range(len(keyListForIpConfig)):
-            append_dataframe_given_values(keyListForIpConfig[t], str(ipconfigsOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListForIpConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(ipconfigsOfVms[t]))
-        for t in range(len(keyListForDiskConfig)):
-            append_dataframe_given_values(keyListForDiskConfig[t], str(diskConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListForDiskConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(diskConfigOfVms[t]))
-        for t in range(len(keyListForOsConfig)):
-            append_dataframe_given_values(keyListForOsConfig[t], str(osConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromOsConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(osConfigOfVms[t]))
-        for t in range(len(keyListForHostConfig)):
-            append_dataframe_given_values(keyListForHostConfig[t], str(hostConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromHostConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(hostConfigOfVms[t]))
+        for t, item in enumerate(keyListForIpConfig):
+            append_dataframe_given_values(item, str(ipconfigsOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListForIpConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(ipconfigsOfVms[t]))
+        for t, item in enumerate(keyListForDiskConfig):
+            append_dataframe_given_values(item, str(diskConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListForDiskConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(diskConfigOfVms[t]))
+        for t, item in enumerate(keyListForOsConfig):
+            append_dataframe_given_values(item, str(osConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromOsConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(osConfigOfVms[t]))
+        for t, item in enumerate(keyListForHostConfig):
+            append_dataframe_given_values(item, str(hostConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromHostConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(hostConfigOfVms[t]))
         dataFrameForInsert.to_sql("proxmox_disc", engineForPostgres, chunksize=5000, index=False, method=None,
                    if_exists='append')
