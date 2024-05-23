@@ -91,9 +91,10 @@ def call_get_list_promlebs():
 
 def call_get_list_promlem_notes():
     promlems_id = 60
-    if get_list_promlem_notes(promlems_id):
-        d = flatten_dict(get_list_promlem_notes(promlems_id))
-        for key, value in d.items():
+    problem_notes = get_list_promlem_notes(promlems_id)
+    if problem_notes:
+        flattened_problem_notes = flatten_dict(problem_notes)
+        for key, value in flattened_problem_notes.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, promlems_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/promlebs/{id}/notes", f"{base_url}/promlebs/{promlems_id}/notes")
     else:
         print("No data found")
@@ -101,8 +102,8 @@ def call_get_list_promlem_notes():
 def call_get_list_problem_worklogs():
     promlems_id = 60
     if get_list_problem_worklogs(promlems_id):
-        d = flatten_dict(get_list_problem_worklogs(promlems_id))
-        for key, value in d.items():
+        flattened_problem_worklogs = flatten_dict(get_list_problem_worklogs(promlems_id))
+        for key, value in flattened_problem_worklogs.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, promlems_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/promlebs/{id}/worklogs", f"{base_url}/promlebs/{promlems_id}/worklogs")
     else:
         print("No data found")
@@ -120,8 +121,8 @@ def call_get_list_changes():
 def call_get_change_by_id():
     change_id = 2317
     if get_changes_by_id(change_id):
-        d = flatten_dict(get_changes_by_id(change_id))
-        for key, value in d.items():
+        flattened_change_info = flatten_dict(get_changes_by_id(change_id))
+        for key, value in flattened_change_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, change_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/changes/{id}", f"{base_url}/changes/{change_id}")
     else:
         print("No data found")
@@ -140,8 +141,8 @@ def call_get_list_projects():
 def call_get_project_by_id():
     project_id = 32
     if get_project_by_id(project_id):
-        d = flatten_dict(get_project_by_id(project_id))
-        for key, value in d.items():
+        flattened_project_info = flatten_dict(get_project_by_id(project_id))
+        for key, value in flattened_project_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, project_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/projects/{id}", f"{base_url}/projects/{project_id}")
     else:
         print("No data found")
