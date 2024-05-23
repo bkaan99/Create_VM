@@ -63,18 +63,20 @@ def call_get_request_notes_by_id():
 
 def call_get_request_approval_levels_by_id():
     request_id = 258497
-    if get_request_approval_levels_by_id(request_id) is not None:
-        d = flatten_dict(get_request_approval_levels_by_id(request_id))
-        for key, value in d.items():
+    approval_level_info = get_request_approval_levels_by_id(request_id)
+    if approval_level_info:
+        flattened_approval_level_info = flatten_dict(approval_level_info)
+        for key, value in flattened_approval_level_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, request_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/requests/{id}/approval_level", f"{base_url}/requests/{request_id}/approval_levels")
     else:
         print("No data found")
 
 def call_get_request_worklogs_by_id():
     request_id = 258497
-    if get_request_worklogs_by_id(request_id):
-        d = flatten_dict(get_request_worklogs_by_id(request_id))
-        for key, value in d.items():
+    worklog_info = get_request_worklogs_by_id(request_id)
+    if worklog_info:
+        flattened_worklog_info = flatten_dict(worklog_info)
+        for key, value in flattened_worklog_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, request_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/requests/{id}/worklogs", f"{base_url}/requests/{request_id}/worklogs")
     else:
         print("No data found")
@@ -101,8 +103,9 @@ def call_get_list_promlem_notes():
 
 def call_get_list_problem_worklogs():
     promlems_id = 60
-    if get_list_problem_worklogs(promlems_id):
-        flattened_problem_worklogs = flatten_dict(get_list_problem_worklogs(promlems_id))
+    problem_worklogs = get_list_problem_worklogs(promlems_id)
+    if problem_worklogs:
+        flattened_problem_worklogs = flatten_dict(problem_worklogs)
         for key, value in flattened_problem_worklogs.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, promlems_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/promlebs/{id}/worklogs", f"{base_url}/promlebs/{promlems_id}/worklogs")
     else:
@@ -120,8 +123,9 @@ def call_get_list_changes():
 
 def call_get_change_by_id():
     change_id = 2317
-    if get_changes_by_id(change_id):
-        flattened_change_info = flatten_dict(get_changes_by_id(change_id))
+    change_info = get_changes_by_id(change_id)
+    if change_info:
+        flattened_change_info = flatten_dict(change_info)
         for key, value in flattened_change_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, change_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/changes/{id}", f"{base_url}/changes/{change_id}")
     else:
@@ -140,8 +144,9 @@ def call_get_list_projects():
 
 def call_get_project_by_id():
     project_id = 32
-    if get_project_by_id(project_id):
-        flattened_project_info = flatten_dict(get_project_by_id(project_id))
+    project_info = get_project_by_id(project_id)
+    if project_info:
+        flattened_project_info = flatten_dict(project_info)
         for key, value in flattened_project_info.items():
             append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend, createdDateForAppend, project_id, virtualizationEnvironmentType, virtualalizationEnvironmentIp, "/projects/{id}", f"{base_url}/projects/{project_id}")
     else:
@@ -183,7 +188,7 @@ def call_get_list_project_milestone_comments():
 
 def call_get_list_aseests():
     assets = get_list_aseests()
-    if get_list_aseests():
+    if assets:
         for asset in assets:
             flattened_asset = flatten_dict(asset)
             for key, value in flattened_asset.items():
