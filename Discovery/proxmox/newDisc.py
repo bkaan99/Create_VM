@@ -29,8 +29,8 @@ def get_nodes(headers,url):
 
 def get_node_information_from_json(jsonWithNodes):
     listOfNodeNames = []
-    for i in range(len(jsonWithNodes)):
-        listOfNodeNames.append(jsonWithNodes[i]["node"])
+    for i, item in enumerate(jsonWithNodes):
+        listOfNodeNames.append(item["node"])
     return listOfNodeNames
 
 def discover_proxmox_environment(nodeName):
@@ -40,19 +40,19 @@ def discover_proxmox_environment(nodeName):
 
 def get_id_from_discovered_data(firstDiscoveredJson):
     listOfVMIDS = []
-    for i in range(len(firstDiscoveredJson)):
-        listOfVMIDS.append(firstDiscoveredJson[i]["vmid"])
+    for i, item in enumerate(firstDiscoveredJson):
+        listOfVMIDS.append(item["vmid"])
     return listOfVMIDS
 
 def get_vm_config(headersWithCookie,vmIdList,nodeName):
     vmIdListToReturn = []
     vmConfigResultList = []
-    for i in range(len(vmIdList)):
-        urlToSendRequest = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu/"+str(vmIdList[i])+"/config"
+    for i, item in enumerate(vmIdList):
+        urlToSendRequest = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu/"+str(item)+"/config"
         vmConfigResult = requests.get(urlToSendRequest, headers=headersWithCookie, verify=False).text
         vmConfigResult = json.loads(vmConfigResult)
         vmConfigResultList.append(vmConfigResult["data"])
-        vmIdListToReturn.append(vmIdList[i])
+        vmIdListToReturn.append(item)
     return vmConfigResultList, vmIdListToReturn
 
 def extract_useful_data_from_vm_config(configList, IdList):
@@ -70,8 +70,7 @@ def extract_useful_data_from_vm_config(configList, IdList):
         "usb", "vcpus", "vga", "vmgenid", "vmstatestorage", "watchdog"
     ]
 
-    for c in range(len(configList)):
-        config = configList[c]
+    for c, config in enumerate(configList):
         for key in config.keys():
             listOfValuesForDataFrame = []
 
@@ -233,8 +232,8 @@ if __name__ == "__main__":
 
         keyListForIpConfig, ipconfigsOfVms, IdListForIpConfig = get_ip_information_proxmox.get_ip_given_vm(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
-        for t in range(len(keyListForIpConfig)):
-            append_dataframe_given_values(keyListForIpConfig[t], str(ipconfigsOfVms[t]), isDeletedValueForAppend,
+        for t, item in enumerate(keyListForIpConfig):
+            append_dataframe_given_values(item, str(ipconfigsOfVms[t]), isDeletedValueForAppend,
                                           versionForAppend, createdDateForAppend, IdListForIpConfig[t],
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           f"api2/extjs/nodes/{node}/qemu/{IdListForIpConfig[t]}/agent/network-get-interfaces")
@@ -243,8 +242,8 @@ if __name__ == "__main__":
 
         keyListForDiskConfig, diskConfigOfVms, IdListForDiskConfig = get_disk_volumes_proxmox.get_disk_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
-        for t in range(len(keyListForDiskConfig)):
-            append_dataframe_given_values(keyListForDiskConfig[t], str(diskConfigOfVms[t]), isDeletedValueForAppend,
+        for t, item in enumerate(keyListForDiskConfig):
+            append_dataframe_given_values(item, str(diskConfigOfVms[t]), isDeletedValueForAppend,
                                           versionForAppend, createdDateForAppend, IdListForDiskConfig[t],
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           f"api2/extjs/nodes/{node}/qemu/{IdListForIpConfig[t]}/agent/get-fsinfo")
@@ -253,8 +252,8 @@ if __name__ == "__main__":
 
         keyListForOsConfig, osConfigOfVms, IdListFromOsConfig = get_os_info_proxmox.get_os_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
-        for t in range(len(keyListForOsConfig)):
-            append_dataframe_given_values(keyListForOsConfig[t], str(osConfigOfVms[t]), isDeletedValueForAppend,
+        for t, item in enumerate(keyListForOsConfig):
+            append_dataframe_given_values(item, str(osConfigOfVms[t]), isDeletedValueForAppend,
                                           versionForAppend, createdDateForAppend, IdListFromOsConfig[t],
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-osinfo")
@@ -263,8 +262,8 @@ if __name__ == "__main__":
 
         keyListForHostConfig, hostConfigOfVms, IdListFromHostConfig = get_host_name_proxmox.get_host_name(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 
-        for t in range(len(keyListForHostConfig)):
-            append_dataframe_given_values(keyListForHostConfig[t], str(hostConfigOfVms[t]), isDeletedValueForAppend,
+        for t, item in enumerate(keyListForHostConfig):
+            append_dataframe_given_values(item, str(hostConfigOfVms[t]), isDeletedValueForAppend,
                                           versionForAppend, createdDateForAppend, IdListFromHostConfig[t],
                                           virtualizationEnvironmentType, virtualizationEnvironmentIp, node,
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-host-name")
