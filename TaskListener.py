@@ -1,44 +1,46 @@
-from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
-import ssl
-import time
+from pyVim.connect import  Disconnect
+from vCenter.IaaS.Connections.vSphere_connection import create_vsphere_connection
+
 
 def list_tasks(content):
-
-    for task in content.taskManager.recentTask:
+    tasks_info_list = []
+    recent_tasks = content.taskManager.recentTask
+    for task in recent_tasks:
+        info = task.info
         try:
-            if task.info.entityName:
-                print(f"Task: {task.info.descriptionId} | Entity: {task.info.entityName} | State: {task.info.state}")
+            entity_name = getattr(info, 'entityName', None)
+            if entity_name:
+                task_info = {
+                    "Task": getattr(info, 'name', 'N/A'),
+                    "Entity Name": entity_name,
+                    "Cancelable": getattr(info, 'cancelable', 'N/A'),
+                    "Cancelled": getattr(info, 'cancelled', 'N/A'),
+                    "Change Tag": getattr(info, 'changeTag', 'N/A'),
+                    "Complete Time": getattr(info, 'completeTime', 'N/A'),
+                    "Description": getattr(info, 'description', 'N/A') if isinstance(getattr(info, 'description', 'N/A'), str) else getattr(getattr(info, 'description', None), 'message', 'N/A'),
+                    "Description ID": getattr(info, 'descriptionId', 'N/A'),
+                    "Error Message": getattr(info.error, 'msg', 'No error message') if info.error else 'No error message',
+                    "Task Key": getattr(info, 'key', 'N/A'),
+                    "Progress": getattr(info, 'progress', 'N/A'),
+                    "Queue Time": getattr(info, 'queueTime', 'N/A'),
+                    "Start Time": getattr(info, 'startTime', 'N/A'),
+                    "State": getattr(info, 'state', 'N/A'),
+                }
+                tasks_info_list.append(task_info)
+        except AttributeError as e:
+            print(f"An error occurred: {e}")
 
-        except Exception as e:
-            print(f"Error: {e}")
+    return tasks_info_list
 
 def main():
-    # ESXi host details
-    esxi_host = "10.14.45.11"
-    esxi_user = "root"
-    esxi_password = "Aa112233!"
+    vCenter_host_ip = "10.14.45.10"
+    vCenter_user = "administrator@vsphere.local"
+    vCenter_password = "Aa112233!"
 
-    # Disable SSL certificate verification
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    si, content = create_vsphere_connection(vCenter_host_ip, vCenter_user, vCenter_password)
 
-    # Connect to ESXi host
-    si = SmartConnect(
-        host=esxi_host,
-        user=esxi_user,
-        pwd=esxi_password,
-        sslContext=ssl_context,
-    )
-
-    # Retrieve content
-    content = si.RetrieveContent()
-
-    # List tasks running on the ESXi host
     list_tasks(content)
 
-    # Disconnect from ESXi host
     Disconnect(si)
 
 if __name__ == "__main__":
