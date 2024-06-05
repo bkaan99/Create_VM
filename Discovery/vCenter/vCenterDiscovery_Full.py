@@ -244,17 +244,18 @@ def host_section(vm, vmID):
         all_networks = vm.network
         for network in all_networks:
             for host in network.host:
-
                 host_basic_list = ["alarmActionsEnabled","answerFileValidationResult","answerFileValidationState","complianceCheckResult","complianceCheckState","configStatus","name","overallStatus","precheckRemediationResult","remediationResult","remediationState"]
                 for item in host_basic_list:
                     append_vm_info(vmID, item, getattr(host, item), "vm.network.host")
 
-                list = ["capability","config","summary"]
-                for item in list:
+                section_list = ["capability","config","summary"]
+                for item in section_list:
                     append_section_info(getattr(host, item), vmID, f"vm.network.host.{item}")
-    except:
+
+    except AttributeError as e:
         print("Host is not available")
-        pass
+    except Exception as e:
+        print("An unexpected error occurred")
 
 def resource_pool_section(vm, vmID):
     try:
