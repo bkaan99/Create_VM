@@ -74,10 +74,10 @@ def createTaskItsm(vmid, cookie):
     # @TODO 0 TITLE 1 DESCRIPTION
     #createTaskItsm("pyhtondan ekledim 14.49", "titleBülo3")
     #deleteTask("silinecek veri")
-    for i in range(len(resultList)):
+    for i, item in enumerate(resultList):
         TCODE = str(time.time()).replace(".","")
-        append_dataframe_given_values(resultList[i][1], resultList[i][0]+"|"+TCODE, vmid, "STARTED", datetime.now(),
-                                      False, 1,str(resultList[i][2]),TCODE)
+        append_dataframe_given_values(item[1], item[0]+"|"+TCODE, vmid, "STARTED", datetime.now(),
+                                      False, 1,str(item[2]),TCODE)
         start_index = cookie.find("_zcsr_tmp=") + len("_zcsr_tmp=")
         end_index = cookie.find(";", start_index)
         zcsr_tmp_value = cookie[start_index:end_index]
@@ -91,9 +91,9 @@ def createTaskItsm(vmid, cookie):
             "associatedEntityID": None,
             "scopeid": None,
             "TASKTEMPLATEID": "1822",
-            "TITLE": resultList[i][1],
+            "TITLE": item[1],
             "STATUSID": "1",
-            "DESCRIPTION": resultList[i][0]+"|"+TCODE,
+            "DESCRIPTION": item[0]+"|"+TCODE,
             "MOD_IND": "task",
             "FORMNAME": "TaskForm",
             "EstimatedEffort": "0",
