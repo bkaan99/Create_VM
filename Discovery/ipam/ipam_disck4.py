@@ -125,7 +125,7 @@ def get_ip_addresses(IPAM):
 
     print("IP Adresleri")
     # ips succes code 200 ise
-    if ips['success'] == True:
+    if ips['success'] is True:
         for ip in ips['data']:
             print("IP ID : ", ip['id'])
             print("IP : ", ip['ip'])

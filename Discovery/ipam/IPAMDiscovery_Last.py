@@ -38,7 +38,7 @@ def get_ip_addresses(IPAM):
     subnets_url2 = phpipamsdk.AddressesApi(phpipam=IPAM)
     ips = subnets_url2.get_address()
 
-    if ips['success'] == True:
+    if ips['success'] is True:
         for count, ip in enumerate(ips['data']):
             print(count)
             for key, value in (item for item in ip.items() if item[0] not in ["links"]):
@@ -64,7 +64,7 @@ def get_all_subnets(IPAM):
 
     start_time = time.time()
 
-    if subnets['success'] == True:
+    if subnets['success'] is True:
         for count, subnet in enumerate(subnets['data']):
             print(count)
             for key, value in (item for item in subnet.items() if item[0] not in ["links", "permissions"]):
@@ -78,13 +78,13 @@ def get_all_subnets(IPAM):
             #subnet usage bilgisi
             subnet_usage = subnets_url2.get_subnet_usage(subnet_id=subnet['id'])
 
-            if subnet_usage['success'] == True:
+            if subnet_usage['success'] is True:
                 for key, value in subnet_usage['data'].items():
                     append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets/Usage", f"{ipam_api_url}subnets/{subnet['id']}")
 
             #subnete ait ip adresleri
             ip_adresses = subnets_url2.list_subnet_addresses(subnet_id=subnet['id'])
-            if ip_adresses['success'] == True:
+            if ip_adresses['success'] is True:
                 for ip in ip_adresses['data']:
                     append_dataframe_given_values("ip", str(ip['ip']), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Subnets/Adresses", f"{ipam_api_url}subnets/{subnet['id']}/adresses/{ip['id']}")
 
@@ -112,7 +112,7 @@ def get_sections(IPAM):
     sections_url2=  phpipamsdk.SectionsApi(phpipam=IPAM)
     sections = sections_url2.list_sections()
 
-    if sections['success'] == True:
+    if sections['success'] is True:
         for count, section in enumerate(sections['data']):
             print(count)
             for key, value in (item for item in section.items() if item[0] not in ["links"]):
@@ -132,14 +132,14 @@ def get_circiuts(IPAM):
         circuits_url2=  phpipamsdk.CircuitsApi(phpipam=IPAM)
         circuits = circuits_url2.list_circuits()
 
-        if circuits['success'] == True:
+        if circuits['success'] is True:
             for count, circuit in enumerate(circuits['data']):
                 print(count)
                 for key, value in (item for item in circuit.items() if item[0] not in ["links"]):
                     append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Circuits", f"{ipam_api_url}circuits/{circuit['id']}")
 
         providers = circuits_url2.list_providers()
-        if providers['success'] == True:
+        if providers['success'] is True:
             for provider in providers['data']:
                 for key, value in provider.items():
                     append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Circuits/Providers", f"{ipam_api_url}circuits/providers/{provider['id']}")
@@ -156,7 +156,7 @@ def get_devices(IPAM):
     devices_url2=  phpipamsdk.DevicesApi(phpipam=IPAM)
     devices = devices_url2.list_devices()
 
-    if devices['success'] == True:
+    if devices['success'] is True:
         for count, device in enumerate(devices['data']):
             print(count)
             for key, value in (item for item in device.items() if item[0] not in ["links"]):
@@ -175,7 +175,7 @@ def get_vlan(IPAM):
     vlans_url2=  phpipamsdk.VlansApi(phpipam=IPAM)
     vlans = vlans_url2.list_vlans()
 
-    if vlans['success'] == True:
+    if vlans['success'] is True:
         for count, vlan in enumerate(vlans['data']):
             print(count)
             for key, value in (item for item in vlan.items() if item[0] not in ["links"]):
@@ -187,7 +187,7 @@ def get_vlan(IPAM):
             print("Process Percentage : ", percentage_formatted, "%")
 
             vlan_subnets = vlans_url2.list_vlan_subnets(vlan_id=vlan['id'])
-            if vlan_subnets['success'] == True:
+            if vlan_subnets['success'] is True:
                 for subnet in vlan_subnets['data']:
                     for key, value in (item for item in subnet.items() if item[0] not in ["links"]):
                         append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Vlans/Subnets", f"{ipam_api_url}vlans/{vlan['id']}/subnets/{subnet['id']}")
@@ -200,7 +200,7 @@ def get_l2domains(IPAM):
     l2domains_url2=  phpipamsdk.L2DomainsApi(phpipam=IPAM)
     l2domains = l2domains_url2.list_l2domains()
 
-    if l2domains['success'] == True:
+    if l2domains['success'] is True:
         for count, l2domain in enumerate(l2domains['data']):
             print(count)
             for key, value in (item for item in l2domain.items() if item[0] not in ["links"]):
@@ -212,7 +212,7 @@ def get_l2domains(IPAM):
             print("Process Percentage : ", percentage_formatted, "%")
 
             vlans = l2domains_url2.get_l2domain_vlans(domain_id=l2domain['id'])
-            if vlans['success'] == True:
+            if vlans['success'] is True:
                 for vlan in vlans['data']:
                     for key, value in (item for item in vlan.items() if item[0] not in ["links"]):
                         append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "L2Domains/Vlans", f"{ipam_api_url}l2domains/{l2domain['id']}/vlans/{vlan['vlanId']}")
