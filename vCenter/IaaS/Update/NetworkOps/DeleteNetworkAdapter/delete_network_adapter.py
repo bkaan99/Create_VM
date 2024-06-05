@@ -65,6 +65,3 @@ def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password
     delete_last_network_adapter(vm_to_reconfigure, content)
 
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()

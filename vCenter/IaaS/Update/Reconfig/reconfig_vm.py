@@ -79,5 +79,3 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, clone_name, cpu_count,
 
     Disconnect(service_instance)
 
-if __name__ == "__main__":
-    main()

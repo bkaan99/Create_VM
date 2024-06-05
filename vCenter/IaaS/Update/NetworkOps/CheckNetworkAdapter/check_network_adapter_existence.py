@@ -46,6 +46,3 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name):
     Disconnect(service_instance)
 
     return network_adapter_existence_value, device_label
-
-if __name__ == "__main__":
-    main()

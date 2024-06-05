@@ -29,6 +29,3 @@ def main(old_vm_name, new_vm_name, vCenter_host_ip, vCenter_user, vCenter_passwo
 
     # Disconnect from vCenter
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()
