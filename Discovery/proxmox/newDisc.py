@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
         print("VM Configs are discovered")
 
-        lastDataFrameForInsert = extract_useful_data_from_vm_config(configListOfVms, IdList)
+        extract_useful_data_from_vm_config(configListOfVms, IdList)
 
         keyListForIpConfig, ipconfigsOfVms, IdListForIpConfig = get_ip_information_proxmox.get_ip_given_vm(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
 

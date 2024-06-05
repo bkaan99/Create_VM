@@ -722,7 +722,7 @@ if __name__ == "__main__":
         listOfVMIDS = get_id_from_discovered_data(discoveredNodeData)
         configListOfVms, IdList = get_vm_config_proxmox.get_vm_config(headersWithCookie, listOfVMIDS, node)
 
-        lastDataFrameForInsert = extract_useful_data_from_vm_config(configListOfVms,node)
+        extract_useful_data_from_vm_config(configListOfVms,node)
         keyListForIpConfig, ipconfigsOfVms, IdListForIpConfig = get_ip_information_proxmox.get_ip_given_vm(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
         keyListForDiskConfig, diskConfigOfVms, IdListForDiskConfig = get_disk_volumes_proxmox.get_disk_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
         keyListForOsConfig, osConfigOfVms, IdListFromOsConfig = get_os_info_proxmox.get_os_information(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
