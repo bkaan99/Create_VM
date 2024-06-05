@@ -34,3 +34,15 @@ def itsm_credential():
 
     return  itsm_api_url, itsm_api_key
 
+def vcenter_credential():
+    login_credential = {
+        "host_ip": "10.14.45.10",
+        "username": "cekinoitsmuser",
+        "password": "Cekino123!!"
+    }
+
+    return login_credential
+
+
+
+

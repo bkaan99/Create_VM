@@ -7,17 +7,17 @@ import pandas as pd
 import sys
 from sqlalchemy import create_engine
 from datetime import datetime
-
+from Discovery import Credentials
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
 
-def connect_esxi_environment(esxi_host, username, password):
+def connect_esxi_environment(vcenter_host, username, password):
     # Bağlantı yap
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.verify_mode = ssl.CERT_NONE  # Sertifika doğrulamasını devre dışı bırak
 
-    si = SmartConnect(host=esxi_host, user=username, pwd=password, port=443, sslContext=context)
+    si = SmartConnect(host=vcenter_host, user=username, pwd=password, port=443, sslContext=context)
 
     # Sanal makineleri al
     content = si.RetrieveContent()
@@ -28,7 +28,7 @@ def connect_esxi_environment(esxi_host, username, password):
 def append_vm_info(vmID, key, value, additional_info=''):
     try:
         append_dataframe_given_values(key, value, isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                      createdDateForAppend, vmID, virtualizationEnvironmentType, vcenter_host, None,
                                       notes=f"{additional_info}")
     except:
         pass
@@ -41,7 +41,7 @@ def append_section_info(section, vmID, section_name):
             value = str(value)
             keyToInsert = key
             append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, vcenter_host, None,
                                           notes=f"{section_name}")
     except:
         pass
@@ -99,7 +99,7 @@ def vm_config_section(vm, vmID):
             value = str(value)
             keyToInsert = key
             append_dataframe_given_values(keyToInsert, value, isDeletedValueForAppend, versionForAppend,
-                                          createdDateForAppend, vmID, virtualizationEnvironmentType, esxi_host, None,
+                                          createdDateForAppend, vmID, virtualizationEnvironmentType, vcenter_host, None,
                                           notes=f"{main_section}")
 
         #datastoreUrl
@@ -349,13 +349,14 @@ def vm_information_getter(vms):
         # append_section_info(vm.runtime, vmID, "vm.runtime")
 
 if __name__ == "__main__":
+    vcenter_credentials = Credentials.vcenter_credential()
     createdDateForAppend = datetime.now()
     versionForAppend = 2
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "vCenter"
-    esxi_host = "10.14.45.10"
-    username = "administrator@vsphere.local"
-    password = "Aa112233!"
+    vcenter_host = vcenter_credentials["host_ip"]
+    username = vcenter_credentials["username"]
+    password = vcenter_credentials["password"]
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
@@ -375,7 +376,7 @@ if __name__ == "__main__":
         password="Cekino.123!")
     cursorForPostgres = connectionForPostgres.cursor()
     vmIdList = Convert(mystring)
-    vmsFromESXI, si = connect_esxi_environment(esxi_host, username, password)
+    vmsFromESXI, si = connect_esxi_environment(vcenter_host, username, password)
     vm_information_getter(vmsFromESXI)
     Disconnect(si)
     dataFrameForInsert.to_sql("kr_discovery_findings", engineForPostgres, chunksize=5000, index=False, method=None,
