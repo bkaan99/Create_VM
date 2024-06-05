@@ -28,10 +28,12 @@ def main(vm_name):
     if service_instance is not None:
         vm_to_check = get_vm_by_name(content, vm_name)
 
-        if vm_to_check is not None:
-             if vm_to_check.guest.toolsStatus == vim.vm.GuestInfo.ToolsStatus.toolsOk:
-                 CurrentState = True
-                 return CurrentState
+        if (
+            vm_to_check is not None
+            and vm_to_check.guest.toolsStatus == vim.vm.GuestInfo.ToolsStatus.toolsOk
+        ):
+            CurrentState = True
+            return CurrentState
 
         # Disconnect from vCenter
         Disconnect(service_instance)
