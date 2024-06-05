@@ -141,7 +141,7 @@ def main():
         task_sender(stage_name="_", vmid=vmid, operationCode=6, cookie=cookie, task_mod=1)
 
         # check internet connection
-        if vm_config_lists_InternetConnection == True:
+        if vm_config_lists_InternetConnection is True:
             network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
                                                                                                  vCenter_user=vCenter_user,
                                                                                                  vCenter_password=vCenter_password,
@@ -222,7 +222,7 @@ def main():
                 if not vm_tools_status:
                     raise Exception("VM Tools status could not be verified after retrying.")
 
-            elif network_adapter_existence_value == False:
+            elif network_adapter_existence_value is False:
                 add_network_adapter.main(vm_name_to_reconfigure=clone_name,
                                          vCenter_host_ip=vCenter_host_ip,
                                          vCenter_user=vCenter_user,

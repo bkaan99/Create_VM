@@ -9,7 +9,7 @@ def get_disk_information(environmentIp, nodeName, vmIdList, headersWithCookie):
         urlToSendRequest = "https://"+environmentIp+"/api2/extjs/nodes/"+nodeName+"/qemu/"+str(item)+"/agent/get-fsinfo"
         vmConfigResult = requests.get(urlToSendRequest, headers=headersWithCookie, verify=False).text
         vmConfigResult = json.loads(vmConfigResult)
-        if vmConfigResult["data"] == None:
+        if vmConfigResult["data"] is None:
             keyList.append("error")
             valueList.append(vmConfigResult["message"])
             vmIdListToReturn.append(item)
