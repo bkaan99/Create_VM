@@ -115,6 +115,3 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name, disk_mount_lo
         print(f"Error: {e}")
     finally:
         Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()

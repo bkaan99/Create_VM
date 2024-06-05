@@ -81,6 +81,3 @@ def main(vm_name_to_reconfigure, vCenter_host_ip, vCenter_user, vCenter_password
             delete_disk_by_name(vm_to_reconfigure, disk['Disk Name'])
 
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()

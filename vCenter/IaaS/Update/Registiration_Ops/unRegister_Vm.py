@@ -43,5 +43,3 @@ def main(unregister_vm_name ,vCenter_host_ip, vCenter_user, vCenter_password):
 
     Disconnect(service_instance)
 
-if __name__ == "__main__":
-    main()
