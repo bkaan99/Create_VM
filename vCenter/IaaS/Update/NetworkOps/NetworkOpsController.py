@@ -54,7 +54,7 @@ def main(vm_name, vCenter_host_ip, vCenter_user, vCenter_password):
         if network_adapter_existence_value is True:
             print(f"{device_label} ağ adaptörü var.")
         else:
-            print(f"Ağ adaptörü yok.")
+            print("Ağ adaptörü yok.")
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, vm_name):
     if network_adapter_existence_value:
         print(f"Ağ adaptörü '{device_label}' VM'de bulunuyor.")
     else:
-        print(f"Ağ adaptörü VM'de bulunmuyor.")
+        print("Ağ adaptörü VM'de bulunmuyor.")
 
     Disconnect(service_instance)
 

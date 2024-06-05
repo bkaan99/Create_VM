@@ -40,7 +40,7 @@ def answer_vm_question(vm):
                 wait_for_task(reconfig_task)
                 break
     else:
-        print(f"Answer not found for question")
+        print("Answer not found for question")
 
 def main():
     ssl_context = ssl.create_default_context()
