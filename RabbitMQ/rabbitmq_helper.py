@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from enum import Enum
 import pika
@@ -11,11 +12,20 @@ class Status(Enum):
     FINISHED = 'finished'
     CRASHED = 'crashed'
 
-class ScriptListenerHelper:
+class Config:
+    RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+    RABBITMQ_USER ="guest"
+    RABBITMQ_PASS ="guest"
+    RABBITMQ_PORT = 15672
+    BASE_URL = f"http://{RABBITMQ_HOST}:{RABBITMQ_PORT}/api"
+    SCRIPT_LISTEN_QUEUE_NAME = 'script_listener'
+
+
+class MainHelper:
     @staticmethod
     def create_connection():
         try:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=Config.RABBITMQ_HOST))
             return connection
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Failed to connect to RabbitMQ server: {e}")
@@ -27,9 +37,9 @@ class ScriptListenerHelper:
 
     @staticmethod
     def send_message(queue_name, message):
-        connection = ScriptListenerHelper.create_connection()
+        connection = MainHelper.create_connection()
         channel = connection.channel()
-        ScriptListenerHelper.create_queue(channel, queue_name)
+        MainHelper.create_queue(channel, queue_name)
 
         properties = pika.BasicProperties(
             timestamp=int(time.time()),  # Unix timestamp formatında zaman damgası
@@ -43,13 +53,13 @@ class ScriptListenerHelper:
 
     @staticmethod
     def receive_message(queue_name):
-        connection = ScriptListenerHelper.create_connection()
+        connection = MainHelper.create_connection()
         if connection is None:
             print("Connection failed. No messages received.")
             return None
 
         channel = connection.channel()
-        ScriptListenerHelper.create_queue(channel, queue_name)
+        MainHelper.create_queue(channel, queue_name)
         messages = []
         message_bodies = []
 
@@ -90,8 +100,8 @@ class ScriptListenerHelper:
 
     @staticmethod
     def list_queues():
-        url = 'http://localhost:15672/api/queues'
-        response = requests.get(url, auth=HTTPBasicAuth('guest', 'guest'))
+        url = Config.BASE_URL + "/queues"
+        response = requests.get(url, auth=HTTPBasicAuth(username= Config.RABBITMQ_USER, password=Config.RABBITMQ_PASS))
         if response.status_code == 200:
             queues = response.json()
             return [queue['name'] for queue in queues]
@@ -101,7 +111,7 @@ class ScriptListenerHelper:
 
     @staticmethod
     def delete_queue(queue_name):
-        connection = ScriptListenerHelper.create_connection()
+        connection = MainHelper.create_connection()
         channel = connection.channel()
         channel.queue_delete(queue=queue_name)
         print(f" [x] Deleted queue '{queue_name}'")
@@ -119,8 +129,8 @@ class ScriptListenerHelper:
                 "error": error
             }
             json_message =json.dumps(message)
-            ScriptListenerHelper.send_message('script_listener', json_message)
-            print("script_listener kuyruğuna mesaj gönderildi.")
+            MainHelper.send_message(queue_name= Config.SCRIPT_LISTEN_QUEUE_NAME, message=json_message)
+            print(f"{Config.SCRIPT_LISTEN_QUEUE_NAME} kuyruğuna mesaj gönderildi.")
             return message
         except Exception as e:
             print(f"Error: {e}")
@@ -128,7 +138,7 @@ class ScriptListenerHelper:
 
     @staticmethod
     def error_catcher_queue():
-        messages = ScriptListenerHelper.receive_message('script_listener')
+        messages = MainHelper.receive_message(queue_name=Config.SCRIPT_LISTEN_QUEUE_NAME)
 
         if isinstance(messages, list):
             for message in messages:
@@ -140,6 +150,4 @@ class ScriptListenerHelper:
                 print(f"Error: {message_dict['error']}")
                 print("\n")
         else:
-            print("No messages received from script_listener queue.")
-
-
+            print(f"No messages received from {Config.SCRIPT_LISTEN_QUEUE_NAME} queue.")
