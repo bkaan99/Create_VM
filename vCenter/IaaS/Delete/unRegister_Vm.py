@@ -43,6 +43,3 @@ def main(unregister_vm_name :str ,vCenter_host_ip :str, vCenter_user :str, vCent
         print(f"VM with name {unregister_vm_name} not found")
 
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()

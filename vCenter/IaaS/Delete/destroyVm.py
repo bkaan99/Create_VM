@@ -39,6 +39,3 @@ def main(destroy_vm_name :str ,vCenter_host_ip :str, vCenter_user :str, vCenter_
         print(f"VM with name {vm_name_to_destroy} not found")
 
     Disconnect(service_instance)
-
-if __name__ == "__main__":
-    main()
