@@ -247,7 +247,7 @@ def host_section(vm, vmID):
 
                 host_basic_list = ["alarmActionsEnabled","answerFileValidationResult","answerFileValidationState","complianceCheckResult","complianceCheckState","configStatus","name","overallStatus","precheckRemediationResult","remediationResult","remediationState"]
                 for item in host_basic_list:
-                    append_vm_info(vmID, item, getattr(host, item), f"vm.network.host")
+                    append_vm_info(vmID, item, getattr(host, item), "vm.network.host")
 
                 list = ["capability","config","summary"]
                 for item in list:

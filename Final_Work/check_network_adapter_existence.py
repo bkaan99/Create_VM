@@ -67,7 +67,7 @@ def main():
     if network_adapter_existence:
         print(f"Ağ adaptörü '{device_label}' VM'de bulunuyor.")
     else:
-        print(f"Ağ adaptörü VM'de bulunmuyor.")
+        print("Ağ adaptörü VM'de bulunmuyor.")
 
     Disconnect(service_instance)
 
