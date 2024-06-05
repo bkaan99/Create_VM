@@ -36,10 +36,9 @@ def main():
     for resource_pool in resource_pools:
         print(resource_pool.name)
 
-
-
     Disconnect(service_instance)
 
 
 if __name__ == "__main__":
     main()
+    script_listener(os.path.basename(__file__), status='finished')
