@@ -23,8 +23,9 @@ def Connect_IPAM(ipam_api_url, ipam_login):
             IPAM = phpipamsdk.PhpIpamApi(
                 api_uri=ipam_api_url, api_verify_ssl=False)
             IPAM.login(auth=(ipam_login['username'], ipam_login['password']))
-            token = IPAM._api_token
-
+            token = getattr(IPAM, '_api_token', None)
+            if token is None:
+                raise AttributeError("Token attribute not found")
             return IPAM
 
         except Exception as e:
