@@ -20,26 +20,36 @@ class Config:
     BASE_URL = f"http://{RABBITMQ_HOST}:{RABBITMQ_PORT}/api"
     SCRIPT_LISTEN_QUEUE_NAME = 'script_listener'
 
-
-class MainHelper:
+class RabbitMQConnection:
     @staticmethod
     def create_connection():
         try:
             connection = pika.BlockingConnection(pika.ConnectionParameters(host=Config.RABBITMQ_HOST))
             return connection
-        except pika.exceptions.AMQPConnectionError as e:
-            print(f"Failed to connect to RabbitMQ server: {e}")
+        except pika.exceptions.AMQPError as e:
+            print(f"Error: {e}")
             return None
-
     @staticmethod
     def create_queue(channel, queue_name):
         channel.queue_declare(queue=queue_name)
 
     @staticmethod
+    def create_channel():
+        connection = RabbitMQConnection.create_connection()
+        if connection:
+            return connection.channel()
+        return None
+
+    @staticmethod
+    def close_connection(connection):
+        connection.close()
+
+
+class MessageHandler:
+    @staticmethod
     def send_message(queue_name, message):
-        connection = MainHelper.create_connection()
-        channel = connection.channel()
-        MainHelper.create_queue(channel, queue_name)
+        channel = RabbitMQConnection.create_channel()
+        RabbitMQConnection.create_queue(channel, queue_name)
 
         properties = pika.BasicProperties(
             timestamp=int(time.time()),  # Unix timestamp formatında zaman damgası
@@ -47,19 +57,14 @@ class MainHelper:
             delivery_mode=2  # Kalıcı mesajlar
         )
 
-        channel.basic_publish(exchange='', routing_key=queue_name, body=message , properties=properties)
+        channel.basic_publish(exchange='', routing_key=queue_name, body=message, properties=properties)
         print(f" [x] Sent '{message}' to queue '{queue_name}'")
-        connection.close()
+        RabbitMQConnection.close_connection(channel)
 
     @staticmethod
     def receive_message(queue_name):
-        connection = MainHelper.create_connection()
-        if connection is None:
-            print("Connection failed. No messages received.")
-            return None
-
-        channel = connection.channel()
-        MainHelper.create_queue(channel, queue_name)
+        channel = RabbitMQConnection.create_channel()
+        RabbitMQConnection.create_queue(channel, queue_name)
         messages = []
         message_bodies = []
 
@@ -91,33 +96,32 @@ class MainHelper:
             else:
                 break
 
-        connection.close()
-
         if not messages:
             return "Tüm mesajlar okundu veya kuyruk boş."
 
         return message_bodies
 
+class QueueManager:
     @staticmethod
     def list_queues():
         url = Config.BASE_URL + "/queues"
-        response = requests.get(url, auth=HTTPBasicAuth(username= Config.RABBITMQ_USER, password=Config.RABBITMQ_PASS))
+        response = requests.get(url, auth=HTTPBasicAuth(username=Config.RABBITMQ_USER, password=Config.RABBITMQ_PASS))
         if response.status_code == 200:
             queues = response.json()
             return [queue['name'] for queue in queues]
         else:
             return f"Failed to retrieve queues: {response.status_code}"
 
-
     @staticmethod
     def delete_queue(queue_name):
-        connection = MainHelper.create_connection()
+        connection = RabbitMQConnection.create_connection()
         channel = connection.channel()
         channel.queue_delete(queue=queue_name)
         print(f" [x] Deleted queue '{queue_name}'")
         connection.close()
 
 
+class ScriptListener:
     @staticmethod
     def script_listener(script_name='', status='', output=None, error=None):
         try:
@@ -129,7 +133,7 @@ class MainHelper:
                 "error": error
             }
             json_message =json.dumps(message)
-            MainHelper.send_message(queue_name= Config.SCRIPT_LISTEN_QUEUE_NAME, message=json_message)
+            MessageHandler.send_message(queue_name= Config.SCRIPT_LISTEN_QUEUE_NAME, message=json_message)
             print(f"{Config.SCRIPT_LISTEN_QUEUE_NAME} kuyruğuna mesaj gönderildi.")
             return message
         except Exception as e:
@@ -138,7 +142,7 @@ class MainHelper:
 
     @staticmethod
     def error_catcher_queue():
-        messages = MainHelper.receive_message(queue_name=Config.SCRIPT_LISTEN_QUEUE_NAME)
+        messages = MessageHandler.receive_message(queue_name=Config.SCRIPT_LISTEN_QUEUE_NAME)
 
         if isinstance(messages, list):
             for message in messages:
