@@ -126,7 +126,7 @@ class ScriptListener:
     def script_listener(script_name='', status='', output=None, error=None):
         try:
             message = {
-                "script_name": f"{script_name}.py" if script_name else "No script name provided",
+                "script_name": f"{script_name}" if script_name else "No script name provided",
                 "status": status,
                 "timestamp": int(time.time()),
                 "output": output,
