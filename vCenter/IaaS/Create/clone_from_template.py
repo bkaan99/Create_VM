@@ -3,8 +3,8 @@ from vCenter.IaaS.Connections.vSphere_connection import *
 from pyVmomi import vim
 import time
 
-def clone_template(si, template_name, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
-    content = si.RetrieveContent()
+def clone_template(content, template_name, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
+
     template = get_template_by_name(content, template_name)
     vm_folder = template.parent
 
@@ -27,7 +27,7 @@ def get_template_by_name(content, template_name):
             return vm
     return None
 
-def create_clone_spec(content, template, folder, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
+def create_clone_spec(content, template, folder, clone_name, disk_size_gb, disk_mode, memory_mb, cpu_count):
     clone_spec = vim.vm.CloneSpec()
     relocate_spec = vim.vm.RelocateSpec()
     relocate_spec.folder = folder
@@ -53,7 +53,7 @@ def create_clone_spec(content, template, folder, clone_name, disk_size_gb, disk_
             disk_spec.operation = vim.vm.device.VirtualDeviceSpec.Operation.edit
             disk_spec.device = device
             #disk_size_gb değeri var olan boyuttan büyük olmalı (GB)
-            disk_spec.device.capacityInKB = disk_size_gb * 1024 * 1024
+            disk_spec.device.capacityInKB = int(disk_size_gb * 1024 * 1024)
 
             # Disk modunu ayarla
             if disk_mode == 0:
@@ -70,19 +70,16 @@ def create_clone_spec(content, template, folder, clone_name, disk_size_gb, disk_
 
 def get_resource_pool(content):
     resource_pool = None
-    cluster = get_cluster(content)
-    if cluster:
-        rp = cluster.resourcePool
+    clusters = get_cluster_list(content)
+    if clusters:
+        rp = clusters[0].resourcePool
         resource_pool = rp
     return resource_pool
 
-def get_cluster(content):
-    cluster = None
+def get_cluster_list(content):
     container = content.viewManager.CreateContainerView(content.rootFolder, [vim.ClusterComputeResource], True)
-    for c in container.view:
-        cluster = c
-        break
-    return cluster
+    cluster_list = container.view
+    return cluster_list
 
 def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_name, disk_size_gb, disk_mode, memory_mb, cpu_count):
 
@@ -94,7 +91,7 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
 
     try:
         # Call clone_template function with desired template name and clone name
-        clone_template(service_instance,
+        clone_template(content= content,
                        template_name= template_name,
                        clone_name= clone_name,
                        disk_size_gb= disk_size_gb,
@@ -117,4 +114,12 @@ def main(vCenter_host_ip, vCenter_user, vCenter_password, template_name, clone_n
     Disconnect(service_instance)
 
 if __name__ == "__main__":
-    main()
+    main(vCenter_host_ip="10.14.45.10",
+         vCenter_user="administrator@vsphere.local",
+         vCenter_password="Aa112233!",
+         template_name="Win2019_test_template",
+         clone_name="bülent_test_clone",
+         disk_size_gb=20,
+         disk_mode=0,
+         memory_mb=2048,
+         cpu_count=2)
