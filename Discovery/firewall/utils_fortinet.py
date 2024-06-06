@@ -318,7 +318,3 @@ def main_controller():
     else:
         log_and_print("Failed to fetch VLAN, Firewall, Web Filter, or App Control details.")
         return None, None, None, None, None, None
-
-
-if __name__ == "__main__":
-    main_controller()

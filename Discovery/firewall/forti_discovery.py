@@ -76,16 +76,11 @@ if __name__ == "__main__":
 
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
+
     # engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    #
-    # connectionForPostgres = psycopg2.connect(
-    #     host="10.14.45.69",
-    #     port="7100",
-    #     database="karcin_pfms",
-    #     user="postgres",
-    #     password="Cekino.123!")
-    # cursorForPostgres = connectionForPostgres.cursor()
 
     controller_method()
 
     dataFrameForInsert.to_csv("forti_disc.csv", index=False)
+
+    # dataFrameForInsert.to_sql('discovery', engineForPostgres, if_exists='append', index=False)
