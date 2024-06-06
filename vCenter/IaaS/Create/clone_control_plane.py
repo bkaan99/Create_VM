@@ -6,7 +6,8 @@ import string
 import time
 from vCenter.IaaS.Connections.db_connection import *
 from vCenter.IaaS.Create import clone_from_template
-from vCenter.IaaS.ExternelFiles import check_vm_os_family, vmtoolsstatus, get_id_list_controller
+from vCenter.IaaS.ExternelFiles import check_vm_os_family, get_id_list_controller
+from vCenter.IaaS.ExternelFiles.vmtools_utils import vmtool_status
 from vCenter.IaaS.Update.DiskOps.AddDisk import add_disk_to_vm
 from vCenter.IaaS.Update.DiskOps.SetDisk import execute_disk_to_windows, execute_disk_to_linux, execute_sapaas_disk_to_centos
 from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
@@ -120,9 +121,10 @@ def main():
                                  cpu_count=vm_config_lists_Cpu)
 
         print("VM Tools Kontrol ediliyor.")
-        while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip, username=vCenter_user,
-                                     password=vCenter_password,
-                                     vm_name=clone_name):
+        while not vmtool_status(vCenterIP=vCenter_host_ip,
+                                username=vCenter_user,
+                                password=vCenter_password,
+                                vm_name=clone_name):
             print("VM Tools status kontrol döngüsü başlatıldı...")
             time.sleep(3)
 
@@ -148,10 +150,10 @@ def main():
                                                                                                  vm_name=clone_name)
 
             if network_adapter_existence_value:
-                vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                     username=vCenter_user,
-                                                     password=vCenter_password,
-                                                     vm_name=clone_name)
+                vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name)
 
 
                 assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
@@ -185,10 +187,10 @@ def main():
                     max_retries = 3
                     while retry_count < max_retries:
                         time.sleep(10)
-                        vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                             username=vCenter_user,
-                                                             password=vCenter_password,
-                                                             vm_name=clone_name)
+                        vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name)
 
                         assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
 
@@ -268,17 +270,17 @@ def main():
                                     vCenter_user=vCenter_user,
                                     vCenter_password=vCenter_password)
 
-                while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                             username=vCenter_user,
-                                             password=vCenter_password,
-                                             vm_name=clone_name):
+                while not vmtool_status(vCenterIP=vCenter_host_ip,
+                                        username=vCenter_user,
+                                        password=vCenter_password,
+                                        vm_name=clone_name):
                     print("VM Tools status kontrol ediliyor")
                     time.sleep(3)
 
-                vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                     username=vCenter_user,
-                                                     password=vCenter_password,
-                                                     vm_name=clone_name)
+                vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name)
 
                 disk_number_windows += 1
 
@@ -352,16 +354,16 @@ def main():
                                         cookie=cookie, task_mod=2)
 
                 else:
-                    while not vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                 username=vCenter_user,
-                                                 password=vCenter_password,
-                                                 vm_name=clone_name):
+                    while not vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name):
                         time.sleep(3)
 
-                    vm_tools_status = vmtoolsstatus.main(vCenterIP=vCenter_host_ip,
-                                                         username=vCenter_user,
-                                                         password=vCenter_password,
-                                                         vm_name=clone_name)
+                    vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name)
                     if vm_tools_status:
                         if pfms_config_type == "SAPaaS":
                             if vm_config_lists_OperatingSystemInformation == "Windows":
