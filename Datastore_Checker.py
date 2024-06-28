@@ -39,18 +39,20 @@ def connect_Postgres():
 
     return None
 
-def insert_datastore_info_with_pandas(datastore_list):
+def insert_datastore_info_with_pandas(datastore_list: list) -> None:
     try:
         # DataFrame oluştur
         df = pd.DataFrame(datastore_list)
         # kolon isimlerini düzenle
-        df.columns = ['datastore_name', 'datastore_url', 'capacity_gb', 'used_space_gb', 'free_space_gb', 'datastore_type', 'check_time']
+        df.columns = ['datastore_name', 'datastore_url', 'capacity_gb',
+                      'used_space_gb', 'free_space_gb',
+                      'datastore_type', 'check_time']
 
         # Veritabanı bağlantısı oluştur
         engine = connect_Postgres()
 
         # DataFrame'i PostgreSQL veritabanına yaz
-        df.to_sql('datastore_info', engine, if_exists='append', index=False, chunksize=5000, method=None,)
+        df.to_sql('datastore_info', engine, if_exists='replace', index=False, chunksize=5000, method=None, )
 
         print("Veri deposu bilgileri başarıyla eklendi.")
 
