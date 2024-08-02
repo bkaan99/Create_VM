@@ -1,4 +1,6 @@
+import os
 import ssl
+from RabbitMQ.rabbitmq_helper import MessageHandler, Config, RabbitMQConnection, ScriptListener
 
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
@@ -29,9 +31,9 @@ def main():
 
     content = service_instance.RetrieveContent()
 
-    resource_pools = get_all_resource_pools(content)
+    ScriptListener.script_listener(os.path.basename(__file__), status='running')
 
-    # Kaynak havuzlarını yazdır
+    resource_pools = get_all_resource_pools(content)
     print("Tüm kaynak havuzları:")
     for resource_pool in resource_pools:
         print(resource_pool.name)
@@ -41,4 +43,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    script_listener(os.path.basename(__file__), status='finished')
+    ScriptListener.script_listener(os.path.basename(__file__), status='finished')

@@ -6,6 +6,12 @@ import time
 def clone_template(content, template_name, clone_name, disk_size_gb, disk_mode,memory_mb, cpu_count):
 
     template = get_template_by_name(content, template_name)
+
+    if not template:
+        print(f"{template_name} adında bir template bulunamadı.")
+        exit(1)
+
+    #TODO: Buraya vm'i kuraağımız alanı dinamik yapmamız gerekecek. Şuan için default olarak vm_folder = template.parent
     vm_folder = template.parent
 
     clone_spec = create_clone_spec(content, template, vm_folder, clone_name, disk_size_gb, disk_mode ,memory_mb, cpu_count)

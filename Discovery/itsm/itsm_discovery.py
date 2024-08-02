@@ -83,7 +83,7 @@ def call_get_request_worklogs_by_id():
 
 def call_get_list_promlebs():
     promlems = get_list_promlebs()
-    if promlems:
+    if promlems is not None:
         for problem in promlems:
             flattened_problem = flatten_dict(problem)
             for key, value in flattened_problem.items():
@@ -218,23 +218,41 @@ def call_get_list_solutions():
 
 def controller_method():
     call_all_requests()
+    print("call_all_requests tamamlandı")
     call_get_request_full_details()
+    print("call_get_request_full_details tamamlandı")
     call_get_request_summary()
+    print("call_get_request_summary tamamlandı")
     call_get_request_notes_by_id()
+    print("call_get_request_notes_by_id tamamlandı")
     call_get_request_approval_levels_by_id()
+    print("call_get_request_approval_levels_by_id tamamlandı")
     call_get_request_worklogs_by_id()
+    print("call_get_request_worklogs_by_id tamamlandı")
     call_get_list_promlebs()
+    print("call_get_list_promlebs tamamlandı")
     call_get_list_promlem_notes()
+    print("call_get_list_promlem_notes tamamlandı")
     call_get_list_problem_worklogs()
+    print("call_get_list_problem_worklogs tamamlandı")
     call_get_list_changes()
+    print("call_get_list_changes tamamlandı")
     call_get_list_projects()
+    print("call_get_list_projects tamamlandı")
     call_get_project_by_id()
+    print("call_get_project_by_id tamamlandı")
     call_get_list_project_comments()
+    print("call_get_list_project_comments tamamlandı")
     call_get_list_project_milestones()
+    print("call_get_list_project_milestones tamamlandı")
     call_get_list_project_milestone_comments()
+    print("call_get_list_project_milestone_comments tamamlandı")
     call_get_list_aseests()
+    print("call_get_list_aseests tamamlandı")
     call_get_list_workstations()
+    print("call_get_list_workstations tamamlandı")
     call_get_list_solutions()
+    print("call_get_list_solutions tamamlandı")
 
 if __name__ == "__main__":
     base_url, api_key = Credentials.itsm_credential()
@@ -246,7 +264,7 @@ if __name__ == "__main__":
 
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
-    # engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
+    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
     #
     # connectionForPostgres = psycopg2.connect(
     #     host="10.14.45.69",
@@ -258,6 +276,6 @@ if __name__ == "__main__":
 
     controller_method()
 
-    dataFrameForInsert.to_csv("itsm_disc.csv", index=False)
+    #dataFrameForInsert.to_csv("itsm_disc.csv", index=False)
 
-    #dataFrameForInsert.to_sql("itsm_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')
+    dataFrameForInsert.to_sql("itsm_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')

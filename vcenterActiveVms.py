@@ -3,6 +3,7 @@ from pyVmomi import vim
 import ssl
 from vCenter.IaaS.Connections import db_connection
 
+
 def get_vm_by_name(content, vm_name):
     container = content.viewManager.CreateContainerView(
         content.rootFolder, [vim.VirtualMachine], True

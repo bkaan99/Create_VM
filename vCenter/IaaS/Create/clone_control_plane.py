@@ -14,6 +14,7 @@ from vCenter.IaaS.Update.NetworkOps.AddNetworkAdapter import add_network_adapter
 from vCenter.IaaS.Update.NetworkOps.CheckNetworkAdapter import check_network_adapter_existence
 from vCenter.IaaS.Update.NetworkOps.SetIPAdress import execute_ipAddress_windows, execute_ipAddress_to_linux
 from vCenter.ITSM_Integration import createitsmtaskLast, updateItsmTask
+from Discovery.Credentials import vcenter_credential
 
 
 def delete_itsm_tasks(vmidToDelete):
@@ -48,14 +49,127 @@ def task_sender(stage_name, vmid, operationCode, cookie, task_mod):
                                           vmid,
                                           cookie=cookie)
 
+def internet_connection_controller(vmid, vCenter_host_ip, vCenter_user, vCenter_password, clone_name, cookie, vm_config_lists_OperatingSystemInformation, vm_config_lists_IpAdress):
+    network_adapter_existence_value, device_label = check_network_adapter_existence.main(
+        vCenter_host_ip=vCenter_host_ip,
+        vCenter_user=vCenter_user,
+        vCenter_password=vCenter_password,
+        vm_name=clone_name)
+
+    if network_adapter_existence_value:
+        vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                        username=vCenter_user,
+                                        password=vCenter_password,
+                                        vm_name=clone_name)
+
+        assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
+        #ip set process
+        if vm_tools_status:
+            if vm_config_lists_OperatingSystemInformation == "Windows":
+                execute_ipAddress_windows.main(vm_name=clone_name,
+                                               vCenter_host_ip=vCenter_host_ip,
+                                               vCenter_user=vCenter_user,
+                                               vCenter_password=vCenter_password,
+                                               ipAddress=vm_config_lists_IpAdress)
+
+                # itsm task list
+                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                            cookie=cookie, task_mod=2)
+
+            elif vm_config_lists_OperatingSystemInformation == "Linux":
+                execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                                vCenter_host_ip=vCenter_host_ip,
+                                                vCenter_user=vCenter_user,
+                                                vCenter_password=vCenter_password,
+                                                ipAddress=vm_config_lists_IpAdress)
+
+                # itsm task list
+                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                            cookie=cookie, task_mod=2)
+
+        else:
+            time.sleep(5)
+            retry_count = 0
+            max_retries = 3
+            while retry_count < max_retries:
+                time.sleep(10)
+                vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
+                                                username=vCenter_user,
+                                                password=vCenter_password,
+                                                vm_name=clone_name)
+
+                assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
+                if vm_tools_status:
+                    if vm_config_lists_OperatingSystemInformation == "Windows":
+                        execute_ipAddress_windows.main(vm_name=clone_name,
+                                                       vCenter_host_ip=vCenter_host_ip,
+                                                       vCenter_user=vCenter_user,
+                                                       vCenter_password=vCenter_password,
+                                                       ipAddress=vm_config_lists_IpAdress)
+
+                        # itsm task list
+                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                    cookie=cookie, task_mod=2)
+
+
+                    elif vm_config_lists_OperatingSystemInformation == "Linux":
+                        execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                                        vCenter_host_ip=vCenter_host_ip,
+                                                        vCenter_user=vCenter_user,
+                                                        vCenter_password=vCenter_password,
+                                                        ipAddress=vm_config_lists_IpAdress)
+
+                        # itsm task list
+                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                                    cookie=cookie, task_mod=2)
+
+                    break
+                retry_count += 1
+
+        if not vm_tools_status:
+            raise Exception("VM Tools status could not be verified after retrying.")
+
+    elif network_adapter_existence_value == False:
+        add_network_adapter.main(vm_name_to_reconfigure=clone_name,
+                                 vCenter_host_ip=vCenter_host_ip,
+                                 vCenter_user=vCenter_user,
+                                 vCenter_password=vCenter_password)
+
+        # itsm task list
+        assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
+
+        if vm_config_lists_OperatingSystemInformation == "Windows":
+            execute_ipAddress_windows.main(vm_name=clone_name,
+                                           vCenter_host_ip=vCenter_host_ip,
+                                           vCenter_user=vCenter_user,
+                                           vCenter_password=vCenter_password,
+                                           ipAddress=vm_config_lists_IpAdress)
+
+            # itsm task list
+            task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                        cookie=cookie, task_mod=2)
+
+        elif vm_config_lists_OperatingSystemInformation == "Linux":
+            execute_ipAddress_to_linux.main(vm_name=clone_name,
+                                            vCenter_host_ip=vCenter_host_ip,
+                                            vCenter_user=vCenter_user,
+                                            vCenter_password=vCenter_password,
+                                            ipAddress=vm_config_lists_IpAdress)
+
+            # itsm task list
+            task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
+                        cookie=cookie, task_mod=2)
 
 def main():
     print("IAAS Create işlemi başlatıldı")
 
     # vSphere server credentials
-    vCenter_host_ip = "10.14.45.10"
-    vCenter_user = "administrator@vsphere.local"
-    vCenter_password = "Aa112233!"
+    credentials = vcenter_credential()
+    vCenter_host_ip = credentials["host_ip"]
+    vCenter_user = credentials["username"]
+    vCenter_password = credentials["password"]
 
     #vm id arguments
     vmIdList = get_id_list_controller.get_id_list()
@@ -104,7 +218,6 @@ def main():
         clone_name = vm_config_lists_VmName
 
         # #ITSM task kontrolü
-
         delete_itsm_tasks(vmid)
         createitsmtaskLast.createTaskItsm(vmid, cookie= cookie)
 
@@ -143,117 +256,15 @@ def main():
         task_sender(stage_name="_", vmid=vmid, operationCode=6, cookie=cookie, task_mod=1)
 
         # check internet connection
-        if vm_config_lists_InternetConnection is True:
-            network_adapter_existence_value, device_label = check_network_adapter_existence.main(vCenter_host_ip=vCenter_host_ip,
-                                                                                                 vCenter_user=vCenter_user,
-                                                                                                 vCenter_password=vCenter_password,
-                                                                                                 vm_name=clone_name)
-
-            if network_adapter_existence_value:
-                vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
-                                                username=vCenter_user,
-                                                password=vCenter_password,
-                                                vm_name=clone_name)
-
-
-                assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
-
-                if vm_tools_status:
-                    if vm_config_lists_OperatingSystemInformation == "Windows":
-                        execute_ipAddress_windows.main(vm_name=clone_name,
-                                                       vCenter_host_ip=vCenter_host_ip,
-                                                       vCenter_user=vCenter_user,
-                                                       vCenter_password=vCenter_password,
-                                                       ipAddress=vm_config_lists_IpAdress)
-
-                        # itsm task list
-                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                    cookie=cookie,task_mod=2)
-
-                    elif vm_config_lists_OperatingSystemInformation == "Linux":
-                        execute_ipAddress_to_linux.main(vm_name=clone_name,
-                                                        vCenter_host_ip=vCenter_host_ip,
-                                                        vCenter_user=vCenter_user,
-                                                        vCenter_password=vCenter_password,
-                                                        ipAddress=vm_config_lists_IpAdress)
-
-                        # itsm task list
-                        task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                    cookie=cookie,task_mod=2)
-
-                else:
-                    time.sleep(5)
-                    retry_count = 0
-                    max_retries = 3
-                    while retry_count < max_retries:
-                        time.sleep(10)
-                        vm_tools_status = vmtool_status(vCenterIP=vCenter_host_ip,
-                                                username=vCenter_user,
-                                                password=vCenter_password,
-                                                vm_name=clone_name)
-
-                        assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
-
-                        if vm_tools_status:
-                            if vm_config_lists_OperatingSystemInformation == "Windows":
-                                execute_ipAddress_windows.main(vm_name=clone_name,
-                                                               vCenter_host_ip=vCenter_host_ip,
-                                                               vCenter_user=vCenter_user,
-                                                               vCenter_password=vCenter_password,
-                                                               ipAddress=vm_config_lists_IpAdress)
-
-                                # itsm task list
-                                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                            cookie=cookie, task_mod=2)
-
-
-                            elif vm_config_lists_OperatingSystemInformation == "Linux":
-                                execute_ipAddress_to_linux.main(vm_name=clone_name,
-                                                                vCenter_host_ip=vCenter_host_ip,
-                                                                vCenter_user=vCenter_user,
-                                                                vCenter_password=vCenter_password,
-                                                                ipAddress=vm_config_lists_IpAdress)
-
-                                # itsm task list
-                                task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                            cookie=cookie, task_mod=2)
-
-                            break
-                        retry_count += 1
-
-                if not vm_tools_status:
-                    raise Exception("VM Tools status could not be verified after retrying.")
-
-            elif network_adapter_existence_value is False:
-                add_network_adapter.main(vm_name_to_reconfigure=clone_name,
-                                         vCenter_host_ip=vCenter_host_ip,
-                                         vCenter_user=vCenter_user,
-                                         vCenter_password=vCenter_password)
-
-                # itsm task list
-                assignIpToIaasVmTaskList = get_itsm_values(vmid, 4)
-
-                if vm_config_lists_OperatingSystemInformation == "Windows":
-                    execute_ipAddress_windows.main(vm_name=clone_name,
-                                                   vCenter_host_ip=vCenter_host_ip,
-                                                   vCenter_user=vCenter_user,
-                                                   vCenter_password=vCenter_password,
-                                                   ipAddress=vm_config_lists_IpAdress)
-
-                    # itsm task list
-                    task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                cookie=cookie, task_mod=2)
-
-                elif vm_config_lists_OperatingSystemInformation == "Linux":
-                    execute_ipAddress_to_linux.main(vm_name=clone_name,
-                                                    vCenter_host_ip=vCenter_host_ip,
-                                                    vCenter_user=vCenter_user,
-                                                    vCenter_password=vCenter_password,
-                                                    ipAddress=vm_config_lists_IpAdress)
-
-                    # itsm task list
-                    task_sender(stage_name=assignIpToIaasVmTaskList, vmid=vmid, operationCode=4,
-                                cookie=cookie, task_mod=2)
+        if vm_config_lists_InternetConnection == True:
+            internet_connection_controller(vmid=vmid,
+                                           vCenter_host_ip=vCenter_host_ip,
+                                           vCenter_user=vCenter_user,
+                                           vCenter_password=vCenter_password,
+                                           clone_name=clone_name,
+                                           cookie=cookie,
+                                           vm_config_lists_OperatingSystemInformation=vm_config_lists_OperatingSystemInformation,
+                                           vm_config_lists_IpAdress=vm_config_lists_IpAdress)
 
         # add disk to VM
         if len(other_disk_list) > 0:

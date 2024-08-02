@@ -52,6 +52,7 @@ def seleniumItsm():
     full_cookie = ""
     firefox_path = "/usr/bin/firefox"
     firefox_options = Options()
+    firefox_options.add_argument("--headless")
     firefox_options.headless = True
     firefox_options.add_argument("--display=:99")
     driver = webdriver.Firefox(options=firefox_options)

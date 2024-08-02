@@ -12,7 +12,7 @@ def main(os_family, os_version):
             return template_name
 
         else:
-            template_name = "bkaan_windows_template"
+            template_name = "New_Windows_VM"
             return template_name
 
     elif "Linux" in os_family:

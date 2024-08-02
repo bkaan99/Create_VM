@@ -29,6 +29,7 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
         f'{ipAddress} 255.255.255.0 10.14.45.1'
     )
 
+    #TODO: DNS ayarlarını neden 8888 ve 8844 olarak değiştirdik? Bunu soralım.
     dns_script = (
         f'netsh interface ip set dns name="Ethernet0" static '
         f'8.8.8.8 &&'
@@ -36,8 +37,8 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
     )
 
     auth = vim.vm.guest.NamePasswordAuthentication(
-        username="cekino",
-        password="1234"
+        username="Çekino",
+        password="Aa112233!"
     )
     pm = content.guestOperationsManager.processManager
 
@@ -71,3 +72,6 @@ def main(vm_name ,vCenter_host_ip, vCenter_user, vCenter_password, ipAddress):
         print(f"Error: {e}")
 
     Disconnect(service_instance)
+
+if __name__ == "__main__":
+    main("maria", "10.14.45.10", "administrator@vsphere.local", "Aa112233!", "192.30.30.0/24")

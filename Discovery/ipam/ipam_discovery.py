@@ -229,15 +229,12 @@ def append_dataframe_given_values(key, value, is_deleted, version, created_date,
 def vm_information_getter():
 
     get_ip_addresses(IPAM)
-    #get_all_subnets(IPAM)
-    #get_sections(IPAM)
-    #get_circiuts(IPAM)
-    #get_devices(IPAM)
-    #get_vlan(IPAM)
-    #get_l2domains(IPAM)
-
-
-
+    get_all_subnets(IPAM)
+    get_sections(IPAM)
+    get_circiuts(IPAM)
+    get_devices(IPAM)
+    get_vlan(IPAM)
+    get_l2domains(IPAM)
 
 if __name__ == "__main__":
     ipam_login, ipam_api_url, ipam_base_url = Credentials.ipam_credential()
@@ -264,4 +261,4 @@ if __name__ == "__main__":
     #export csv
     dataFrameForInsert.to_csv("subnets.csv", index=False)
 
-    #dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')
+    dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')

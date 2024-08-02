@@ -290,16 +290,16 @@ def vm_information_getter(vms):
         #
         # #smallDescription
         # print("small description is starting")
-        # try:
-        #     small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp"]
-        #     for index, item in enumerate(small_list):
-        #         if getattr(vm, item) is not None:
-        #             append_vm_info(vmID, item, getattr(vm, item), "vm")
-        #         else:
-        #             continue
-        # except:
-        #     print(f"VM {vm_index} error")
-        #
+        try:
+            small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp"]
+            for index, item in enumerate(small_list):
+                if getattr(vm, item) is not None:
+                    append_vm_info(vmID, item, getattr(vm, item), "vm")
+                else:
+                    continue
+        except:
+            print(f"VM {vm_index} error")
+
         # # Summary Section
         # print("summary section is starting")
         # vm_summary_section(vm, vmID)

@@ -43,11 +43,16 @@ def get_vmList_Config(vmid):
     vmListConfig_VirtualizationTechnology = VmListConfigrurationTable.get("virtualizationtechnology")[0]
     vmListConfig_PFMSConfigurationId = VmListConfigrurationTable.get("pfmsconfiguration_id")[0]
 
-    pfmsConfigType = pd.read_sql_query(
-        "select configtype from kr_pfms_configuration where id=" + str(vmListConfig_PFMSConfigurationId),
-        connectionForPostgres).get("configtype")[0]
+    pfmsConfigTable = pd.read_sql_query(f"select configtype, customername from kr_pfms_configuration where id={vmListConfig_PFMSConfigurationId}",connectionForPostgres)
 
-    return vmListConfig_Id, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_VmName, vmListConfig_HostName, vmListConfig_IpAdress, vmListConfig_Environment, vmListConfig_OperatingSystemInformation, vmListConfig_OperatingSystemVersion, vmListConfig_InternetConnection, vmListConfig_VirtualizationTechnology, vmListConfig_PFMSConfigurationId, pfmsConfigType
+    pfmsConfigType = pfmsConfigTable.get("configtype")[0]
+    customerName = pfmsConfigTable.get("customername")[0]
+
+    return (vmListConfig_Id, vmListConfig_Cpu, vmListConfig_RamSize, vmListConfig_VmName,
+            vmListConfig_HostName,vmListConfig_IpAdress, vmListConfig_Environment,
+            vmListConfig_OperatingSystemInformation, vmListConfig_OperatingSystemVersion,
+            vmListConfig_InternetConnection, vmListConfig_VirtualizationTechnology, vmListConfig_PFMSConfigurationId,
+            pfmsConfigType, customerName)
 
 def get_first_disik_Config(vmid):
     connectionForPostgres, cursorForPostgres = connect_Postgres()

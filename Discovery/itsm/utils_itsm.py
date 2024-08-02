@@ -32,6 +32,7 @@ def make_request_and_handle_errors(endpoint: str, params: dict) -> dict:
         return response.json()
     except Exception as e:
         print(f"Hata oluştu: {e}")
+        return None
 
 def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
     batchSize = 100
@@ -199,7 +200,6 @@ def get_request_worklogs_by_id(request_id: Union[str, int]='') -> dict:
         return None
 
 def get_list_promlebs(startIndex=0, numberOfData = None):
-
     if numberOfData is None:
         numberOfData = 200
 
@@ -209,82 +209,112 @@ def get_list_promlebs(startIndex=0, numberOfData = None):
     all_problems = []
 
     for i in range(0, total_batches):
-        input_data = {
-            "list_info": {
-                "row_count": batchSize,
-                "start_index": startIndex,
-                "sort_field": "due_by_time",
-                "sort_order": "desc",
-                "get_total_count": True
+        try:
+            input_data = {
+                "list_info": {
+                    "row_count": batchSize,
+                    "start_index": startIndex,
+                    "sort_field": "due_by_time",
+                    "sort_order": "desc",
+                    "get_total_count": True
+                }
             }
-        }
-        input_data_str = json.dumps(input_data)
+            input_data_str = json.dumps(input_data)
 
-        response = get_response('/problems', params=input_data_str)
+            data = make_request_and_handle_errors('/problems', params=input_data)
 
+            #response = get_response('/problems', params=input_data_str)
+
+            if data:
+                all_problems.extend(data.get('problems', []))
+                for problem in data.get('problems', []):
+                    print(problem)
+                startIndex += batchSize
+            else:
+                print(f"Problemler alınamadı. Hata kodu: {data['status_code']}")
+                return None
+
+            return all_problems
+
+        except HTTPError as e:
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
+            break
+
+
+def get_list_promlem_notes(problem_id):
+    try:
+        response = get_response(f'/problems/{problem_id}/notes')
         if response.status_code == 200:
             data = response.json()
             print("Problemler başarıyla alındı:")
-            for problem in data['problems']:
-                print(problem)
-            all_problems.extend(data['problems'])
-            startIndex += batchSize
+            for note in data['notes']:
+                print(note)
+            return data['notes']
+
         else:
             print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
             print(response.json())
             return None
 
-    return all_problems
-def get_list_promlem_notes(problem_id):
-    response = get_response(f'/problems/{problem_id}/notes')
-    if response.status_code == 200:
-        data = response.json()
-        print("Problemler başarıyla alındı:")
-        for note in data['notes']:
-            print(note)
-        return data['notes']
-
-    else:
-        print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 def get_list_problem_tasks(problem_id):
-    response = get_response(f'/problems/{problem_id}/tasks')
-    if response.status_code == 200:
-        data = response.json()
-        print("Problemler başarıyla alındı:")
-        for task in data['tasks']:
-            print(task)
-        return data['tasks']
-    else:
-        print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/problems/{problem_id}/tasks')
+        if response.status_code == 200:
+            data = response.json()
+            print("Problemler başarıyla alındı:")
+            for task in data['tasks']:
+                print(task)
+            return data['tasks']
+        else:
+            print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_problem_worklogs(problem_id):
-    response = get_response(f'/problems/{problem_id}/worklogs')
-    if response.status_code == 200:
-        data = response.json()
-        print("Problemler başarıyla alındı:")
-        for worklog in data['worklogs']:
-            print(worklog)
-        return data['worklogs']
-    else:
-        print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/problems/{problem_id}/worklogs')
+        if response.status_code == 200:
+            data = response.json()
+            print("Problemler başarıyla alındı:")
+            for worklog in data['worklogs']:
+                print(worklog)
+            return data['worklogs']
+        else:
+            print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_problem_task_worklogs(problem_id, task_id):
-    response = get_response(f'/problems/{problem_id}/tasks/{task_id}/worklogs')
-    if response.status_code == 200:
-        data = response.json()
-        print("Problemler başarıyla alındı:")
-        for worklog in data['worklogs']:
-            print(worklog)
-        return data['worklogs']
-    else:
-        print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/problems/{problem_id}/tasks/{task_id}/worklogs')
+        if response.status_code == 200:
+            data = response.json()
+            print("Problemler başarıyla alındı:")
+            for worklog in data['worklogs']:
+                print(worklog)
+            return data['worklogs']
+        else:
+            print(f"Problemler alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_changes(startIndex=0, numberOfData = None):
@@ -298,31 +328,40 @@ def get_list_changes(startIndex=0, numberOfData = None):
     all_changes = []
 
     for i in range(0, total_batches):
-        input_data = {
-            "list_info": {
-                "row_count": batchSize,
-                "start_index": startIndex,
-                "sort_order": "desc",
-                "get_total_count": True
+        try:
+            input_data = {
+                "list_info": {
+                    "row_count": batchSize,
+                    "start_index": startIndex,
+                    "sort_order": "desc",
+                    "get_total_count": True
+                }
             }
-        }
-        input_data_str = json.dumps(input_data)
+            input_data_str = json.dumps(input_data)
 
-        response = get_response('/changes', params=input_data_str)
+            response = get_response('/changes', params=input_data_str)
 
-        if response.status_code == 200:
-            data = response.json()
-            print("Değişiklikler başarıyla alındı:")
-            for change in data['changes']:
-                print(change)
-            all_changes.extend(data['changes'])
-            startIndex += batchSize
-        else:
-            print(f"Değişiklikler alınamadı. Hata kodu: {response.status_code}")
-            print(response.json())
-            return None
+            if response.status_code == 200:
+                data = response.json()
+                print("Değişiklikler başarıyla alındı:")
+                for change in data['changes']:
+                    print(change)
+                all_changes.extend(data['changes'])
+                startIndex += batchSize
+            else:
+                print(f"Değişiklikler alınamadı. Hata kodu: {response.status_code}")
+                print(response.json())
+                return None
 
-    return all_changes
+            return all_changes
+
+        except HTTPError as e:
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
+            break
 
 def get_changes_by_id(change_id: int):
     response = get_response(f'/changes/{change_id}')
@@ -416,252 +455,307 @@ def get_list_change_task_worklogs(change_id: int, task_id: int):
         return None
 
 def get_list_projects():
-
-    input_data = {
-        "list_info": {
-            "row_count": 100,
-            "start_index": 0,
-            "sort_field": "id",
-            "sort_order": "desc",
-            "get_total_count": True
-        }
-    }
-
-    input_data_str = json.dumps(input_data)
-    #FIXME: total count olayını normal haline getir.
-    #total_count = get_response('/projects', params=input_data_str).json()['list_info']['total_count']
-    total_count = 100
-    batch_size = 100
-    total_batches = math.ceil(total_count / batch_size)
-
-    all_projects = []
-
-    for i in range(0, total_batches):
+    try:
         input_data = {
             "list_info": {
-                "row_count": batch_size,
-                "start_index": i * batch_size,
+                "row_count": 100,
+                "start_index": 0,
                 "sort_field": "id",
-                "sort_order": "asc",
+                "sort_order": "desc",
                 "get_total_count": True
             }
         }
 
         input_data_str = json.dumps(input_data)
+        #FIXME: total count olayını normal haline getir.
+        #total_count = get_response('/projects', params=input_data_str).json()['list_info']['total_count']
+        total_count = 100
+        batch_size = 100
+        total_batches = math.ceil(total_count / batch_size)
 
-        response = get_response('/projects', params=input_data_str)
+        all_projects = []
 
-        if response.status_code == 200:
-            data = response.json()
-            print("Projeler başarıyla alındı:")
-            for project in data['projects']:
-                print(project)
-                all_projects.append(project)
-        else:
-            print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
-            print(response.json())
+        for i in range(0, total_batches):
+            input_data = {
+                "list_info": {
+                    "row_count": batch_size,
+                    "start_index": i * batch_size,
+                    "sort_field": "id",
+                    "sort_order": "asc",
+                    "get_total_count": True
+                }
+            }
 
-    return all_projects
+            input_data_str = json.dumps(input_data)
+
+            response = get_response('/projects', params=input_data_str)
+
+            if response.status_code == 200:
+                data = response.json()
+                print("Projeler başarıyla alındı:")
+                for project in data['projects']:
+                    print(project)
+                    all_projects.append(project)
+            else:
+                print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
+                print(response.json())
+
+        return all_projects
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
+        return None
 
 def get_project_by_id(project_id):
-    response = get_response(f'/projects/{project_id}')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje başarıyla alındı:")
-        for key in data['project']:
-            print(f"{key}: {data['project'][key]}")
-        return data['project']
-    else:
-        print(f"Proje alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje başarıyla alındı:")
+            for key in data['project']:
+                print(f"{key}: {data['project'][key]}")
+            return data['project']
+        else:
+            print(f"Proje alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_members(project_id):
-    response = get_response(f'/projects/{project_id}/project_members')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje üyeleri başarıyla alındı:")
-        for member in data['members']:
-            print(member)
-        return data['members']
-    else:
-        print(f"Proje üyeleri alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/project_members')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje üyeleri başarıyla alındı:")
+            for member in data['members']:
+                print(member)
+            return data['members']
+        else:
+            print(f"Proje üyeleri alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_comments(project_id):
-    response = get_response(f'/projects/{project_id}/comments')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje yorumları başarıyla alındı:")
-        for comment in data['comments']:
-            print(comment)
-        return data['comments']
-    else:
-        print(f"Proje yorumları alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/comments')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje yorumları başarıyla alındı:")
+            for comment in data['comments']:
+                print(comment)
+            return data['comments']
+        else:
+            print(f"Proje yorumları alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_tasks(project_id):
-    response = get_response(f'/projects/{project_id}/tasks')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje görevleri başarıyla alındı:")
-        for task in data['tasks']:
-            print(task)
-        return data['tasks']
-    else:
-        print(f"Proje görevleri alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/tasks')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje görevleri başarıyla alındı:")
+            for task in data['tasks']:
+                print(task)
+            return data['tasks']
+        else:
+            print(f"Proje görevleri alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_milestones(project_id):
-    response = get_response(f'/projects/{project_id}/milestones')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje kilometre taşları başarıyla alındı:")
-        for milestone in data['milestones']:
-            print(milestone)
-        return data['milestones']
-    else:
-        print(f"Proje kilometre taşları alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/milestones')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje kilometre taşları başarıyla alındı:")
+            for milestone in data['milestones']:
+                print(milestone)
+            return data['milestones']
+        else:
+            print(f"Proje kilometre taşları alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_milestone_comments(project_id, milestone_id):
-    response = get_response(f'/projects/{project_id}/milestones/{milestone_id}/comments')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje kilometre taşı yorumları başarıyla alındı:")
-        for comment in data['comments']:
-            print(comment)
-        return data['comments']
-    else:
-        print(f"Proje kilometre taşı yorumları alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/milestones/{milestone_id}/comments')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje kilometre taşı yorumları başarıyla alındı:")
+            for comment in data['comments']:
+                print(comment)
+            return data['comments']
+        else:
+            print(f"Proje kilometre taşı yorumları alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_project_milestone_tasks(project_id, milestone_id):
-    response = get_response(f'/projects/{project_id}/milestones/{milestone_id}/tasks')
-    if response.status_code == 200:
-        data = response.json()
-        print("Proje kilometre taşı görevleri başarıyla alındı:")
-        for task in data['tasks']:
-            print(task)
-        return data['tasks']
-    else:
-        print(f"Proje kilometre taşı görevleri alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response(f'/projects/{project_id}/milestones/{milestone_id}/tasks')
+        if response.status_code == 200:
+            data = response.json()
+            print("Proje kilometre taşı görevleri başarıyla alındı:")
+            for task in data['tasks']:
+                print(task)
+            return data['tasks']
+        else:
+            print(f"Proje kilometre taşı görevleri alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_releases():
-    response = get_response('/releases')
-    if response.status_code == 200:
-        data = response.json()
-        print("Sürümler başarıyla alındı:")
-        for release in data['releases']:
-            print(release)
-        return data['releases']
-    else:
-        print(f"Sürümler alınamadı. Hata kodu: {response.status_code}")
-        print(response.json())
+    try:
+        response = get_response('/releases')
+        if response.status_code == 200:
+            data = response.json()
+            print("Sürümler başarıyla alındı:")
+            for release in data['releases']:
+                print(release)
+            return data['releases']
+        else:
+            print(f"Sürümler alınamadı. Hata kodu: {response.status_code}")
+            print(response.json())
+            return None
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
         return None
 
 def get_list_aseests():
 
-    input_data = {
-        "list_info": {
-            "row_count": 100,
-            "start_index": 0,
-            "sort_field": "id",
-            "sort_order": "desc",
-            "get_total_count": True
-        }
-    }
+    try:
 
-    input_data_str = json.dumps(input_data)
-
-    #FIXME: total count olayını normal haline getir.
-    #total_count = get_response('/assets', params=input_data_str).json()['list_info']['total_count']
-    total_count = 100
-    batch_size = 100
-    total_batches = math.ceil(total_count / batch_size)
-
-    all_assets = []
-
-    for i in range(0, total_batches):
         input_data = {
             "list_info": {
-                "row_count": batch_size,
-                "start_index": i * batch_size,
+                "row_count": 100,
+                "start_index": 0,
                 "sort_field": "id",
-                "sort_order": "asc",
+                "sort_order": "desc",
                 "get_total_count": True
             }
         }
 
         input_data_str = json.dumps(input_data)
 
-        response = get_response('/assets', params=input_data_str)
+        #FIXME: total count olayını normal haline getir.
+        #total_count = get_response('/assets', params=input_data_str).json()['list_info']['total_count']
+        total_count = 100
+        batch_size = 100
+        total_batches = math.ceil(total_count / batch_size)
 
-        if response.status_code == 200:
-            data = response.json()
-            print("Projeler başarıyla alındı:")
-            for asset in data['assets']:
-                print(asset)
-                all_assets.append(asset)
-        else:
-            print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
-            print(response.json())
+        all_assets = []
 
-    return all_assets
+        for i in range(0, total_batches):
+            input_data = {
+                "list_info": {
+                    "row_count": batch_size,
+                    "start_index": i * batch_size,
+                    "sort_field": "id",
+                    "sort_order": "asc",
+                    "get_total_count": True
+                }
+            }
+
+            input_data_str = json.dumps(input_data)
+
+            response = get_response('/assets', params=input_data_str)
+
+            if response.status_code == 200:
+                data = response.json()
+                print("Projeler başarıyla alındı:")
+                for asset in data['assets']:
+                    print(asset)
+                    all_assets.append(asset)
+            else:
+                print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
+                print(response.json())
+
+        return all_assets
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
+        return None
 
 def get_list_workstations():
-    input_data = {
-        "list_info": {
-            "row_count": 100,
-            "start_index": 0,
-            "sort_field": "id",
-            "sort_order": "desc",
-            "get_total_count": True
-        }
-    }
-
-    input_data_str = json.dumps(input_data)
-    #FIXME: total count olayını normal haline getir.
-    #total_count = get_response('/workstations', params=input_data_str).json()['list_info']['total_count']
-    total_count = 100
-    batch_size = 100
-    total_batches = math.ceil(total_count / batch_size)
-
-    all_workstations = []
-
-    for i in range(0, total_batches):
+    try:
         input_data = {
             "list_info": {
-                "row_count": batch_size,
-                "start_index": i * batch_size,
+                "row_count": 100,
+                "start_index": 0,
                 "sort_field": "id",
-                "sort_order": "asc",
+                "sort_order": "desc",
                 "get_total_count": True
             }
         }
 
         input_data_str = json.dumps(input_data)
+        #FIXME: total count olayını normal haline getir.
+        #total_count = get_response('/workstations', params=input_data_str).json()['list_info']['total_count']
+        total_count = 100
+        batch_size = 100
+        total_batches = math.ceil(total_count / batch_size)
 
-        response = get_response('/workstations', params=input_data_str)
+        all_workstations = []
 
-        if response.status_code == 200:
-            data = response.json()
-            print("Projeler başarıyla alındı:")
-            for workstation in data['workstations']:
-                print(workstation)
-                all_workstations.append(workstation)
-        else:
-            print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
-            print(response.json())
+        for i in range(0, total_batches):
+            input_data = {
+                "list_info": {
+                    "row_count": batch_size,
+                    "start_index": i * batch_size,
+                    "sort_field": "id",
+                    "sort_order": "asc",
+                    "get_total_count": True
+                }
+            }
 
-    return all_workstations
+            input_data_str = json.dumps(input_data)
+
+            response = get_response('/workstations', params=input_data_str)
+
+            if response.status_code == 200:
+                data = response.json()
+                print("Projeler başarıyla alındı:")
+                for workstation in data['workstations']:
+                    print(workstation)
+                    all_workstations.append(workstation)
+            else:
+                print(f"Projeler alınamadı. Hata kodu: {response.status_code}")
+                print(response.json())
+
+        return all_workstations
+
+    except Exception as e:
+        print(f"Beklenmedik hata: {e}")
+        return None
 
 def get_list_tasks():
     response = get_response('/tasks')

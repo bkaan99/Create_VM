@@ -1,3 +1,4 @@
+from functools import wraps
 import requests
 import configparser
 import logging
@@ -34,7 +35,6 @@ def log_and_print(message):
     print(message)
     logging.info(message)
 
-
 def read_config(config_file_path=r'C:\Projeler\py\py_FIREWALL\firewall_config.ini'):
     """Read the configuration from an INI file."""
     config = configparser.ConfigParser()
@@ -44,71 +44,61 @@ def read_config(config_file_path=r'C:\Projeler\py\py_FIREWALL\firewall_config.in
         'access_token': config['fortigate']['access_token']
     }
 
-
-def get_all_vlans_details(config):
-    """Fetch all VLAN details from FortiGate."""
-    url = config['url']
-    access_token = config['access_token']
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    endpoint = '/api/v2/cmdb/system/interface'
-    response = requests.get(f"{url}{endpoint}", headers=headers, verify=False)
-
-    if response.status_code == 200:
-        vlans = response.json()['results']
-        all_vlans_details = []
-
-        for vlan in vlans:
-            vlan_details = {
-                'Name': vlan.get('name', 'N/A') ,
-                'VLAN ID': vlan.get('vlanid', 'N/A'),
-                'Interface': vlan.get('interface', 'N/A'),
-                'IP Address': vlan.get('ip', 'N/A'),
-                'Status': vlan.get('status', 'N/A'),
-                'Alias': vlan.get('alias', 'N/A'),
-                'MAC Address': vlan.get('macaddr', 'N/A'),
-                'VLAN Interface': vlan.get('vlaninterface', 'N/A'),
-                'Role': vlan.get('role', 'N/A'),
-                'Type': vlan.get('type', 'N/A'),
-                'MTU': vlan.get('mtu', 'N/A'),
-                'Description': vlan.get('description', 'N/A'),
-                'Speed': vlan.get('speed', 'N/A'),
-                'Duplex': vlan.get('duplex', 'N/A'),
-                'DHCP Relay IP': vlan.get('dhcp-relay-ip', 'N/A'),
-                'DHCP Relay Service': vlan.get('dhcp-relay-service', 'N/A'),
-                'DHCP Client Options': vlan.get('dhcp-client-options', 'N/A'),
-                'Management IP': vlan.get('management-ip', 'N/A'),
-                'IPv6 Address': vlan.get('ipv6', {}).get('ip6-address', 'N/A'),
-                'IPv6 Gateway': vlan.get('ipv6', {}).get('ip6-gateway', 'N/A'),
-                'Firewall Rules': [],
-                'Web Filter Profiles': [],
-                'App Control Profiles': []
+def api_call(endpoint):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(config, *args, **kwargs):
+            url = config['url']
+            access_token = config['access_token']
+            headers = {
+                "Authorization": f"Bearer {access_token}"
             }
-
-            # Bandwidth bilgilerini almak için ek bir API çağrısı
-            traffic_endpoint = f"/api/v2/monitor/system/interface/select?filter=name=={vlan.get('name', '')}"
-            traffic_response = requests.get(f"{url}{traffic_endpoint}", headers=headers, verify=False)
-            if traffic_response.status_code == 200:
-                traffic_data = traffic_response.json()
-                vlan_details.update({
-                    'RX Bandwidth': traffic_data.get('rx', 'N/A'),
-                    'TX Bandwidth': traffic_data.get('tx', 'N/A')
-                })
+            response = requests.get(f"{url}{endpoint}", headers=headers, verify=False)
+            if response.status_code == 200:
+                return func(response.json(), *args, **kwargs)
             else:
-                vlan_details.update({
-                    'RX Bandwidth': 'N/A',
-                    'TX Bandwidth': 'N/A'
-                })
+                log_and_print(f"Error fetching data from {endpoint}: {response.status_code}")
+                return None
+        return wrapper
+    return decorator
 
-            all_vlans_details.append(vlan_details)
 
-        return all_vlans_details
-    else:
-        log_and_print(f"Error fetching VLAN details: {response.status_code}")
-        return None
+@api_call('/api/v2/cmdb/system/interface')
+def get_all_vlans_details(response_json):
+    """Fetch all VLAN details from FortiGate."""
+    vlans = response_json['results']
+    all_vlans_details = []
 
+    for vlan in vlans:
+        vlan_details = {
+            'Name': vlan.get('name', 'N/A'),
+            'VLAN ID': vlan.get('vlanid', 'N/A'),
+            'Interface': vlan.get('interface', 'N/A'),
+            'IP Address': vlan.get('ip', 'N/A'),
+            'Status': vlan.get('status', 'N/A'),
+            'Alias': vlan.get('alias', 'N/A'),
+            'MAC Address': vlan.get('macaddr', 'N/A'),
+            'VLAN Interface': vlan.get('vlaninterface', 'N/A'),
+            'Role': vlan.get('role', 'N/A'),
+            'Type': vlan.get('type', 'N/A'),
+            'MTU': vlan.get('mtu', 'N/A'),
+            'Description': vlan.get('description', 'N/A'),
+            'Speed': vlan.get('speed', 'N/A'),
+            'Duplex': vlan.get('duplex', 'N/A'),
+            'DHCP Relay IP': vlan.get('dhcp-relay-ip', 'N/A'),
+            'DHCP Relay Service': vlan.get('dhcp-relay-service', 'N/A'),
+            'DHCP Client Options': vlan.get('dhcp-client-options', 'N/A'),
+            'Management IP': vlan.get('management-ip', 'N/A'),
+            'IPv6 Address': vlan.get('ipv6', {}).get('ip6-address', 'N/A'),
+            'IPv6 Gateway': vlan.get('ipv6', {}).get('ip6-gateway', 'N/A'),
+            'Firewall Rules': [],
+            'Web Filter Profiles': [],
+            'App Control Profiles': []
+        }
+
+        all_vlans_details.append(vlan_details)
+
+    return all_vlans_details
 
 def get_firewall_rules(config):
     """Fetch all firewall rules from FortiGate."""
@@ -318,3 +308,5 @@ def main_controller():
     else:
         log_and_print("Failed to fetch VLAN, Firewall, Web Filter, or App Control details.")
         return None, None, None, None, None, None
+
+main_controller()

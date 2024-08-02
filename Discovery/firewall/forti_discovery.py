@@ -1,5 +1,7 @@
 from datetime import datetime
 import pandas as pd
+from sqlalchemy import create_engine
+
 from Discovery.firewall.utils_fortinet import main_controller
 
 
@@ -77,10 +79,10 @@ if __name__ == "__main__":
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
 
-    # engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
+    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
 
     controller_method()
 
-    dataFrameForInsert.to_csv("forti_disc.csv", index=False)
+    #dataFrameForInsert.to_csv("forti_disc.csv", index=False)
 
-    # dataFrameForInsert.to_sql('discovery', engineForPostgres, if_exists='append', index=False)
+    dataFrameForInsert.to_sql('forti_disc', engineForPostgres, if_exists='append', index=False)

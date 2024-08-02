@@ -19,12 +19,16 @@ engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10
 cursorForExecute = connectionBerko.cursor()
 def seleniumItsm():
     full_cookie = ""
+    print("seleniumItsm giriyorum.")
     firefox_path = "/usr/bin/firefox"
     firefox_options = Options()
+    firefox_options.add_argument("--headless")
     firefox_options.headless = True
     firefox_options.add_argument("--display=:99")
+    print("seleniumItsm firefox ayarlarını yapıyorum.")
     driver = webdriver.Firefox(options=firefox_options)
     try:
+        print("seleniumItsm try içindeyim.")
         driver.get("https://supporttest.glasshouse.com.tr/")
         username = "cekinoitsmuser"
         password = "Cekino123!!"
@@ -36,9 +40,13 @@ def seleniumItsm():
         password_input.send_keys(password)
         login_button = driver.find_element(By.XPATH,
                                            "/html/body/div[1]/div[2]/div/div/div[2]/div/form/div/div[2]/div/div/div/div[17]/button")
+        print("seleniumItsm login butonuna tıklıyorum.")
         login_button.click()
+        print("seleniumItsm login butonuna tıkladım.")
         #  time.sleep(8)
+        print("seleniumItsm cookieleri alıyorum.")
         cookies = driver.get_cookies()
+        print("seleniumItsm cookieleri aldım. " + str(len(cookies)) + " adet cookie var.")
         for cookie in cookies:
             full_cookie += f"{cookie['name']}={cookie['value']};"
     except Exception as e:

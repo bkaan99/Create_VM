@@ -37,8 +37,8 @@ def itsm_credential():
 def vcenter_credential():
     login_credential = {
         "host_ip": "10.14.45.10",
-        "username": "cekinoitsmuser",
-        "password": "Cekino123!!"
+        "username": "administrator@vsphere.local",
+        "password": "Aa112233!"
     }
 
     return login_credential
