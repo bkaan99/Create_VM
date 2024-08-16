@@ -244,6 +244,34 @@ def get_app_control_profiles(config):
         log_and_print(f"Error fetching application control profiles: {response.status_code}")
         return None
 
+def get_user_groups(config):
+    """Fetch all user groups from FortiGate."""
+    url = config['url']
+    access_token = config['access_token']
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    endpoint = '/api/v2/cmdb/user/group'
+    response = requests.get(f"{url}{endpoint}", headers=headers, verify=False)
+
+    if response.status_code == 200:
+        user_groups = response.json()['results']
+        all_user_groups = []
+
+        for group in user_groups:
+            group_details = {
+                'Name': group.get('name', 'N/A'),
+                'Comment': group.get('comments', 'N/A'),
+                'Members': [member.get('name', 'N/A') for member in group.get('member', [])]
+            }
+            all_user_groups.append(group_details)
+
+        return all_user_groups
+    else:
+        log_and_print(f"Error fetching user groups: {response.status_code}")
+        return None
+
 
 def map_rules_to_vlans(vlans, x_list):
     """Map firewall rules to their respective VLANs based on interfaces."""
@@ -290,6 +318,8 @@ def save_to_json(data, filename):
 def main_controller():
     config_path = r'/Users/b.gurgen/PycharmProjects/Create_VM/Discovery/firewall/config.ini'
     config = read_config(config_path)
+
+    usergroup = get_user_groups(config)
 
     vlan_details = get_all_vlans_details(config)
     firewall_rules, x_list = get_firewall_rules(config)

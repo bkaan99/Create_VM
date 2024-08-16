@@ -21,6 +21,17 @@ def ipam_credential():
     ipam_base_url = "172.28.0.27"
 
     return ipam_login, ipam_api_url, ipam_base_url
+def ipam_live_credential():
+    ipam_login = {
+        "username": "cekinoIpamUser",
+        "password": "WQeMGw725"
+    }
+
+    ipam_api_url = "https://172.28.0.17/api/0001/"
+
+    ipam_base_url = "172.28.0.17"
+
+    return ipam_login, ipam_api_url, ipam_base_url
 
 def itsm_credential():
 
@@ -32,7 +43,18 @@ def itsm_credential():
     itsm_api_url = "https://supporttest.glasshouse.com.tr/api/v3"
     itsm_api_key = "A919767F-C901-4874-B0D4-0D3EE04CD3F2"
 
-    return  itsm_api_url, itsm_api_key
+    return itsm_api_url, itsm_api_key
+def itsm_live_credential():
+
+    itsm_login = {
+        "username" : "cekinoitsmuser",
+        "password" : "Aa112233!"
+    }
+
+    itsm_api_url = "https://support.glasshouse.com.tr/api/v3"
+    itsm_api_key = "72860D48-B48B-444E-8AEB-B527206C31EE"
+
+    return itsm_api_url, itsm_api_key
 
 def vcenter_credential():
     login_credential = {

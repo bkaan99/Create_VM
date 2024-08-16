@@ -8,22 +8,20 @@ import sys
 from sqlalchemy import create_engine
 from datetime import datetime
 from Discovery import Credentials
+from vCenter.IaaS.Connections.vSphere_connection import create_vsphere_connection
+
+def Convert(string):
+    li = list(string.replace(' ', '').split(","))
+    return li
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
 
 def connect_esxi_environment(vcenter_host, username, password):
-    # Bağlantı yap
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.verify_mode = ssl.CERT_NONE  # Sertifika doğrulamasını devre dışı bırak
-
-    si = SmartConnect(host=vcenter_host, user=username, pwd=password, port=443, sslContext=context)
-
-    # Sanal makineleri al
-    content = si.RetrieveContent()
+    service_instance, content = create_vsphere_connection(vcenter_host, username, password)
     container = content.viewManager.CreateContainerView(content.rootFolder, [vim.VirtualMachine], True)
     vms = container.view
-    return vms, si
+    return vms, service_instance
 
 def append_vm_info(vmID, key, value, additional_info=''):
     try:
@@ -143,7 +141,6 @@ def datastore_section(vm, vmID):
             for section in sub_sections:
                 append_section_info(getattr(datastore, section), vmID, f"{main_section}.[{datastore_count}].{section}")
 
-
             #declaredAlarmState
             declaredAlarmState = datastore.declaredAlarmState
             for alarm in declaredAlarmState:
@@ -158,8 +155,6 @@ def datastore_section(vm, vmID):
             effectiveRole = datastore.effectiveRole
             for role in effectiveRole:
                 append_vm_info(vmID, "effectiveRole", role, f"{main_section}.[{datastore_count}].effectiveRole")
-
-
 
             #host bilgisi
             all_host = datastore.host
@@ -288,8 +283,8 @@ def vm_information_getter(vms):
         print(f"VM {vm_index} / {len(vms)} is starting")
         print("")
         #
-        # #smallDescription
-        # print("small description is starting")
+        #smallDescription
+        print("small description is starting")
         try:
             small_list = ["alarmActionsEnabled","configStatus","guestHeartbeatStatus","name","overallStatus","parentVApp"]
             for index, item in enumerate(small_list):
@@ -351,34 +346,26 @@ def vm_information_getter(vms):
 
 if __name__ == "__main__":
     vcenter_credentials = Credentials.vcenter_credential()
+    vcenter_host = vcenter_credentials["host_ip"]
+    username = vcenter_credentials["username"]
+    password = vcenter_credentials["password"]
+
     createdDateForAppend = datetime.now()
     versionForAppend = 2
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "vCenter"
-    vcenter_host = vcenter_credentials["host_ip"]
-    username = vcenter_credentials["username"]
-    password = vcenter_credentials["password"]
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
-    engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
+
     mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
     mystring = mystring.replace("[", "").replace("]", "")
 
-    def Convert(string):
-        li = list(string.replace(' ', '').split(","))
-        return li
-
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
+
     vmIdList = Convert(mystring)
     vmsFromESXI, si = connect_esxi_environment(vcenter_host, username, password)
     vm_information_getter(vmsFromESXI)
     Disconnect(si)
+
     dataFrameForInsert.to_sql("kr_discovery_findings", engineForPostgres, chunksize=5000, index=False, method=None,
                               if_exists='append')
