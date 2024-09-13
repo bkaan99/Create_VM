@@ -2,26 +2,24 @@ import socket
 import time
 import warnings
 import phpipamsdk
-import psycopg2
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Table, Column, String, DateTime, MetaData, inspect, Boolean, Integer
 from datetime import datetime
 from Discovery import Credentials
+from typing import Optional, Dict
 
-def is_connected(host, port):
+def is_connected(host: str, port: int) -> bool:
     try:
-        # Bir soket nesnesi oluştur ve belirtilen host ve port'a bağlanmaya çalış
         with socket.create_connection((host, port), timeout=5) as connection:
             return True
     except (socket.gaierror, socket.timeout, ConnectionRefusedError):
         return False
 
-def Connect_IPAM(ipam_api_url, ipam_login):
+def Connect_IPAM(ipam_api_url: str, ipam_login: Dict[str, str]) -> Optional[phpipamsdk.PhpIpamApi]:
     warnings.filterwarnings('ignore')
-    if is_connected('172.28.0.27', 443):
+    if is_connected('172.28.0.17', 443):
         try:
-            IPAM = phpipamsdk.PhpIpamApi(
-                api_uri=ipam_api_url, api_verify_ssl=False)
+            IPAM = phpipamsdk.PhpIpamApi(api_uri=ipam_api_url, api_verify_ssl=False)
             IPAM.login(auth=(ipam_login['username'], ipam_login['password']))
             token = getattr(IPAM, '_api_token', None)
             if token is None:
@@ -33,7 +31,6 @@ def Connect_IPAM(ipam_api_url, ipam_login):
     else:
         print("IPAM'a bağlanılamadı")
         return None
-
 
 def get_ip_addresses(IPAM):
     subnets_url2 = phpipamsdk.AddressesApi(phpipam=IPAM)
@@ -135,7 +132,6 @@ def get_circiuts(IPAM):
 
         if circuits['success'] is True:
             for count, circuit in enumerate(circuits['data']):
-                print(count)
                 for key, value in (item for item in circuit.items() if item[0] not in ["links"]):
                     append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend, createdDateForAppend, None, virtualizationEnvironmentType, ipam_base_url, "Circuits", f"{ipam_api_url}circuits/{circuit['id']}")
 
@@ -227,7 +223,6 @@ def append_dataframe_given_values(key, value, is_deleted, version, created_date,
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
 
 def vm_information_getter():
-
     get_ip_addresses(IPAM)
     get_all_subnets(IPAM)
     get_sections(IPAM)
@@ -236,10 +231,34 @@ def vm_information_getter():
     get_vlan(IPAM)
     get_l2domains(IPAM)
 
+def create_datastore_table_if_not_exists(engine, table_name: str):
+    metadata = MetaData()
+    datastore_table = Table(
+        table_name, metadata,
+        Column('key', String),
+        Column('value', String),
+        Column('is_deleted', Boolean),
+        Column('version', Integer),
+        Column('created_date', DateTime),
+        Column('vm_id', Integer),
+        Column('virtualization_environment_type', String),
+        Column('virtualization_environment_ip', String),
+        Column('node', String),
+        Column('notes', String)
+    )
+    inspector = inspect(engine)
+    if not inspector.has_table(table_name):
+        metadata.create_all(engine)
+        print(f"{table_name} ---> tablosu oluşturuldu.")
+    else:
+        print("")
+        print(f"{table_name} ---> tablosu zaten var.")
+
 if __name__ == "__main__":
-    ipam_login, ipam_api_url, ipam_base_url = Credentials.ipam_credential()
+    ipam_login, ipam_api_url, ipam_base_url = Credentials.ipam_live_credential()
     IPAM = Connect_IPAM(ipam_api_url, ipam_login)
 
+    TABLE_NAME = "kr_discovery_ipam"
     createdDateForAppend = datetime.now()
     versionForAppend = 2
     isDeletedValueForAppend = False
@@ -249,16 +268,9 @@ if __name__ == "__main__":
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
 
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
     vm_information_getter()
 
-    #export csv
-    dataFrameForInsert.to_csv("subnets.csv", index=False)
+    create_datastore_table_if_not_exists(engineForPostgres, TABLE_NAME)
 
-    dataFrameForInsert.to_sql("ipam_disc", engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')
+    #dataFrameForInsert.to_csv("subnets.csv", index=False)
+    dataFrameForInsert.to_sql(TABLE_NAME, engineForPostgres, chunksize=5000, index=False, method=None,if_exists='append')

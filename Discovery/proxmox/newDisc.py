@@ -1,13 +1,10 @@
 import json
 import requests
-import base64
-import psycopg2
 import pandas as pd
-import sys
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Table, Column, String, DateTime, MetaData, inspect, Boolean, Integer
 from datetime import datetime
-from Discovery.proxmox import get_vm_id_list_proxmox, get_ip_information_proxmox, get_disk_volumes_proxmox, \
-    get_os_info_proxmox, get_host_name_proxmox
+from Discovery.proxmox.utils import get_disk_volumes_proxmox, get_ip_information_proxmox, get_host_name_proxmox, \
+    get_vm_id_list_proxmox, get_os_info_proxmox
 from Discovery import Credentials
 
 
@@ -17,7 +14,7 @@ def append_dataframe_given_values(key, value, is_deleted, version, created_date,
 def append_vm_info(vmID, key, value, additional_info=''):
     try:
         append_dataframe_given_values(str(key), str(value), isDeletedValueForAppend, versionForAppend,
-                                      createdDateForAppend, vmID, virtualizationEnvironmentType, virtualizationEnvironmentIp, virtualizationEnvironmentIp,
+                                      createdDateForAppend, vmID, virtualizationEnvironmentType, virtualizationEnvironmentIp, nodeName=node,
                                       notes=f"{additional_info}")
     except:
         pass
@@ -34,7 +31,7 @@ def get_node_information_from_json(jsonWithNodes):
     return listOfNodeNames
 
 def discover_proxmox_environment(nodeName):
-    url = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu"
+    url = f"https://{virtualizationEnvironmentIp}/api2/extjs/nodes/"+nodeName+"/qemu"
     discoveredNodeData = get_vm_id_list_proxmox.get_vm_id_list(headersWithCookie, url)
     return discoveredNodeData
 
@@ -48,7 +45,7 @@ def get_vm_config(headersWithCookie,vmIdList,nodeName):
     vmIdListToReturn = []
     vmConfigResultList = []
     for i, item in enumerate(vmIdList):
-        urlToSendRequest = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu/"+str(item)+"/config"
+        urlToSendRequest = f"https://{virtualizationEnvironmentIp}/api2/extjs/nodes/"+nodeName+"/qemu/"+str(item)+"/config"
         vmConfigResult = requests.get(urlToSendRequest, headers=headersWithCookie, verify=False).text
         vmConfigResult = json.loads(vmConfigResult)
         vmConfigResultList.append(vmConfigResult["data"])
@@ -161,9 +158,33 @@ def extract_useful_data_from_vm_config(configList, IdList):
                 except:
                     append_vm_info(IdList[c], keyForInsert, valueForInsert, f"api2/extjs/nodes/{node}/qemu/{vm_id}/config")
 
+def create_datastore_table_if_not_exists(engine, table_name: str):
+    metadata = MetaData()
+    datastore_table = Table(
+        table_name, metadata,
+        Column('key', String),
+        Column('value', String),
+        Column('is_deleted', Boolean),
+        Column('version', Integer),
+        Column('created_date', DateTime),
+        Column('vm_id', Integer),
+        Column('virtualization_environment_type', String),
+        Column('virtualization_environment_ip', String),
+        Column('node', String),
+        Column('notes', String)
+    )
+    inspector = inspect(engine)
+    if not inspector.has_table(table_name):
+        metadata.create_all(engine)
+        print(f"{table_name} ---> tablosu oluşturuldu.")
+    else:
+        print("")
+        print(f"{table_name} ---> tablosu zaten var.")
 
 if __name__ == "__main__":
-    login, virtualizationEnvironmentIp =Credentials.proxmox_credential()
+    login, virtualizationEnvironmentIp =Credentials.new_proxmox_credential()
+    TABLE_NAME = "kr_discovery_proxmox"
+
     createdDateForAppend = datetime.now()
     versionForAppend = 2
     isDeletedValueForAppend = False
@@ -172,27 +193,14 @@ if __name__ == "__main__":
                         "virtualization_environment_type", "virtualization_environment_ip", "node", "notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
 
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
-
-    def Convert(string):
-        li = list(string.replace(' ', '').split(","))
-        return li
 
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
-    vmIdList = Convert(mystring)
+    create_datastore_table_if_not_exists(engineForPostgres, TABLE_NAME)
 
     headers = {
         "Content-Type": "application/json",
     }
-    responseforticket = requests.post("https://10.14.46.11:8006/api2/extjs/access/ticket", headers=headers, json=login,
+    responseforticket = requests.post(f"https://{virtualizationEnvironmentIp}/api2/extjs/access/ticket", headers=headers, json=login,
                                       verify=False)
     headersWithCookie = {
         "Content-Type": "application/json",
@@ -269,5 +277,5 @@ if __name__ == "__main__":
                                           "api2/extjs/nodes/"+node+"/qemu/"+str(IdListFromOsConfig[t])+"/agent/get-host-name")
 
         print("Host Info is discovered")
-    dataFrameForInsert.to_sql("proxmox_disc", engineForPostgres, chunksize=5000, index=False, method=None,
-                              if_exists='append')
+    dataFrameForInsert.to_sql(TABLE_NAME, engineForPostgres, chunksize=5000, index=False, method=None,
+                              if_exists='replace')

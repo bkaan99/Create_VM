@@ -1,13 +1,12 @@
 import json
 import math
-from typing import Union
-
+from typing import Union, Optional
 import requests
 from urllib.error import HTTPError
 from Discovery import Credentials
 
 def get_response(endpoint : str ='', params=None) -> requests.Response:
-    base_url, api_key = Credentials.itsm_credential()
+    base_url, api_key = Credentials.itsm_live_credential()
     url = f"{base_url}{endpoint}"
     headers = {
         'Content-Type': 'application/json',
@@ -34,14 +33,14 @@ def make_request_and_handle_errors(endpoint: str, params: dict) -> dict:
         print(f"Hata oluştu: {e}")
         return None
 
-def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
+def get_all_requests(startIndex : int =0) -> list:
     batchSize = 100
-    print("Tüm talepler alınıyor...")
-    total_batches = math.ceil(numberOfData / batchSize)
-
+    print("Tüm Request talepleri alınıyor...")
+    first_start_index = startIndex
     all_requests = []
+    total_count = None
 
-    for i in range(0, total_batches):
+    while True:
         try:
             input_data = {
                 "list_info": {
@@ -57,12 +56,22 @@ def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
 
             if data:
                 all_requests.extend(data.get('requests', []))
-                for request in data.get('requests', []):
-                    print(request)
+
+                if total_count is None:
+                    total_count = data['list_info'].get('total_count', 0)
+                    print(f"Toplam talep sayısı: {total_count}")
+
+                remaining_count = total_count - first_start_index
+
+                current_count = len(all_requests)
+                print(f"İşlenen talepler: {startIndex}/{total_count} ({(current_count / remaining_count) * 100:.2f}%)")
+
+                if startIndex + batchSize >= total_count:
+                    break
+
+                startIndex += batchSize
             else:
                 break
-
-            startIndex += batchSize
 
         except HTTPError as e:
             print(f"HTTP hatası: {e}")
@@ -75,53 +84,26 @@ def get_all_requests(startIndex : int =0 , numberOfData : int = 200) -> list:
     return all_requests
 
 def get_all_request_ids(startIndex: int =0) -> list:
-    numberOfData = 200
-    batchSize = 100
-    requests_ids = []
+    all_requests = get_all_requests(startIndex=startIndex)
+    request_ids = [request.get('id') for request in all_requests if request.get('id')]
+    return request_ids
 
-    print("Tüm talep id'leri başarıyla alındı:")
+def get_info_by_request_id(request_id: Union[str, int] = None) ->  Optional[dict]:
 
-    total_batches = math.ceil(numberOfData / batchSize)
-
-    for i in range(0, total_batches):
-        input_data = {
-            "list_info": {
-                "row_count": batchSize,
-                "start_index": startIndex,
-                "sort_field": "due_by_time",
-                "sort_order": "desc",
-                "get_total_count": True
-            }
-        }
-
-        data = make_request_and_handle_errors('/requests', params=input_data)
-
-        if data:
-            for request in data.get('requests', []):
-                request_id = request.get('id')
-                if request_id:
-                    print(request_id)
-                    requests_ids.append(request_id)
-        else:
-            break
-
-        startIndex += batchSize
-
-        # Yüzdelik hesaplama
-        completed_percentage = ((i + 1) / total_batches) * 100
-        print(f"Tamamlanan: %{completed_percentage:.2f}")
-
-    # with open('request_ids.json', 'w') as file:
-    #     json.dump(requests_ids, file, indent=2)
-
-    return requests_ids
-
-def get_info_by_request_id(request_id: Union[str, int]='') -> dict:
-    data = make_request_and_handle_errors(f'/requests/{request_id}', params={})
-    if data:
-        return data['request']
-    else:
+    if request_id is None:
+        print("Geçersiz talep ID'si.")
         return None
+
+    data = make_request_and_handle_errors(f'/requests/{request_id}', params={})
+
+    if data and 'request' in data:
+        return data['request']
+    elif data and 'status_code' in data:
+        print(f"Talep alınamadı. Hata kodu: {data['status_code']}")
+    else:
+        print("Beklenmedik bir hata oluştu.")
+
+    return None
 
 def get_request_summary_by_id(request_id: Union[str, int]='') -> dict:
     data = make_request_and_handle_errors(f'/requests/{request_id}/summary', params={})
@@ -896,5 +878,147 @@ def get_list_products():
             print(f"Ürünler alınamadı. Hata kodu: {response.status_code}")
             print(response.json())
 
-if __name__ == '__main__':
-    get_request_summary_by_id('258497')
+def get_all_sites(startIndex : int =0) -> list:
+    batchSize = 100
+    print("Tüm ---> /sites talepler alınıyor...")
+    first_start_index = startIndex
+    all_sites = []
+    total_count = None
+
+    while True:
+        try:
+            input_data = {
+                "list_info": {
+                    "row_count": batchSize,
+                    "start_index": startIndex,
+                    "get_total_count": True
+                }
+            }
+
+            data = make_request_and_handle_errors('/sites', params=input_data)
+
+            if data:
+                all_sites.extend(data.get('sites', []))
+
+                if total_count is None:
+                    total_count = data['list_info'].get('total_count', 0)
+                    print(f"Toplam talep sayısı: {total_count}")
+
+                remaining_count = total_count - first_start_index
+
+                current_count = len(all_sites)
+                print(f"İşlenen talepler: {startIndex}/{total_count} ({(current_count / remaining_count) * 100:.2f}%)")
+
+                if startIndex + batchSize >= total_count:
+                    break
+
+                startIndex += batchSize
+            else:
+                break
+
+        except HTTPError as e:
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
+            break
+
+    return all_sites
+
+def get_all_tasks(startIndex: int =0) -> list:
+    batchSize = 100
+    print("Tüm Tasklar için talepler alınıyor...\n")
+    first_start_index = startIndex
+    all_tasks = []
+    total_count = None
+
+    while True:
+        try:
+            input_data = {
+                "list_info": {
+                    "row_count": batchSize,
+                    "start_index": startIndex,
+                    "page": 1,
+                    "get_total_count": True
+                }
+            }
+
+            data = make_request_and_handle_errors('/tasks', params=input_data)
+
+            if data:
+                all_tasks.extend(data.get('tasks', []))
+
+                if total_count is None:
+                    total_count = data['list_info'].get('total_count', 0)
+                    print(f"Toplam talep sayısı: {total_count}")
+                remaining_count = total_count - first_start_index
+
+                current_count = len(all_tasks)
+                print(f"İşlenen talepler: {startIndex}/{total_count} ({(current_count / remaining_count) * 100:.2f}%)")
+
+                if startIndex + batchSize >= total_count:
+                    break
+
+                startIndex += batchSize
+            else:
+                break
+
+        except HTTPError as e:
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
+            break
+
+    return all_tasks
+
+def get_all_contracts(startIndex: int =0) -> list:
+    batchSize = 100
+    print("Tüm Kontratlar için talepler alınıyor...\n")
+    first_start_index = startIndex
+
+    all_contracts = []
+    total_count = None
+
+    while True:
+        try:
+            input_data = {
+                "list_info": {
+                    "row_count": batchSize,
+                    "start_index": startIndex,
+                    "page": 1,
+                    "get_total_count": True
+                }
+            }
+
+            data = make_request_and_handle_errors('/contracts', params=input_data)
+
+            if data:
+                all_contracts.extend(data.get('contracts', []))
+
+                if total_count is None:
+                    total_count = data['list_info'].get('total_count', 0)
+                    print(f"Toplam talep sayısı: {total_count}")
+                remaining_count = total_count - first_start_index
+
+                current_count = len(all_contracts)
+                print(f"İşlenen talepler: {startIndex}/{total_count} ({(current_count / remaining_count) * 100:.2f}%)")
+
+                if startIndex + batchSize >= total_count:
+                    break
+
+                startIndex += batchSize
+            else:
+                break
+
+        except HTTPError as e:
+            print(f"HTTP hatası: {e}")
+            break
+
+        except Exception as e:
+            print(f"Beklenmedik hata: {e}")
+            break
+
+    return all_contracts

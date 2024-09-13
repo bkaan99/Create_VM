@@ -120,7 +120,7 @@ def Find_GuestFamily(vm):
         "VMware Photon OS"
     ]
 
-    all_keywords = windows_keywords + other_keywords + macos_keywords + linux_keywords
+    all_keywords: list = windows_keywords + other_keywords + macos_keywords + linux_keywords
 
     for keyword in all_keywords:
         if keyword in guest_full_name:

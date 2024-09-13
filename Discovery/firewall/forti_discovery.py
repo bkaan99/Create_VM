@@ -1,7 +1,6 @@
 from datetime import datetime
 import pandas as pd
-from sqlalchemy import create_engine
-
+from sqlalchemy import create_engine, Table, Column, String, DateTime, MetaData, inspect, Boolean, Integer
 from Discovery.firewall.utils_fortinet import main_controller
 
 
@@ -68,8 +67,31 @@ def controller_method():
     app_control_profiles_to_dataframe(app_control_profiles)
     print("app_control_profiles_to_dataframe tamamlandı")
 
+def create_datastore_table_if_not_exists(engine, table_name: str):
+    metadata = MetaData()
+    datastore_table = Table(
+        table_name, metadata,
+        Column('key', String),
+        Column('value', String),
+        Column('is_deleted', Boolean),
+        Column('version', Integer),
+        Column('created_date', DateTime),
+        Column('vm_id', Integer),
+        Column('virtualization_environment_type', String),
+        Column('virtualization_environment_ip', String),
+        Column('node', String),
+        Column('notes', String)
+    )
+    inspector = inspect(engine)
+    if not inspector.has_table(table_name):
+        metadata.create_all(engine)
+        print(f"{table_name} ---> tablosu oluşturuldu.")
+    else:
+        print("")
+        print(f"{table_name} ---> tablosu zaten var.")
 
 if __name__ == "__main__":
+    TABLE_NAME = "kr_discovery_fortinet"
     createdDateForAppend = datetime.now()
     versionForAppend = 1
     isDeletedValueForAppend = False
@@ -85,4 +107,5 @@ if __name__ == "__main__":
 
     #dataFrameForInsert.to_csv("forti_disc.csv", index=False)
 
-    dataFrameForInsert.to_sql('forti_disc', engineForPostgres, if_exists='append', index=False)
+    create_datastore_table_if_not_exists(engineForPostgres, TABLE_NAME)
+    dataFrameForInsert.to_sql(TABLE_NAME, engineForPostgres, if_exists='append', index=False)

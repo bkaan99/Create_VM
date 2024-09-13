@@ -59,7 +59,7 @@ def seleniumItsm():
     try:
         driver.get("https://supporttest.glasshouse.com.tr/")
         username = "cekinoitsmuser"
-        password = "Cekino123!!"
+        password = "Aa112233!!!"
         username_input = driver.find_element(By.XPATH,
                                              "/html/body/div[1]/div[2]/div/div/div[2]/div/form/div/div[2]/div/div/div/div[1]/div/input")
         password_input = driver.find_element(By.XPATH,

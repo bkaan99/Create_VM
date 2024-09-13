@@ -10,6 +10,18 @@ def proxmox_credential():
 
     return proxmox_login, virtualizationEnvironmentIp
 
+def new_proxmox_credential():
+    proxmox_login = {
+            "username": "root",
+            "password": "Aa112233!",
+            "realm": "pam",
+            "new-format": 1
+        }
+
+    virtualizationEnvironmentIp = "10.14.45.51:8006"
+
+    return proxmox_login, virtualizationEnvironmentIp
+
 def ipam_credential():
     ipam_login = {
         "username": "ansible",
@@ -65,6 +77,12 @@ def vcenter_credential():
 
     return login_credential
 
+def turksat_vmware_credential():
+    login_credential = {
+        "host_ip": "10.184.1.10",
+        "username": "P9988.marvin.android@vsphere.local",
+        "password": "T7z8nSVChzmzw3zUjK9."
 
+    }
 
-
+    return login_credential

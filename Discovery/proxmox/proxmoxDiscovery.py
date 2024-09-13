@@ -1,13 +1,10 @@
-import base64
 import requests
-import psycopg2
 import pandas as pd
-import sys
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Table, Column, String, DateTime, MetaData, inspect, Boolean, Integer
 from datetime import datetime
-
-from Discovery.proxmox import get_disk_volumes_proxmox, get_os_info_proxmox, get_host_name_proxmox, get_nodes_proxmox, \
-    get_vm_id_list_proxmox, get_pool_info, get_pool_information, get_vm_config_proxmox, get_ip_information_proxmox
+from Discovery import Credentials
+from Discovery.proxmox.utils import get_disk_volumes_proxmox, get_ip_information_proxmox, get_nodes_proxmox, \
+    get_host_name_proxmox, get_vm_id_list_proxmox, get_vm_config_proxmox, get_os_info_proxmox
 
 
 def append_dataframe_given_values(key, value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes):
@@ -15,7 +12,6 @@ def append_dataframe_given_values(key, value, is_deleted, version, created_date,
     dataFrameForInsert.loc[len(dataFrameForInsert)]=[key,value, is_deleted, version, created_date, vm_id, virtualization_environment_type,virtualization_environment_ip, nodeName, notes]
 
 # def appaend_dataframe_for_pool_table(vmid,vm_name,pool_name,is_deleted,created_date,version,virtualization_environment_type,virtualization_environment_ip,customer_name,is_matched,vm_type,vm_note):
-#
 #     dataFrameForInsertPoolTable.loc[len(dataFrameForInsertPoolTable)]=[vmid,vm_name,pool_name,is_deleted,created_date,version,virtualization_environment_type,virtualization_environment_ip,customer_name,is_matched,vm_type,vm_note]
 
 def get_node_information_from_json(jsonWithNodes):
@@ -23,8 +19,9 @@ def get_node_information_from_json(jsonWithNodes):
     for i, item in enumerate(jsonWithNodes):
         listOfNodeNames.append(item["node"])
     return listOfNodeNames
+
 def discover_proxmox_environment(nodeName):
-    url = "https://10.14.46.11:8006/api2/extjs/nodes/"+nodeName+"/qemu"
+    url = f"https://{virtualizationEnvironmentIp}/api2/extjs/nodes/"+nodeName+"/qemu"
     discoveredNodeData = get_vm_id_list_proxmox.get_vm_id_list(headersWithCookie, url)
     return discoveredNodeData
 def get_id_from_discovered_data(firstDiscoveredJson):
@@ -640,41 +637,56 @@ def extract_useful_data_from_vm_config(configList,nodenameToInsert):
                 notes = valueForInsert
                 append_vm_info(IdList[c], keyForInsert, valueForInsert, notes, nodenameToInsert),
 
+def create_datastore_table_if_not_exists(engine, table_name: str):
+    metadata = MetaData()
+    datastore_table = Table(
+        table_name, metadata,
+        Column('key', String),
+        Column('value', String),
+        Column('is_deleted', Boolean),
+        Column('version', Integer),
+        Column('created_date', DateTime),
+        Column('vm_id', Integer),
+        Column('virtualization_environment_type', String),
+        Column('virtualization_environment_ip', String),
+        Column('node', String),
+        Column('notes', String)
+    )
+    inspector = inspect(engine)
+    if not inspector.has_table(table_name):
+        metadata.create_all(engine)
+        print(f"{table_name} ---> tablosu oluşturuldu.")
+    else:
+        print("")
+        print(f"{table_name} ---> tablosu zaten var.")
 
 if __name__ == "__main__":
+    login_credential, virtualization_ip = Credentials.new_proxmox_credential()
+    TABLE_NAME = "kr_discovery_proxmox"
+
     createdDateForAppend = datetime.now()
     versionForAppend = 1
     isDeletedValueForAppend = False
     virtualizationEnvironmentType = "Proxmox"
-    virtualizationEnvironmentIp = "10.14.46.11:8006"
+    virtualizationEnvironmentIp = virtualization_ip
+
     dataFrameColumns = ["key","value","is_deleted","version","created_date","vm_id","virtualization_environment_type","virtualization_environment_ip","node","notes"]
     dataFrameForInsert = pd.DataFrame(columns=dataFrameColumns)
-    mystring = base64.b64decode(sys.argv[1]).decode('UTF-8')
-    mystring = mystring.replace("[", "").replace("]", "")
-
-    def Convert(string):
-        li = list(string.replace(' ', '').split(","))
-        return li
 
     engineForPostgres = create_engine('postgresql+psycopg2://postgres:Cekino.123!@10.14.45.69:7100/karcin_pfms')
-    connectionForPostgres = psycopg2.connect(
-        host="10.14.45.69",
-        port="7100",
-        database="karcin_pfms",
-        user="postgres",
-        password="Cekino.123!")
-    cursorForPostgres = connectionForPostgres.cursor()
-    vmIdList = Convert(mystring)
+
+    create_datastore_table_if_not_exists(engineForPostgres, TABLE_NAME)
+
     login = {
-            "username": "root",
-            "password": "Aa112233!",
+            "username": login_credential.get("username"),
+            "password": login_credential.get("password"),
             "realm": "pam",
             "new-format": 1
         }
     headers = {
             "Content-Type": "application/json",
         }
-    responseforticket = requests.post("https://10.14.46.11:8006/api2/extjs/access/ticket", headers=headers,json=login, verify=False)
+    responseforticket = requests.post(f"https://{virtualizationEnvironmentIp}/api2/extjs/access/ticket", headers=headers,json=login, verify=False)
     headersWithCookie = {
             "Content-Type": "application/json",
             "Cookie": "PVEAuthCookie=" + responseforticket.json().get("data").get("ticket"),
@@ -720,7 +732,7 @@ if __name__ == "__main__":
     for node in clearedNodeInfo:
         discoveredNodeData = discover_proxmox_environment(node)
         listOfVMIDS = get_id_from_discovered_data(discoveredNodeData)
-        configListOfVms, IdList = get_vm_config_proxmox.get_vm_config(headersWithCookie, listOfVMIDS, node)
+        configListOfVms, IdList = get_vm_config_proxmox.get_vm_config(headersWithCookie, listOfVMIDS, node, virtualizationEnvironmentIp)
 
         extract_useful_data_from_vm_config(configListOfVms,node)
         keyListForIpConfig, ipconfigsOfVms, IdListForIpConfig = get_ip_information_proxmox.get_ip_given_vm(virtualizationEnvironmentIp, node, listOfVMIDS, headersWithCookie)
@@ -736,5 +748,7 @@ if __name__ == "__main__":
             append_dataframe_given_values(item, str(osConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromOsConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(osConfigOfVms[t]))
         for t, item in enumerate(keyListForHostConfig):
             append_dataframe_given_values(item, str(hostConfigOfVms[t]), isDeletedValueForAppend, versionForAppend, createdDateForAppend, IdListFromHostConfig[t], virtualizationEnvironmentType, virtualizationEnvironmentIp, node, str(hostConfigOfVms[t]))
-        dataFrameForInsert.to_sql("proxmox_disc", engineForPostgres, chunksize=5000, index=False, method=None,
-                   if_exists='append')
+
+
+        dataFrameForInsert.to_sql(TABLE_NAME, engineForPostgres, chunksize=5000, index=False, method=None,
+                   if_exists='replace')

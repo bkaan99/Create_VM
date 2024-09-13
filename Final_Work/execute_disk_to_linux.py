@@ -70,7 +70,7 @@ def main():
 
         # Yeni disk oluşturma ve mount işlemleri
         disk_device = "/dev/sd"  # Burada disk cihazının başlangıç değerini tanımlayın
-        added_disk_full_path_name = disk_device + added_disk_label
+        added_disk_full_path_name = m + added_disk_label
 
         cmd_create_disk = f"sudo parted {added_disk_full_path_name} <<EOF\n" \
                           "mklabel gpt\n" \
